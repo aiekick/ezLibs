@@ -1,0 +1,33 @@
+name: Win
+
+on:
+  push:
+    branches:
+    - master
+    paths-ignore:
+    - '.github/**'
+    - 'doc/**'
+    - '.gitignore'
+    - 'README.md'
+    - 'LICENSE'
+
+jobs:
+  build_Win_latest:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: master
+    - name: configure
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_EZ_LIBS_TESTING=ON -DUSE_EZ_EXPR_PERFOS_GENERATION=ON
+    - name: build
+      run: cmake --build build
+    - name: ctest
+      run: ctest --test-dir build --output-on-failure
+    - name: zip test results
+      run: Compress-Archive -Path ./TestResults/* -Destination ./tests_results.zip
+    - name: upload test results artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: tests_results.zip
+        path: ./tests_results.zip
