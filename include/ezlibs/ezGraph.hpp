@@ -101,6 +101,10 @@ typedef std::shared_ptr<Node> NodePtr;
 typedef std::weak_ptr<Node> NodeWeak;
 typedef std::function<RetCodes(size_t, const std::vector<SlotPtr> &, const SlotWeak &)> NodeFunctor;
 
+class Graph;
+typedef std::shared_ptr<Graph> GraphPtr;
+typedef std::weak_ptr<Graph> GraphWeak;
+
 typedef uintptr_t Uuid;
 
 typedef void *UserDatas;
@@ -139,6 +143,7 @@ struct EvalDatas {
 
 class Slot : public UUID {
     friend class Node;
+    friend class Graph;
 
 protected:
     SlotWeak m_This;
@@ -149,11 +154,16 @@ protected:
 
 public:
     Slot() : UUID(this) {}
-    explicit Slot(const SlotDatas &vDatas) : UUID(this), mp_SlotDatas(std::make_shared<SlotDatas>(vDatas)) {}
+    template <typename T, typename = std::enable_if<std::is_base_of<SlotDatas, T>::value>>
+    explicit Slot(const T &vDatas) : UUID(this), mp_SlotDatas(std::make_shared<T>(vDatas)) {}
     ~Slot() override {
         mp_SlotDatas.reset();
         m_ConnectedSlots.clear();
+        unit();
     }
+
+    virtual bool init() { return true; }
+    virtual void unit() {}
 
     // enable_if remove the need to use a slow dynamic_cast
     template <typename T, typename = std::enable_if<std::is_base_of<SlotDatas, T>::value>>
@@ -176,7 +186,8 @@ public:
 protected:
     void m_setThis(const SlotWeak &vThis) { m_This = vThis; }
 
-    explicit Slot(std::shared_ptr<SlotDatas> vpDatas, SlotWeak vThis) : UUID(this), m_This(std::move(vThis)), mp_SlotDatas(std::move(vpDatas)) {}
+    template <typename T, typename = std::enable_if<std::is_base_of<SlotDatas, T>::value>>
+    explicit Slot(std::shared_ptr<T> vpDatas) : UUID(this), mp_SlotDatas(std::move(vpDatas)) {}
 
     RetCodes m_connectSlot(const SlotWeak &vSlot) {
         auto ret = RetCodes::FAILED_SLOT_PTR_NULL;
@@ -201,7 +212,7 @@ protected:
 };
 
 /////////////////////////////////////
-///// NODE / GRAPH //////////////////
+///// NODE //////////////////////////
 /////////////////////////////////////
 
 struct NodeDatas {
@@ -215,22 +226,29 @@ struct NodeDatas {
 };
 
 class Node : public UUID {
+    friend class Graph;
     NodeWeak m_This;
-    NodeWeak m_ParentNode;
+    GraphWeak m_ParentGraph;
     bool dirty = false;
     std::shared_ptr<NodeDatas> mp_NodeDatas;
-    std::vector<NodePtr> m_Nodes;
     std::vector<SlotPtr> m_Inputs;
     std::vector<SlotPtr> m_Outputs;
 
 public:
     Node() : UUID(this) {}
-    explicit Node(const NodeDatas &vDatas) : UUID(this), mp_NodeDatas(std::make_shared<NodeDatas>(vDatas)) {}
+    template <typename T, typename = std::enable_if<std::is_base_of<NodeDatas, T>::value>>
+    explicit Node(const T &vDatas) : UUID(this), mp_NodeDatas(std::make_shared<T>(vDatas)) {}
     ~Node() override {
+        m_This.reset();
+        m_ParentGraph.reset();
         mp_NodeDatas.reset();
         m_Inputs.clear();
         m_Outputs.clear();
+        unit();
     }
+
+    virtual bool init() { return true; }
+    virtual void unit() {}
 
     // Eval
     virtual RetCodes eval(const size_t vFrame, const SlotWeak &vFrom) {
@@ -242,8 +260,8 @@ public:
     }
 
     // Datas
-    void setParentNode(const NodeWeak &vParentNode) { m_ParentNode = vParentNode; }
-    NodeWeak getParentNode() { return m_ParentNode; }
+    void setParentGraph(const GraphWeak &vParentGraph) { m_ParentGraph = vParentGraph; }
+    GraphWeak getParentGraph() { return m_ParentGraph; }
 
     // enable_if remove the need to use a slow dynamic_cast
     template <typename T, typename = std::enable_if<std::is_base_of<NodeDatas, T>::value>>
@@ -256,37 +274,21 @@ public:
     T &getDatasRef() {
         return static_cast<T &>(*mp_NodeDatas);
     }
-
-    const std::vector<NodePtr> &getNodes() const { return m_Nodes; }
-    std::vector<NodePtr> &getNodesRef() { return m_Nodes; }
-    NodeWeak m_getThis() { return m_This; }
     void setDirty(const bool vFlag) { dirty = vFlag; }
     bool isDirty() const { return dirty; }
 
 protected:  // Node
+    NodeWeak m_getThis() { return m_This; }
     void m_setThis(const NodeWeak &vThis) { m_This = vThis; }
 
-    explicit Node(std::shared_ptr<NodeDatas> vpDatas) : UUID(this), mp_NodeDatas(std::move(vpDatas)) {}
-
-    RetCodes m_addNode(const NodePtr &vNodePtr) {
-        auto ret = RetCodes::FAILED_NODE_PTR_NULL;
-        if (vNodePtr != nullptr) {
-            vNodePtr->setParentNode(m_This);
-            m_Nodes.push_back(vNodePtr);
-            ret = RetCodes::SUCCESS;
+    void m_setSlotThis(SlotPtr vSlotPtr) {
+        if (vSlotPtr != nullptr) {
+            vSlotPtr->m_setThis(vSlotPtr);
         }
-        return ret;
     }
 
-    RetCodes m_delNode(const NodePtr &vNodePtr) {
-        auto ret = RetCodes::FAILED_NODE_NOT_FOUND;
-        const auto it = Utils::isSharedPtrExistInVector(vNodePtr, m_Nodes);
-        if (it != m_Nodes.end()) {
-            m_Nodes.erase(it);
-            ret = RetCodes::SUCCESS;
-        }
-        return ret;
-    }
+    template <typename T, typename = std::enable_if<std::is_base_of<NodeDatas, T>::value>>
+    explicit Node(std::shared_ptr<T> vpDatas) : UUID(this), mp_NodeDatas(std::move(vpDatas)) {}
 
     // Slots
     RetCodes m_addSlot(const SlotPtr &vSlotPtr) {
@@ -323,7 +325,6 @@ protected:  // Node
             *vOutRetCodes = RetCodes::FAILED_NODE_PTR_NULL;
         }
         auto slot_ptr = std::make_shared<Slot>(vSlotDatas);
-        slot_ptr->m_setThis(slot_ptr);
         const auto ret_code = m_addSlot(slot_ptr);
         if (vOutRetCodes != nullptr) {
             *vOutRetCodes = ret_code;
@@ -335,63 +336,6 @@ protected:  // Node
         auto ret = m_delInputSlot(vSlotPtr);
         if (ret != RetCodes::SUCCESS) {
             ret = m_delOutputSlot(vSlotPtr);
-        }
-        return ret;
-    }
-
-    static RetCodes m_connectSlots(const SlotWeak &vFrom, const SlotWeak &vTo) {
-        auto ret = RetCodes::FAILED_SLOT_PTR_NULL;
-        if (!vFrom.expired() && !vTo.expired()) {
-            const auto fromPtr = vFrom.lock();
-            const auto toPtr = vTo.lock();
-            if (fromPtr != nullptr && toPtr != nullptr) {
-                ret = fromPtr->m_connectSlot(vTo);
-                if (ret == RetCodes::SUCCESS) {
-                    ret = toPtr->m_connectSlot(vFrom);
-                    if (ret != RetCodes::SUCCESS) {
-                        fromPtr->m_connectSlot(vTo);
-                    }
-                }
-            }
-        }
-        return ret;
-    }
-
-    RetCodes m_disconnectSlot(const SlotWeak &vFrom) {
-        auto ret = RetCodes::FAILED_SLOT_NOT_FOUND;
-        // INPUTS
-        auto it = Utils::isSharedPtrExistInVector(vFrom.lock(), m_Inputs);
-        if (it != m_Inputs.end()) {
-            (*it)->m_disconnect();
-            ret = RetCodes::SUCCESS;
-        }
-        // OUTPUTS
-        it = Utils::isSharedPtrExistInVector(vFrom.lock(), m_Outputs);
-        if (it != m_Outputs.end()) {
-            assert(ret != RetCodes::SUCCESS);  // if the slot exist both in INPUTS and PUTPUTS. => FAIL
-            (*it)->m_disconnect();
-            ret = RetCodes::SUCCESS;
-        }
-        if (ret != RetCodes::SUCCESS) {
-            const auto fromPtr = vFrom.lock();
-            if (fromPtr != nullptr) {
-                fromPtr->m_disconnect();
-            }
-        }
-        return ret;
-    }
-
-    static RetCodes m_disconnectSlots(const SlotWeak &vFrom, const SlotWeak &vTo) {
-        auto ret = RetCodes::FAILED_SLOT_PTR_NULL;
-        if (!vFrom.expired() && !vTo.expired()) {
-            const auto fromPtr = vFrom.lock();
-            const auto toPtr = vTo.lock();
-            if (fromPtr != nullptr && toPtr != nullptr) {
-                /*ret =*/
-                fromPtr->m_disconnectSlot(vTo);
-                // even if the last is in error, we try the diconnect
-                ret = toPtr->m_disconnectSlot(vFrom);
-            }
         }
         return ret;
     }
@@ -416,8 +360,139 @@ protected:  // Node
         return ret;
     }
 
-    std::vector<SlotPtr> &m_getInputsRef() { return m_Inputs; }
+    const std::vector<SlotPtr> &m_getInputSlots() { return m_Inputs; }
+    std::vector<SlotPtr> &m_getInputSlotsRef() { return m_Inputs; }
 
-    std::vector<SlotPtr> &m_getOutputsRef() { return m_Outputs; }
+    const std::vector<SlotPtr> &m_getOutputSlots() { return m_Outputs; }
+    std::vector<SlotPtr> &m_getOutputSlotsRef() { return m_Outputs; }
 };
+
+/////////////////////////////////////
+///// GRAPH /////////////////////////
+/////////////////////////////////////
+
+struct GraphDatas {
+    std::string name;
+    std::string type;
+    UserDatas userDatas = nullptr;
+    GraphDatas() = default;
+    GraphDatas(std::string vName, std::string vType, UserDatas vUserDatas = nullptr)
+        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
+};
+
+class Graph : public UUID {
+    GraphWeak m_This;
+    GraphWeak m_ParentGraph;
+    NodeWeak m_ParentNode;
+    bool dirty = false;
+    std::shared_ptr<GraphDatas> mp_GraphDatas;
+    std::vector<NodePtr> m_Nodes;
+
+public:
+    Graph() : UUID(this) {}
+    template <typename T, typename = std::enable_if<std::is_base_of<GraphDatas, T>::value>>
+    explicit Graph(const T &vDatas) : UUID(this), mp_GraphDatas(std::make_shared<T>(vDatas)) {}
+    ~Graph() override {
+        m_This.reset();
+        m_ParentNode.reset();
+        mp_GraphDatas.reset();
+        m_Nodes.clear();
+        unit();
+    }
+
+    virtual bool init() { return true; }
+    virtual void unit() {}
+
+    // Datas
+    void setParentNode(const NodeWeak &vParentNode) { m_ParentNode = vParentNode; }
+    NodeWeak getParentNode() { return m_ParentNode; }
+    void setParentGraph(const GraphWeak &vParentNode) { m_ParentGraph = vParentNode; }
+    GraphWeak getParentGraph() { return m_ParentGraph; }
+
+    // enable_if remove the need to use a slow dynamic_cast
+    template <typename T, typename = std::enable_if<std::is_base_of<GraphDatas, T>::value>>
+    const T &getDatas() const {
+        return static_cast<const T &>(*mp_GraphDatas);
+    }
+
+    // enable_if remove the need to use a slow dynamic_cast
+    template <typename T, typename = std::enable_if<std::is_base_of<GraphDatas, T>::value>>
+    T &getDatasRef() {
+        return static_cast<T &>(*mp_GraphDatas);
+    }
+
+    const std::vector<NodePtr> &getNodes() const { return m_Nodes; }
+    std::vector<NodePtr> &getNodesRef() { return m_Nodes; }
+
+    void setDirty(const bool vFlag) { dirty = vFlag; }
+    bool isDirty() const { return dirty; }
+
+protected:  // Node
+    GraphWeak m_getThis() { return m_This; }
+    void m_setThis(const GraphWeak &vThis) { m_This = vThis; }
+
+    void m_setNodeThis(NodePtr vNodePtr) {
+        if (vNodePtr != nullptr) {
+            vNodePtr->m_setThis(vNodePtr);
+        }
+    }
+
+    template <typename T, typename = std::enable_if<std::is_base_of<GraphDatas, T>::value>>
+    explicit Graph(std::shared_ptr<T> vpDatas) : UUID(this), mp_GraphDatas(std::move(vpDatas)) {}
+
+    RetCodes m_addNode(const NodePtr &vNodePtr) {
+        auto ret = RetCodes::FAILED_NODE_PTR_NULL;
+        if (vNodePtr != nullptr) {
+            vNodePtr->m_setThis(vNodePtr);
+            vNodePtr->setParentGraph(m_This);
+            m_Nodes.push_back(vNodePtr);
+            ret = RetCodes::SUCCESS;
+        }
+        return ret;
+    }
+
+    RetCodes m_delNode(const NodePtr &vNodePtr) {
+        auto ret = RetCodes::FAILED_NODE_NOT_FOUND;
+        const auto it = Utils::isSharedPtrExistInVector(vNodePtr, m_Nodes);
+        if (it != m_Nodes.end()) {
+            m_Nodes.erase(it);
+            ret = RetCodes::SUCCESS;
+        }
+        return ret;
+    }
+
+    static RetCodes m_connectSlots(const SlotWeak &vFrom, const SlotWeak &vTo) {
+        auto ret = RetCodes::FAILED_SLOT_PTR_NULL;
+        if (!vFrom.expired() && !vTo.expired()) {
+            const auto fromPtr = vFrom.lock();
+            const auto toPtr = vTo.lock();
+            if (fromPtr != nullptr && toPtr != nullptr) {
+                ret = fromPtr->m_connectSlot(vTo);
+                if (ret == RetCodes::SUCCESS) {
+                    ret = toPtr->m_connectSlot(vFrom);
+                    if (ret != RetCodes::SUCCESS) {
+                        fromPtr->m_connectSlot(vTo);
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+
+    static RetCodes m_disconnectSlots(const SlotWeak &vFrom, const SlotWeak &vTo) {
+        auto ret = RetCodes::FAILED_SLOT_PTR_NULL;
+        if (!vFrom.expired() && !vTo.expired()) {
+            const auto fromPtr = vFrom.lock();
+            const auto toPtr = vTo.lock();
+            if (fromPtr != nullptr && toPtr != nullptr) {
+                /*ret =*/
+                fromPtr->m_disconnectSlot(vTo);
+                // even if the last is in error, we try the diconnect
+                ret = toPtr->m_disconnectSlot(vFrom);
+            }
+        }
+        return ret;
+    }
+};
+
 }  // namespace ez

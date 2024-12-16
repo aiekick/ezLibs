@@ -22,11 +22,11 @@ endif()
 
 if (USE_CODE_COVERAGE)
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		add_compile_options(-fprofile-instr-generate -fcoverage-mapping -O0)
-		add_link_options(-fprofile-instr-generate -fcoverage-mapping -O0)
+		add_compile_options(-fprofile-instr-generate -fcoverage-mapping -fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
+		add_link_options(-fprofile-instr-generate -fcoverage-mapping -fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
 	else()
-		add_compile_options(-fprofile-arcs -ftest-coverage -O0)
-		add_link_options(--coverage -O0)
+		add_compile_options(-fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
+		add_link_options(-fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
 	endif()
 endif()
 
@@ -68,11 +68,11 @@ if (USE_CODE_COVERAGE)
 	add_custom_target(cov DEPENDS ${COVERAGE_WEB_PAGE} ${COVERAGE_XML})
 	add_custom_command(
 		OUTPUT ${COVERAGE_WEB_PAGE}
-		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --html-details ${COVERAGE_WEB_PAGE} --html-single-page --exclude-unreachable-branches --exclude-throw-branches
+		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --exclude-unreachable-branches --exclude-throw-branches --exclude-noncode-lines --html-single-page --html-details ${COVERAGE_WEB_PAGE}
 	)
 	add_custom_command(
 		OUTPUT ${COVERAGE_XML}
-		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --exclude-unreachable-branches --exclude-throw-branches --cobertura > ${COVERAGE_XML}
+		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --exclude-unreachable-branches --exclude-throw-branches --exclude-noncode-lines --cobertura > ${COVERAGE_XML}
 	)
 	set_directory_properties(PROPERTIES
 		ADDITIONAL_CLEAN_FILES ${COVERAGE_WEB_PAGE}

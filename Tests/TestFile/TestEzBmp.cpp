@@ -42,7 +42,7 @@ bool TestEzBmp_Writer() {
             }
         }
     }
-    bmp.save(PROJECT_PATH "test.bmp");
+    bmp.save(PROJECT_PATH "/test.bmp");
     return true;
 }
 

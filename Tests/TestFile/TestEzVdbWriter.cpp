@@ -43,7 +43,7 @@ bool TestEzVdbWriter_Writer() {
         }
         time += 0.5f;
     }
-    vdb.save(PROJECT_PATH "test.vdb");
+    vdb.save(PROJECT_PATH "/test.vdb");
     return true;
 }
 
