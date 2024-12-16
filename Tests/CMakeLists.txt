@@ -68,7 +68,7 @@ if (USE_CODE_COVERAGE)
 	add_custom_target(cov DEPENDS ${COVERAGE_WEB_PAGE} ${COVERAGE_XML})
 	add_custom_command(
 		OUTPUT ${COVERAGE_WEB_PAGE}
-		COMMAND "gcovr -r ../.. . -f ${EZ_LIBS_INCLUDE_DIR} "
+		COMMAND "gcovr -r ../.. . -f '${EZ_LIBS_INCLUDE_DIR}' "
 			"--exclude-unreachable-branches "
 			"--exclude-throw-branches "
 			"--exclude-function-lines "
@@ -78,7 +78,7 @@ if (USE_CODE_COVERAGE)
 	)
 	add_custom_command(
 		OUTPUT ${COVERAGE_XML}
-		COMMAND "gcovr -r ../.. . -f ${EZ_LIBS_INCLUDE_DIR} "
+		COMMAND "gcovr -r ../.. . -f '${EZ_LIBS_INCLUDE_DIR}' "
 			"--exclude-unreachable-branches "
 			"--exclude-throw-branches "
 			"--exclude-function-lines "
