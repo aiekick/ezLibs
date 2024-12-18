@@ -64,17 +64,23 @@ public:
     template <typename T, typename = std::enable_if<std::is_base_of<TestGraphDatas, T>::value>>
     explicit TestGraph(const T &vDatas) : Graph(vDatas) {}
 
-    static ez::RetCodes connectSlots(const ez::SlotWeak &vFrom, const ez::SlotWeak &vTo) { return m_connectSlots(vFrom, vTo); }
+    static ez::RetCodes connectSlots(const ez::SlotWeak &vFrom, const ez::SlotWeak &vTo) { 
+        return m_connectSlots(vFrom, vTo); }
 
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
     std::weak_ptr<U> createChildNode(const TestNodeDatas &vNodeDatas) {
-        auto node_ptr = std::make_shared<U>(vNodeDatas);
+        auto node_ptr = U::create(vNodeDatas);
         if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
             node_ptr.reset();
         }
         // test null node for coverage
         m_addNode(nullptr);
         return node_ptr;
+    }
+
+    template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
+    ez::RetCodes delNode(const std::weak_ptr<U> &vNode) {
+        return m_delNode(vNode.lock());
     }
 };
 
@@ -114,6 +120,9 @@ public:
     static NNodeOpAddPtr create(const TestNodeDatas &vNodeDatas) {
         auto node_ptr = std::make_shared<NodeOpAdd>(vNodeDatas);
         node_ptr->m_setThis(node_ptr);
+        if (!node_ptr->init()) {
+            node_ptr.reset();
+        }
         return node_ptr;
     }
 
@@ -218,6 +227,8 @@ bool TestEzGraph_Evaluation() {
     auto nodeOpAddSlotOutput = nodaOpAdd.lock()->addSlot<ez::Slot>(output_slot_datas);
     CTEST_ASSERT(nodeOpAddSlotOutput.expired() == false);
     CTEST_ASSERT(nodeOpAddSlotOutput.lock() != nullptr);
+    CTEST_ASSERT(graphPtr->connectSlots(nodeNumASlotOutput.lock(), {}) == ez::RetCodes::FAILED_SLOT_PTR_NULL);
+    CTEST_ASSERT(graphPtr->connectSlots({}, nodeOpAddSlotInputB.lock()) == ez::RetCodes::FAILED_SLOT_PTR_NULL);
     CTEST_ASSERT(graphPtr->connectSlots(nodeNumASlotOutput.lock(), nodeOpAddSlotInputA.lock()) == ez::RetCodes::SUCCESS);
     CTEST_ASSERT(graphPtr->connectSlots(nodeNumBSlotOutput.lock(), nodeOpAddSlotInputB.lock()) == ez::RetCodes::SUCCESS);
     CTEST_ASSERT(nodaOpAdd.lock()->eval(10, nodeOpAddSlotOutput.lock()) == ez::RetCodes::SUCCESS);
@@ -230,8 +241,18 @@ bool TestEzGraph_Evaluation() {
     CTEST_ASSERT(nodaOpAdd.lock()->getDatas<TestNodeDatas>().mode == "modeAddBis");
 
     CTEST_ASSERT(nodaOpAdd.lock()->delSlot(nodeOpAddSlotInputA) == ez::RetCodes::SUCCESS);
+    CTEST_ASSERT(nodeOpAddSlotInputA.expired() == true);
+    CTEST_ASSERT(nodeOpAddSlotInputA.lock() == nullptr);
     CTEST_ASSERT(nodaOpAdd.lock()->delSlot(nodeOpAddSlotInputB) == ez::RetCodes::SUCCESS);
+    CTEST_ASSERT(nodeOpAddSlotInputB.expired() == true);
+    CTEST_ASSERT(nodeOpAddSlotInputB.lock() == nullptr);
     CTEST_ASSERT(nodaOpAdd.lock()->delSlot(nodeOpAddSlotOutput) == ez::RetCodes::SUCCESS);
+    CTEST_ASSERT(nodeOpAddSlotOutput.expired() == true);
+    CTEST_ASSERT(nodeOpAddSlotOutput.lock() == nullptr);
+
+    CTEST_ASSERT(graphPtr->delNode(nodaNumA) == ez::RetCodes::SUCCESS);
+    CTEST_ASSERT(graphPtr->delNode(nodaNumB) == ez::RetCodes::SUCCESS);
+    CTEST_ASSERT(graphPtr->delNode(nodaOpAdd) == ez::RetCodes::SUCCESS);
 
     return true;
 }
