@@ -26,10 +26,17 @@ public:
     template <typename U, typename = std::enable_if<std::is_base_of<ez::Slot, U>::value>>
     std::weak_ptr<U> addSlot(const ez::SlotDatas &vSlotDatas) {
         auto slot_ptr = std::make_shared<U>(vSlotDatas);
-        if (m_addSlot(slot_ptr) != ez::RetCodes::SUCCESS) {
+        if ((!slot_ptr->init()) || (m_addSlot(slot_ptr) != ez::RetCodes::SUCCESS)) {
             slot_ptr.reset();
         }
+        // test null slot for coverage
+        m_addSlot(nullptr);
         return slot_ptr;
+    }
+
+    template <typename U, typename = std::enable_if<std::is_base_of<ez::Slot, U>::value>>
+    ez::RetCodes delSlot(const std::weak_ptr<U> &vSlot) {
+        return m_delSlot(vSlot.lock());
     }
 };
 
@@ -48,6 +55,9 @@ public:
     static TestGraphPtr create(const TestGraphDatas &vNodeDatas) {
         auto graph_ptr = std::make_shared<TestGraph>(vNodeDatas);
         graph_ptr->m_setThis(graph_ptr);
+        if (!graph_ptr->init()) {
+            graph_ptr.reset();
+        }
         return graph_ptr;
     }
 
@@ -62,6 +72,8 @@ public:
         if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
             node_ptr.reset();
         }
+        // test null node for coverage
+        m_addNode(nullptr);
         return node_ptr;
     }
 };
@@ -75,8 +87,13 @@ public:
     static NodeNumberPtr create(const TestNodeDatas &vNodeDatas) {
         auto node_ptr = std::make_shared<NodeNumber>(vNodeDatas);
         node_ptr->m_setThis(node_ptr);
+        if (!node_ptr->init()) {
+            node_ptr.reset();
+        }
         return node_ptr;
     }
+
+    virtual ez::RetCodes eval(const size_t vFrame, const ez::SlotWeak &vFrom) { return ez::RetCodes::FAILED; }
 
 private:
     float m_Value = 0.0f;
@@ -211,6 +228,10 @@ bool TestEzGraph_Evaluation() {
     CTEST_ASSERT(nodaOpAdd.lock()->getDatas<ez::NodeDatas>().type == "NodeOpAdd");
     nodaOpAdd.lock()->getDatasRef<TestNodeDatas>().mode = "modeAddBis";
     CTEST_ASSERT(nodaOpAdd.lock()->getDatas<TestNodeDatas>().mode == "modeAddBis");
+
+    CTEST_ASSERT(nodaOpAdd.lock()->delSlot(nodeOpAddSlotInputA) == ez::RetCodes::SUCCESS);
+    CTEST_ASSERT(nodaOpAdd.lock()->delSlot(nodeOpAddSlotInputB) == ez::RetCodes::SUCCESS);
+    CTEST_ASSERT(nodaOpAdd.lock()->delSlot(nodeOpAddSlotOutput) == ez::RetCodes::SUCCESS);
 
     return true;
 }

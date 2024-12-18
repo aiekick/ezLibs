@@ -88,7 +88,6 @@ enum class RetCodes {
     FAILED_NODE_PTR_NULL,
     FAILED_NODE_ALREADY_EXIST,
     FAILED_NODE_NOT_FOUND,
-    FAILED_NODE_NO_FUNCTOR,
     Count
 };
 
@@ -99,7 +98,6 @@ typedef std::weak_ptr<Slot> SlotWeak;
 class Node;
 typedef std::shared_ptr<Node> NodePtr;
 typedef std::weak_ptr<Node> NodeWeak;
-typedef std::function<RetCodes(size_t, const std::vector<SlotPtr> &, const SlotWeak &)> NodeFunctor;
 
 class Graph;
 typedef std::shared_ptr<Graph> GraphPtr;
@@ -219,10 +217,9 @@ struct NodeDatas {
     std::string name;
     std::string type;
     UserDatas userDatas = nullptr;
-    NodeFunctor functor = nullptr;
     NodeDatas() = default;
-    NodeDatas(std::string vName, std::string vType, NodeFunctor vFunctor = nullptr, UserDatas vUserDatas = nullptr)
-        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas), functor(std::move(vFunctor)) {}
+    NodeDatas(std::string vName, std::string vType, UserDatas vUserDatas = nullptr)
+        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
 };
 
 class Node : public UUID {
@@ -249,15 +246,6 @@ public:
 
     virtual bool init() { return true; }
     virtual void unit() {}
-
-    // Eval
-    virtual RetCodes eval(const size_t vFrame, const SlotWeak &vFrom) {
-        auto ret = RetCodes::FAILED_NODE_NO_FUNCTOR;
-        if (mp_NodeDatas->functor != nullptr) {
-            ret = mp_NodeDatas->functor(vFrame, m_Inputs, vFrom);
-        }
-        return ret;
-    }
 
     // Datas
     void setParentGraph(const GraphWeak &vParentGraph) { m_ParentGraph = vParentGraph; }
