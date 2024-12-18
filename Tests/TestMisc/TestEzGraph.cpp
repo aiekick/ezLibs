@@ -31,6 +31,8 @@ public:
         }
         // test null slot for coverage
         m_addSlot(nullptr);
+        // test same slot for coverage
+        m_addSlot(slot_ptr);
         return slot_ptr;
     }
 
@@ -75,6 +77,8 @@ public:
         }
         // test null node for coverage
         m_addNode(nullptr);
+        // test same node for coverage
+        m_addNode(node_ptr);
         return node_ptr;
     }
 
