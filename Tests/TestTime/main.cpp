@@ -19,5 +19,5 @@ int main(int argc, char** argv) {
         return TestTime(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestTime("TestEzCron_TimeCheck_Type_Value") ? 0 : 1;
+    return TestTime("TestEzCron_TimeCheck_Type_Interval") ? 0 : 1;
 }

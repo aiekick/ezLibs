@@ -22,7 +22,7 @@
 
 bool TestEzFigFontLoadAndPrint() {
     ez::FigFont ff;
-    CTEST_ASSERT(ff.load(PROJECT_PATH "TestMisc/res/big.flf").isValid());
+    CTEST_ASSERT(ff.load(SAMPLES_PATH "big.flf").isValid());
     const std::string expected_result = u8R"(            _____                                                       ___      __ 
            |  __ \                                                     / _ \    /_ |
   ___  ____| |__) |  ___  _ __    __ _  _ __ ___    ___  _ __  __   __| | | |    | |

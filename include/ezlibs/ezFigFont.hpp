@@ -11,6 +11,10 @@
 
 #include "ezLog.hpp"
 
+#ifndef EZ_FIG_FONT
+#define EZ_FIG_FONT
+#endif  // EZ_FIG_FONT
+
 namespace ez {
 
 class FigFont {
@@ -38,7 +42,7 @@ private:
 public:
     FigFont() = default;
     FigFont(const std::string& vFilePathName) : m_isValid(m_load(vFilePathName)) {}
-    ~FigFont() { m_unit(); }
+    ~FigFont() = default;
     bool isValid() { return m_isValid; }
     FigFont& load(const std::string& vFilePathName) {
         m_isValid = m_load(vFilePathName);
@@ -52,7 +56,9 @@ private:
 	bool m_load(const std::string& vFilePathName) {
         std::ifstream file(vFilePathName);
         if (!file.is_open()) {
+#ifdef EZ_TOOLS_LOG
             LogVarError("Failed to open the file %s", vFilePathName.c_str());
+#endif // EZ_TOOLS_LOG
             return false;
         }
 
@@ -62,7 +68,9 @@ private:
         std::string magicNumber;
         headerStream >> magicNumber;
         if (magicNumber.substr(0, 5) != "flf2a") {
+#ifdef EZ_TOOLS_LOG
             LogVarError("Not a valid FIGfont file");
+#endif  // EZ_TOOLS_LOG
             return false;
         }
 
@@ -105,15 +113,16 @@ private:
             if (idx < required_chars_count) {
                 cChar = idx + baseChar;
                 if (!m_parseChar(file, cChar)) {
-                    return false;
+                    // return false;
                 }
             } else if (idx - required_chars_count < additionnal_chars_count) {
                 cChar = additionnal_chars.at(idx - required_chars_count);
                 if (!m_parseChar(file, cChar)) {
-                    return false;
+                    // return false;
                 }
             } else {
                 if (!m_parseChar(file, 0)) {
+                    // return false;
                 }
             }
             ++idx;
@@ -158,10 +167,6 @@ private:
         return true;
     }
 
-	void m_unit() {
-	
-	}
-
 	std::string m_printString(const std::string& vPattern) {
         std::stringstream ret;
         std::vector<std::string> rows;
@@ -176,20 +181,6 @@ private:
         }
         return ret.str();
 	}
-
-    bool m_getCharRows(uint8_t vC, std::vector<std::string>& vOutRows) {
-        vOutRows.clear();
-        vOutRows.reserve(m_header.height);
-        auto it = m_glyphs.find(vC);
-        if (it != m_glyphs.end()) {
-            for (const auto& row : it->second.rows) {
-                vOutRows.push_back(row);
-            }
-        } else {
-            return false;
-        }
-        return true;
-    }
 
     std::string m_getCharRow(uint8_t vC, uint8_t vRowIdx) {
         auto it = m_glyphs.find(vC);
