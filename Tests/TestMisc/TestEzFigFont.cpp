@@ -1,4 +1,8 @@
-#include <ezlibs/ezBmp.hpp>
+#include <TestEzFigFont.h>
+#include <ezlibs/ezFigFont.hpp>
+#include <ezlibs/ezCTest.hpp>
+
+#include <iostream>
 #include <string>
 
 // Desactivation des warnings de conversion
@@ -16,33 +20,19 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzBmp_Writer() {
-    ez::img::Bmp bmp;
-    bmp.setSize(100, 100);
-    for (int y = 0; y < 100; ++y) {
-        for (int x = 0; x < 100; ++x) {
-            uint8_t colorIndex = (x / 25) + (y / 25);  // one color per block of 25x25
-            switch (colorIndex) {
-                case 0:
-                case 6: {
-                    bmp.setPixel(x, y, 255, 0, 0);
-                } break;
-                case 1:
-                case 5: {
-                    bmp.setPixel(x, y, 0, 255, 0);
-                } break;
-                case 2:
-                case 4: {
-                    bmp.setPixel(x, y, 0, 0, 255);
-                } break;
-                case 3: {
-                    bmp.setPixel(x, y, 255, 255, 0);
-                } break;
-                default: break;
-            }
-        }
-    }
-    bmp.save(RESULTS_PATH "/test.bmp");
+bool TestEzFigFontLoadAndPrint() {
+    ez::FigFont ff;
+    CTEST_ASSERT(ff.load(PROJECT_PATH "TestMisc/res/big.flf").isValid());
+    const std::string expected_result = u8R"(            _____                                                       ___      __ 
+           |  __ \                                                     / _ \    /_ |
+  ___  ____| |__) |  ___  _ __    __ _  _ __ ___    ___  _ __  __   __| | | |    | |
+ / _ \|_  /|  _  /  / _ \| '_ \  / _` || '_ ` _ \  / _ \| '__| \ \ / /| | | |    | |
+|  __/ / / | | \ \ |  __/| | | || (_| || | | | | ||  __/| |     \ V / | |_| | _  | |
+ \___|/___||_|  \_\ \___||_| |_| \__,_||_| |_| |_| \___||_|      \_/   \___/ (_) |_|
+                                                                                    
+                                                                                    
+)";
+    CTEST_ASSERT(ff.printString("ezRenamer v0.1") == expected_result);
     return true;
 }
 
@@ -54,8 +44,8 @@ bool TestEzBmp_Writer() {
     if (vTest == std::string(#v)) \
     return v()
 
-bool TestEzBmp(const std::string& vTest) {
-    IfTestExist(TestEzBmp_Writer);
+bool TestEzFigFont(const std::string& vTest) {
+    IfTestExist(TestEzFigFontLoadAndPrint);
     return false;
 }
 
