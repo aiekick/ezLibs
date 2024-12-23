@@ -159,7 +159,7 @@ public:
         if (m_Loader.isAPlugin()) {
             if (m_Loader.isValid()) {
                 if (m_PluginInstance) {
-                    if (!m_PluginInstance->Init()) {
+                    if (!m_PluginInstance->init()) {
                         m_PluginInstance.reset();
                     } else {
                         return PluginReturnMsg::LOADING_SUCCEED;
@@ -172,7 +172,7 @@ public:
     }
 
     void unit() {
-        m_PluginInstance->Unit();
+        m_PluginInstance->unit();
         m_PluginInstance.reset();
         m_Loader.dlCloseLib();
     }
