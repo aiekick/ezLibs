@@ -36,6 +36,7 @@ target_include_directories(${PROJECT} PRIVATE
 
 AddTest("TestEzArgs_parsing")
 AddTest("TestEzArgs_delimiters")
+AddTest("TestEzArgs_delimiters_empties")
 AddTest("TestEzArgs_groupeds")
 
 ##########################################################
