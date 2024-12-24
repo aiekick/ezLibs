@@ -1052,7 +1052,7 @@ also "ess-zed".
         63 ?             95 _
 
     Additional required Deutsch FIGcharacters, in order:
-
+196,214,220,228,246,252,223
         196 (umlauted "A" -- two dots over letter "A")
         214 (umlauted "O" -- two dots over letter "O")
         220 (umlauted "U" -- two dots over letter "U")
