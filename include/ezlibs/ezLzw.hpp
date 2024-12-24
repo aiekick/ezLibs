@@ -52,7 +52,7 @@ public:
     Lzw() {
         std::string c;
         for (uint16_t i = 0; i < 256; ++i) {
-            c = i;
+            c = static_cast<char>(i);
             m_dicoComp[c] = i;
             m_dicoDeComp[i] = c;
         }
@@ -115,9 +115,9 @@ public:
         return m_vectorToString(m_datas);
     }
 
-    Lzw& save(const std::string& vFilePathName) {
+    Lzw& save(const std::string& vFilePathName, bool vNoExcept = false) {
         std::ofstream file(vFilePathName, std::ios::binary);
-        if (!file) {
+        if (!file && !vNoExcept) {
             throw std::runtime_error("Impossible d'ouvrir le fichier.");
         }
         auto dataSize = static_cast<uint32_t>(m_datas.size());
@@ -205,7 +205,7 @@ private:
             } else {
                 p = m_dicoDeComp.at(nop);
             }
-            for (const DataType ch : p) {
+            for (DataType ch : p) {
                 result.push_back(ch);
             }
             c = p[0];

@@ -48,79 +48,83 @@ SOFTWARE.
 
 namespace ez {
 
-class Argument {
-    friend class Args;
-
-private:
-    std::vector<std::string> m_base_args;  // base args
-    std::set<std::string> m_full_args;  // full args
-    char one_char_arg = 0;
-    std::string m_help_text;
-    std::string m_help_var_name;
-    std::string m_type;
-    bool m_required = false;
-    char m_delimiter = 0;       // delimiter used for arguments : toto a, toto=a, toto:a, etc...
-    bool m_is_present = false;  // found during parsing
-    std::string m_value;        // value
-
-public:
-    Argument() = default;
-
-    Argument& help(const std::string& vHelp, const std::string& vVarName = {}) {
-        m_help_text = vHelp;
-        m_help_var_name = vVarName;
-        return *this;
-    }
-    Argument& def(const std::string& vDefValue) {
-        m_value = vDefValue;
-        return *this;
-    }
-    Argument& type(const std::string& vType) {
-        m_type = vType;
-        return *this;
-    }
-    Argument& delimiter(char vDelimiter) {
-        m_delimiter = vDelimiter;
-        return *this;
-    }
-    Argument& required(bool vValue) {
-        m_required = vValue;
-        return *this;
-    }
-
-private:
-    typedef std::pair<std::string, std::string> HelpCnt;
-    HelpCnt m_getHelp(bool vPositional, size_t& vInOutFirstColSize) const {
-        HelpCnt res;
-        std::stringstream ss;
-        if (vPositional) {
-            std::string token = m_help_var_name;
-            if (token.empty()) {
-                token = *(m_base_args.begin());
-            }
-            ss << "  " << token;
-        } else {
-            size_t idx = 0;
-            ss << "  ";
-            for (const auto& arg : m_base_args) {
-                if (idx++ > 0) {
-                    ss << ", ";
-                }
-                ss << arg;
-            }
-            if (!m_help_var_name.empty()) {
-                ss << " " << m_help_var_name;
-            }
-        }
-        auto ret = ss.str();
-        if (vInOutFirstColSize < ret.size()) {
-            vInOutFirstColSize = ret.size();
-        }
-        return std::make_pair(ret, m_help_text);
-    }
-};
 
 class Args {
+private:
+    class Argument {
+        friend class Args;
+
+    private:
+        std::vector<std::string> m_base_args;  // base args
+        std::set<std::string> m_full_args;  // full args
+        char one_char_arg = 0;
+        std::string m_help_text;
+        std::string m_help_var_name;
+        std::string m_type;
+        bool m_required = false;
+        char m_delimiter = 0;  // delimiter used for arguments : toto a, toto=a, toto:a, etc...
+        bool m_is_present = false;  // found during parsing
+        bool m_has_value = false;  // found during parsing
+        std::string m_value;  // value
+
+    public:
+        Argument() = default;
+
+        Argument& help(const std::string& vHelp, const std::string& vVarName = {}) {
+            m_help_text = vHelp;
+            m_help_var_name = vVarName;
+            return *this;
+        }
+        Argument& def(const std::string& vDefValue) {
+            m_value = vDefValue;
+            return *this;
+        }
+        Argument& type(const std::string& vType) {
+            m_type = vType;
+            return *this;
+        }
+        Argument& delimiter(char vDelimiter) {
+            m_delimiter = vDelimiter;
+            return *this;
+        }
+        Argument& required(bool vValue) {
+            m_required = vValue;
+            return *this;
+        }
+
+    private:
+        typedef std::pair<std::string, std::string> HelpCnt;
+        HelpCnt m_getHelp(bool vPositional, size_t& vInOutFirstColSize) const {
+            HelpCnt res;
+            std::stringstream ss;
+            if (vPositional) {
+                std::string token = m_help_var_name;
+                if (token.empty()) {
+                    token = *(m_base_args.begin());
+                }
+                ss << "  " << token;
+            } else {
+                size_t idx = 0;
+                ss << "  ";
+                for (const auto& arg : m_base_args) {
+                    if (idx++ > 0) {
+                        ss << ", ";
+                    }
+                    ss << arg;
+                }
+                if (!m_help_var_name.empty()) {
+                    ss << " " << m_help_var_name;
+                }
+            }
+            auto ret = ss.str();
+            if (vInOutFirstColSize < ret.size()) {
+                vInOutFirstColSize = ret.size();
+            }
+            return std::make_pair(ret, m_help_text);
+        }
+    };
+
+
 private:
     std::string m_AppName;
     std::string m_HelpHeader;
@@ -177,6 +181,7 @@ public:
         return m_Optionals.back();
     }
 
+    // is token present
     bool isPresent(const std::string& vKey) {
         auto* ptr = m_getArgumentPtr(vKey, true);
         if (ptr != nullptr) {
@@ -185,11 +190,20 @@ public:
         return false;
     }
 
+    // is token have value
+    bool hasValue(const std::string& vKey) {
+        auto* ptr = m_getArgumentPtr(vKey, true);
+        if (ptr != nullptr) {
+            return ptr->m_has_value;
+        }
+        return false;
+    }
+
     template <typename T>
-    T getValue(const std::string& vKey) const {
-        auto token = m_getArgumentPtr(vKey)->m_value;
-        if (!token.empty()) {
-            return m_convertString<T>(token);
+    T getValue(const std::string& vKey, bool vNoExcept = false) const {
+        auto* ptr = m_getArgumentPtr(vKey, vNoExcept);
+        if (ptr != nullptr && !ptr->m_value.empty()) {
+            return m_convertString<T>(ptr->m_value);
         }
         return {};
     }
@@ -221,11 +235,7 @@ public:
     bool parse(int32_t vArgc, char** vArgv, int32_t vStartIdx = 1U) {
         size_t positional_idx = 0;
         for (int32_t idx = vStartIdx; idx < vArgc; ++idx) {
-            std::string arg = vArgv[idx];
-            auto last_minus = arg.find_last_of("-");
-            if (last_minus != std::string::npos) {
-                arg = arg.substr(last_minus + 1);
-            }
+            std::string arg = m_trim(vArgv[idx]);
 
             // print help
             if (m_HelpArgument.m_full_args.find(arg) != m_HelpArgument.m_full_args.end()) {
@@ -274,11 +284,18 @@ public:
                 if (check_for_value) {
                     if (arg_ref.m_delimiter == ' ') {
                         if (idx < (vArgc + 1)) {
-                            ++idx;
-                            arg_ref.m_value = vArgv[idx];
+                            auto* existingArg = m_getArgumentPtr(vArgv[idx + 1], true);
+                            if (!existingArg) {
+                                arg_ref.m_value = vArgv[++idx];
+                                arg_ref.m_has_value = true;
+                            }
                         }
                     } else if (arg_ref.m_delimiter != 0) {
-                        arg_ref.m_value = value;
+                        auto* existingArg = m_getArgumentPtr(value, true);
+                        if (!existingArg) {
+                            arg_ref.m_value = value;
+                            arg_ref.m_has_value = true;
+                        }
                     }
                 }
             }
@@ -290,6 +307,7 @@ public:
                 }
             }
         }
+
         return true;
     }
 
@@ -325,10 +343,7 @@ private:
         for (const auto& arg : vInOutArgument.m_base_args) {
             // tofix : may fail if arg is --toto-titi.
             // we will get titi but we want toto-titi
-            auto short_last_minus = arg.find_last_of("-");
-            if (short_last_minus != std::string::npos) {
-                vInOutArgument.m_full_args.emplace(arg.substr(short_last_minus + 1));
-            }
+                vInOutArgument.m_full_args.emplace(m_trim(arg));
         }
         vInOutArgument.one_char_arg = (vKey.size() == 1U) ? vKey[0] : 0;
         return vInOutArgument;
@@ -390,6 +405,15 @@ private:
             }
         }
         return ss.str();
+    }
+
+    // remove the first '-' of a token
+    std::string m_trim(const std::string& vToken) {
+        auto short_last_minus = vToken.find_first_not_of("-");
+        if (short_last_minus != std::string::npos) {
+            return vToken.substr(short_last_minus);
+        }
+        return {};
     }
 
     template <typename T>
