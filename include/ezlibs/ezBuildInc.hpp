@@ -176,14 +176,12 @@ public:
         ++m_buildNumber;
         return *this;
     }
-
 #ifdef EZ_FIG_FONT
     FigFontGenerator& setFigFontFile(const std::string& vFigFontFile) {
         m_figFontGenerator.m_generator.load(vFigFontFile);
         return m_figFontGenerator;
     }
 #endif  // EZ_FIG_FONT
-
     BuildInc& write() {
         std::stringstream content;
         content << "#pragma once" << std::endl;

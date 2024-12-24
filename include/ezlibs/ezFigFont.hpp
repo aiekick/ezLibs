@@ -37,7 +37,7 @@ private:
         std::string desc;
         std::vector<std::string> rows;
     };
-    std::unordered_map<uint8_t, Glyph> m_glyphs;
+    std::unordered_map<size_t, Glyph> m_glyphs;
 	
 public:
     FigFont() = default;
@@ -102,11 +102,11 @@ private:
             m_header.commentBlock.push_back(line);
         }
         size_t idx = 0;
-        static constexpr uint8_t baseChar = 32;
+        static constexpr size_t baseChar = 32;
         static constexpr size_t required_chars_count = 127 - baseChar;
         static constexpr size_t additionnal_chars_count = 7;
-        std::array<uint8_t, additionnal_chars_count> additionnal_chars{196, 214, 220, 228, 246, 252, 223};
-        char cChar = baseChar;
+        std::array<size_t, additionnal_chars_count> additionnal_chars{196, 214, 220, 228, 246, 252, 223};
+        size_t cChar = baseChar;
         while (file) {
             std::string line;
             std::vector<std::string> asciiArt;
@@ -130,9 +130,9 @@ private:
         return true;
 	}
 
-    bool m_parseChar(std::ifstream& vFile, const uint8_t vChar) {
+    bool m_parseChar(std::ifstream& vFile, const size_t vChar) {
         std::string row;
-        uint8_t charCode = vChar;
+        size_t charCode = vChar;
         Glyph glyph;
         if (charCode < 32) {
             std::getline(vFile, row);
@@ -140,7 +140,7 @@ private:
             if (spacePos != std::string::npos) {
                 const auto numStr = row.substr(0, spacePos);
                 const auto descStr = row.substr(spacePos + 1);
-                charCode = static_cast<uint8_t>(std::stoi(numStr));
+                charCode = static_cast<size_t>(std::stoi(numStr));
             } else {
                 return false;
             }
@@ -171,18 +171,18 @@ private:
         std::stringstream ret;
         std::vector<std::string> rows;
         rows.resize(m_header.height);
-        size_t rwo_idx = 0;
+        size_t row_idx = 0;
         for (auto& row : rows) {
             for (const auto c : vPattern) {
-                row += m_getCharRow(c, rwo_idx);
+                row += m_getCharRow(c, row_idx);
             }
-            ++rwo_idx;
+            ++row_idx;
             ret << row << std::endl;
         }
         return ret.str();
 	}
 
-    std::string m_getCharRow(uint8_t vC, uint8_t vRowIdx) {
+    std::string m_getCharRow(size_t vC, size_t vRowIdx) {
         auto it = m_glyphs.find(vC);
         if (it != m_glyphs.end()) {
             if (vRowIdx < it->second.rows.size()) {
