@@ -426,6 +426,36 @@ inline vec2<T> atan(const vec2<T>& a) {
     return vec2<T>(ez::atan(a.x), ez::atan(a.y));
 }
 
+// Clamps a value between 0 and 1.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec2<T> clamp(vec2<T> n) {
+    vec2<T> ret;
+    ret.x = ez::clamp(n.x);
+    ret.y = ez::clamp(n.y);
+    return ret;
+}
+
+// Clamps a value between 0 and b.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec2<T> clamp(vec2<T> n, T b) {
+    vec2<T> ret;
+    ret.x = ez::clamp(n.x);
+    ret.y = ez::clamp(n.y);
+    return ret;
+}
+
+// Clamps a value between a and b.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec2<T> clamp(vec2<T> n, T a, T b) {
+    vec2<T> ret;
+    ret.x = ez::clamp(n.x, a, b);
+    ret.y = ez::clamp(n.y, a, b);
+    return ret;
+}
+
 // Using statements for different types of vec2
 using dvec2 = vec2<double>;
 using fvec2 = vec2<float>;
