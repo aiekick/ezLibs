@@ -456,6 +456,39 @@ inline vec3<T> cReflect(const vec3<T>& I, const vec3<T>& N) {
     return I - static_cast<T>(2) * dotS(N, I) * N;
 }
 
+// Clamps a value between 0 and 1.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec3<T> clamp(vec3<T> n) {
+    vec3<T> ret;
+    ret.x = ez::clamp(n.x);
+    ret.y = ez::clamp(n.y);
+    ret.z = ez::clamp(n.z);
+    return ret;
+}
+
+// Clamps a value between 0 and b.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec3<T> clamp(vec3<T> n, T b) {
+    vec3<T> ret;
+    ret.x = ez::clamp(n.x, b);
+    ret.y = ez::clamp(n.y, b);
+    ret.z = ez::clamp(n.z, b);
+    return ret;
+}
+
+// Clamps a value between a and b.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec3<T> clamp(vec3<T> n, T a, T b) {
+    vec3<T> ret;
+    ret.x = ez::clamp(n.x, a, b);
+    ret.y = ez::clamp(n.y, a, b);
+    ret.z = ez::clamp(n.z, a, b);
+    return ret;
+}
+
 // Type aliases for common vector types
 using dvec3 = vec3<double>;
 using fvec3 = vec3<float>;

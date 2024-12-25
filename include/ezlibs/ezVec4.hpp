@@ -516,6 +516,7 @@ using i32vec4 = vec4<int32_t>;
 using i64vec4 = vec4<int64_t>;
 using u8vec4 = vec4<uint8_t>;
 using u16vec4 = vec4<uint16_t>;
+using uvec4 = vec4<uint32_t>;
 using u32vec4 = vec4<uint32_t>;
 using u64vec4 = vec4<uint64_t>;
 
