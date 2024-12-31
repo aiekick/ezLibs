@@ -74,6 +74,7 @@ namespace ez {
 #include "ezTime.hpp"
 #include "ezCron.hpp"
 #include "ezLog.hpp"
+#include "ezCnt.hpp"
 
 namespace ez {
 

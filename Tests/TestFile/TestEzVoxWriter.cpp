@@ -41,7 +41,7 @@ bool TestEzVoxWriter_Writer() {
         time += 0.5f;
     }
     vox.stopTimeLogging();
-    vox.save(PROJECT_PATH "test.vox");
+    vox.save(RESULTS_PATH "/test.vox");
     vox.printStats();
     return true;
 }

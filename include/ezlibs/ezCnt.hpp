@@ -59,6 +59,9 @@ public:
     void resize(const size_t vNewSize) { m_array.resize(vNewSize); }
     void resize(const size_t vNewSize, const TValue& vVal) { m_array.resize(vNewSize, vVal); }
     void reserve(const size_t vNewCapacity) { m_array.reserve(vNewCapacity); }
+
+    typename std::enable_if<std::is_same<TKey, TValue>::value, bool>::type 
+    tryAdd(const TKey& vKey) { return tryAdd(vKey, vKey); }
     bool tryAdd(const TKey& vKey, const TValue& vValue) {
         if (!exist(vKey)) {
             m_dico[vKey] = m_array.size();

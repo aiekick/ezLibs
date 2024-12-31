@@ -32,6 +32,9 @@ SOFTWARE.
 #include <sstream>
 #include <iostream>
 
+// you msut include ezFigFont.hpp before this include 
+// if you want to enable the FigFont Label Generation
+
 namespace ez {
 
 /* File Format 
@@ -42,6 +45,7 @@ namespace ez {
 #define Project_MinorNumber 3
 #define Project_MajorNumber 0
 #define Project_BuildId "0.3.3629"
+#define Project_FigFontLabel "..." // Optionnal
 */
 
 class BuildInc {
@@ -52,6 +56,25 @@ private:
     int32_t m_majorNumber = 0;
     int32_t m_minorNumber = 0;
     int32_t m_buildNumber = 0;
+#ifdef EZ_FIG_FONT
+    class FigFontGenerator {
+        friend class BuildInc;
+    private:
+        ez::FigFont m_generator;
+        bool m_useLabel = true;  // will use the label or not for the FigFont label
+        bool m_useBuildNumber = false;  // will use the buildNumber or not for the FigFont label
+    public:
+        bool isValid() { return m_generator.isValid(); }
+        FigFontGenerator& useLabel(const bool vFlag) {
+            m_useLabel = vFlag;
+            return *this;
+        }
+        FigFontGenerator& useBuildNumber(const bool vFlag) {
+            m_useBuildNumber = vFlag;
+            return *this;
+        }
+    } m_figFontGenerator;
+#endif  // EZ_FIG_FONT
 
 public:
     BuildInc(const std::string& vBuildFileHeader) {
@@ -153,6 +176,12 @@ public:
         ++m_buildNumber;
         return *this;
     }
+#ifdef EZ_FIG_FONT
+    FigFontGenerator& setFigFontFile(const std::string& vFigFontFile) {
+        m_figFontGenerator.m_generator.load(vFigFontFile);
+        return m_figFontGenerator;
+    }
+#endif  // EZ_FIG_FONT
     BuildInc& write() {
         std::stringstream content;
         content << "#pragma once" << std::endl;
@@ -162,6 +191,19 @@ public:
         content << "#define " << m_project << "_MinorNumber " << m_minorNumber << std::endl;
         content << "#define " << m_project << "_MajorNumber " << m_majorNumber << std::endl;
         content << "#define " << m_project << "_BuildId \"" << m_majorNumber << "." << m_minorNumber << "." << m_buildNumber << "\"" << std::endl;
+#ifdef EZ_FIG_FONT
+        if (m_figFontGenerator.isValid()) {
+            std::stringstream version;
+            if (m_figFontGenerator.m_useLabel) {
+                version << m_label << " ";
+            }
+            version << "v" << m_majorNumber << "." << m_minorNumber;
+            if (m_figFontGenerator.m_useBuildNumber) {
+                version << "." << m_buildNumber;
+            }
+            content << "#define " << m_project << "_FigFontLabel u8R\"(" << m_figFontGenerator.m_generator.printString(version.str()) << ")\"" << std::endl;
+        }
+#endif  // EZ_FIG_FONT
         std::ofstream configFileWriter(m_buildFileHeader, std::ios::out);
         if (!configFileWriter.bad()) {
             configFileWriter << content.str();

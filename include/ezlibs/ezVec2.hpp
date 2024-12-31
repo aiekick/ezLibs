@@ -65,10 +65,6 @@ struct vec2 {
     template <typename U>
     vec2(const vec2<U>& a) : x(static_cast<T>(a.x)), y(static_cast<T>(a.y)) {}
 
-    // Constructor with type conversion
-    template <typename U>
-    vec2(const U& a) : x(static_cast<T>(a.x)), y(static_cast<T>(a.y)) {}
-
     vec2(T a) : x(a), y(a) {}
 
     vec2(T a, T b) : x(a), y(b) {}
@@ -424,6 +420,36 @@ inline vec2<T> tan(const vec2<T>& a) {
 template <typename T>
 inline vec2<T> atan(const vec2<T>& a) {
     return vec2<T>(ez::atan(a.x), ez::atan(a.y));
+}
+
+// Clamps a value between 0 and 1.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec2<T> clamp(vec2<T> n) {
+    vec2<T> ret;
+    ret.x = ez::clamp(n.x);
+    ret.y = ez::clamp(n.y);
+    return ret;
+}
+
+// Clamps a value between 0 and b.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec2<T> clamp(vec2<T> n, T b) {
+    vec2<T> ret;
+    ret.x = ez::clamp(n.x);
+    ret.y = ez::clamp(n.y);
+    return ret;
+}
+
+// Clamps a value between a and b.
+// Works with both integral and floating-point types.
+template <typename T>
+inline vec2<T> clamp(vec2<T> n, T a, T b) {
+    vec2<T> ret;
+    ret.x = ez::clamp(n.x, a, b);
+    ret.y = ez::clamp(n.y, a, b);
+    return ret;
 }
 
 // Using statements for different types of vec2

@@ -316,7 +316,7 @@ bool TestEzExpr_Perfos_All(double slowdownThreshold, int iterations) {
     bool res = true;
 
     // Ouverture d'un fichier pour enregistrer les résultats
-    std::ofstream resultsFile(PROJECT_PATH "benchmark_results.md");
+    std::ofstream resultsFile(RESULTS_PATH "benchmark_results.md");
 
     if (resultsFile.is_open()) {
         // Imprimer l'en-tête du tableau

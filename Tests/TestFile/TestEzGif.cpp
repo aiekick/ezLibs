@@ -46,7 +46,7 @@ bool TestEzGif_Writer() {
             }
         }
     }
-    gif.save(PROJECT_PATH "test.gif");
+    gif.save(RESULTS_PATH "/test.gif");
     return true;
 }
 

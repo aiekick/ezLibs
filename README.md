@@ -3,6 +3,7 @@
 [![Osx](https://github.com/aiekick/EzLibs/actions/workflows/Osx.yml/badge.svg)](https://github.com/aiekick/EzLibs/actions/workflows/Osx.yml)
 [![Code Coverage](https://github.com/aiekick/ezLibs/actions/workflows/Coverage.yml/badge.svg)](https://aiekick.github.io/ezLibs)
 [![codecov](https://codecov.io/github/aiekick/EzLibs/graph/badge.svg?token=JSOD4SG2OU)](https://codecov.io/github/aiekick/EzLibs)
+[![CodeFactor](https://www.codefactor.io/repository/github/aiekick/ezlibs/badge/master)](https://www.codefactor.io/repository/github/aiekick/ezlibs/overview/master)
 
 # EzLibs
 
