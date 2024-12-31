@@ -29,10 +29,9 @@ bool TestEzFigFontLoadAndPrint() {
  / _ \|_  /|  _  /  / _ \| '_ \  / _` || '_ ` _ \  / _ \| '__| \ \ / /| | | |    | |
 |  __/ / / | | \ \ |  __/| | | || (_| || | | | | ||  __/| |     \ V / | |_| | _  | |
  \___|/___||_|  \_\ \___||_| |_| \__,_||_| |_| |_| \___||_|      \_/   \___/ (_) |_|
-                                                                                    
-                                                                                    
 )";
-    CTEST_ASSERT(ff.printString("ezRenamer v0.1") == expected_result);
+    auto result = ff.printString("ezRenamer v0.1");
+    CTEST_ASSERT(result == expected_result);
     return true;
 }
 

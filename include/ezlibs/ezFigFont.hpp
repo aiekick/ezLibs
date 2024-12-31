@@ -177,7 +177,10 @@ private:
                 row += m_getCharRow(c, row_idx);
             }
             ++row_idx;
-            ret << row << std::endl;
+            // remove empty rows
+            if (row.find_first_not_of(" ") != std::string::npos) {
+                ret << row << std::endl;
+            }
         }
         return ret.str();
 	}
