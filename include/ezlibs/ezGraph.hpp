@@ -117,8 +117,8 @@ class UUID {
 public:
     explicit UUID(void *vPtr) { m_Uuid = reinterpret_cast<Uuid>(vPtr); }
     virtual ~UUID() = default;
-    Uuid getUUID() const { return m_Uuid; }
-    void setUUID(const Uuid vUUID) { m_Uuid = vUUID; }
+    Uuid getUuid() const { return m_Uuid; }
+    void setUuid(const Uuid vUUID) { m_Uuid = vUUID; }
 };
 
 /////////////////////////////////////
