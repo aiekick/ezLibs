@@ -139,8 +139,9 @@ public:
         if (outSlotPtr != nullptr) {
             auto outNodePtr = std::dynamic_pointer_cast<NodeOpAdd>(outSlotPtr->getParentNode().lock());
             if (outNodePtr != nullptr) {
-                for (const auto &inSlotPtr : m_getInputSlotsRef()) {
-                    if (inSlotPtr != nullptr) {
+                for (const auto &inSlot : m_getInputSlotsRef()) {
+                    auto inSlotPtr = inSlot.lock();
+                    if (inSlot.lock() != nullptr) {
                         for (const auto &conSlot : inSlotPtr->m_getConnectedSlots()) {
                             auto conSlotPtr = conSlot.lock();
                             if (conSlotPtr != nullptr) {

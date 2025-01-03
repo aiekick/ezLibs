@@ -155,7 +155,7 @@ public:
     Slot() : UUID(this) {}
     template <typename T>
     explicit Slot(const T &vDatas) : UUID(this), mp_SlotDatas(std::make_shared<T>(vDatas)) {
-        static_assert(assert_false<T>::value, "T must derive of SlotDatas");
+        static_assert(std::is_base_of<SlotDatas, T>::value, "T must derive of SlotDatas");
     }
     ~Slot() override {
         unit();
