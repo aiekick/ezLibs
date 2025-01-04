@@ -33,11 +33,11 @@ SOFTWARE.
 namespace ez {
 namespace cnt {
 
-// this class can be indexed like a vector 
+// this class can be indexed like a vector
 // and searched in like a dico
 template <typename TKey, typename TValue = TKey>
 class DicoVector {
-private:
+protected:
     std::unordered_map<TKey, size_t> m_dico;
     std::vector<TValue> m_array;
 
@@ -59,9 +59,16 @@ public:
     void resize(const size_t vNewSize) { m_array.resize(vNewSize); }
     void resize(const size_t vNewSize, const TValue& vVal) { m_array.resize(vNewSize, vVal); }
     void reserve(const size_t vNewCapacity) { m_array.reserve(vNewCapacity); }
-
-    typename std::enable_if<std::is_same<TKey, TValue>::value, bool>::type 
-    tryAdd(const TKey& vKey) { return tryAdd(vKey, vKey); }
+    bool erase(const TKey& vKey) {
+        if (exist(vKey)) {
+            auto idx = m_dico.at(vKey);
+            m_array.erase(m_array.begin() + idx);
+            m_dico.erase(vKey);
+            return true;
+        }
+        return false;
+    }
+    bool tryAdd(const TKey& vKeyValue) { return tryAdd(vKeyValue, vKeyValue); }
     bool tryAdd(const TKey& vKey, const TValue& vValue) {
         if (!exist(vKey)) {
             m_dico[vKey] = m_array.size();
@@ -70,6 +77,7 @@ public:
         }
         return false;
     }
+    bool trySetExisting(const TKey& vKeyValue) { return trySetExisting(vKeyValue, vKeyValue); }
     bool trySetExisting(const TKey& vKey, const TValue& vValue) {
         if (exist(vKey)) {
             auto row = m_dico.at(vKey);
@@ -80,5 +88,5 @@ public:
     }
 };
 
-}
+}  // namespace cnt
 }  // namespace ez

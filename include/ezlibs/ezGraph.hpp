@@ -167,16 +167,16 @@ public:
         m_ConnectedSlots.clear();
     }
 
-    // enable_if remove the need to use a slow dynamic_cast
     template <typename T>
     const T &getDatas() const {
+        // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<SlotDatas, T>::value, "T must derive of SlotDatas");
         return static_cast<const T &>(*mp_SlotDatas);
     }
 
-    // enable_if remove the need to use a slow dynamic_cast
     template <typename T>
     T &getDatasRef() {
+        // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<SlotDatas, T>::value, "T must derive of SlotDatas");
         return static_cast<T &>(*mp_SlotDatas);
     }
@@ -188,6 +188,11 @@ public:
     const EvalDatas &getLastEvaluatedDatas() const { return m_LastEvaluatedDatas; }
 
 protected:
+    template <typename T>
+    std::weak_ptr<T> m_getThis() {
+        static_assert(std::is_base_of<Slot, T>::value, "T must derive of Slot");
+        return std::static_pointer_cast<T>(m_This.lock());
+    }
     void m_setThis(const SlotWeak &vThis) { m_This = vThis; }
 
     template <typename T>
@@ -264,16 +269,16 @@ public:
     void setParentGraph(const GraphWeak &vParentGraph) { m_ParentGraph = vParentGraph; }
     GraphWeak getParentGraph() { return m_ParentGraph; }
 
-    // enable_if remove the need to use a slow dynamic_cast
     template <typename T>
     const T &getDatas() const {
+        // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of NodeDatas");
         return static_cast<const T &>(*mp_NodeDatas);
     }
 
-    // enable_if remove the need to use a slow dynamic_cast
     template <typename T>
     T &getDatasRef() {
+        // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of NodeDatas");
         return static_cast<T &>(*mp_NodeDatas);
     }
@@ -281,7 +286,11 @@ public:
     bool isDirty() const { return dirty; }
 
 protected:  // Node
-    NodeWeak m_getThis() { return m_This; }
+    template <typename T>
+    std::weak_ptr<T> m_getThis() {
+        static_assert(std::is_base_of<Node, T>::value, "T must derive of Node");
+        return std::static_pointer_cast<T>(m_This.lock());
+    }
     void m_setThis(const NodeWeak &vThis) { m_This = vThis; }
 
     void m_setSlotThis(SlotPtr vSlotPtr) {
@@ -431,16 +440,16 @@ public:
     void setParentGraph(const GraphWeak &vParentNode) { m_ParentGraph = vParentNode; }
     GraphWeak getParentGraph() { return m_ParentGraph; }
 
-    // enable_if remove the need to use a slow dynamic_cast
     template <typename T>
     const T &getDatas() const {
+        // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<GraphDatas, T>::value, "T must derive of GraphDatas");
         return static_cast<const T &>(*mp_GraphDatas);
     }
 
-    // enable_if remove the need to use a slow dynamic_cast
     template <typename T>
     T &getDatasRef() {
+        // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<GraphDatas, T>::value, "T must derive of GraphDatas");
         return static_cast<T &>(*mp_GraphDatas);
     }
@@ -452,7 +461,11 @@ public:
     bool isDirty() const { return dirty; }
 
 protected:  // Node
-    GraphWeak m_getThis() { return m_This; }
+    template<typename T>
+    std::weak_ptr<T> m_getThis() {
+        static_assert(std::is_base_of<Graph, T>::value, "T must derive of Graph");
+        return std::static_pointer_cast<T>(m_This.lock());
+    }
     void m_setThis(const GraphWeak &vThis) { m_This = vThis; }
 
     void m_setNodeThis(NodePtr vNodePtr) {
