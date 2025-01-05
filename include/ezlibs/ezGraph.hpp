@@ -425,24 +425,6 @@ class Graph : public UUID {
     std::vector<NodeWeak> m_NodeWeaks;
 
 public:
-    template <typename T>
-    std::shared_ptr<T> createChildNode() {
-        static_assert(std::is_base_of<Node, T>::value, "T must derive of ez::Node");
-        auto node_ptr = std::make_shared<T>(m_parentStyle);
-        node_ptr->m_setThis(node_ptr);
-        if (!node_ptr->init()) {
-            node_ptr.reset();
-        } else {
-            if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
-                node_ptr.reset();
-            } else {
-                nd::SetNodePosition(node_ptr->m_nodeID, m_openPopupPosition);
-            }
-        }
-        return node_ptr;
-    }
-
-public:
     Graph() : UUID(this) {}
     template <typename T>
     explicit Graph(const T &vDatas) : UUID(this), mp_GraphDatas(std::make_shared<T>(vDatas)) {
