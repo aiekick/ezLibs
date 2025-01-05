@@ -61,7 +61,16 @@ public:
     void reserve(const size_t vNewCapacity) { m_array.reserve(vNewCapacity); }
     bool erase(const TKey& vKey) {
         if (exist(vKey)) {
+            // when we erase an entry, there is as issue 
+            // in the vector because the indexs are not more corresponding
             auto idx = m_dico.at(vKey);
+            for (auto& it : m_dico) {
+                // we must modify all index greater than the index to delete
+                if (it.second > idx) {
+                    --it.second;
+                }
+            }
+            // now we can safely erase the item from both dico and vector
             m_array.erase(m_array.begin() + idx);
             m_dico.erase(vKey);
             return true;
