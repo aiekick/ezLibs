@@ -153,7 +153,7 @@ protected:
 
 public:
     Slot() : UUID(this) {}
-    template <typename T>
+    template <typename T = SlotDatas>
     explicit Slot(const T &vDatas) : UUID(this), mp_SlotDatas(std::make_shared<T>(vDatas)) {
         static_assert(std::is_base_of<SlotDatas, T>::value, "T must derive of ez::SlotDatas");
     }
@@ -170,14 +170,14 @@ public:
         m_ConnectedSlots.clear();
     }
 
-    template <typename T>
+    template <typename T = SlotDatas>
     const T &getDatas() const {
         // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<SlotDatas, T>::value, "T must derive of ez::SlotDatas");
         return static_cast<const T &>(*mp_SlotDatas);
     }
 
-    template <typename T>
+    template <typename T = SlotDatas>
     T &getDatasRef() {
         // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<SlotDatas, T>::value, "T must derive of ez::SlotDatas");
@@ -185,13 +185,18 @@ public:
     }
 
     void setParentNode(NodeWeak vNodeWeak) { m_ParentNode = std::move(vNodeWeak); }
-    NodeWeak getParentNode() { return m_ParentNode; }
+    template <typename T = Node>
+    std::weak_ptr<T> getParentNode() {
+        // remove the need to use a slow dynamic_cast
+        static_assert(std::is_base_of<Node, T>::value, "T must derive of ez::Node");
+        return std::static_pointer_cast<T>(m_ParentNode.lock());
+    }
     const std::vector<SlotWeak> &m_getConnectedSlots() { return m_ConnectedSlots; }
     void setLastEvaluatedDatas(const EvalDatas vUserDatas) { m_LastEvaluatedDatas = vUserDatas; }
     const EvalDatas &getLastEvaluatedDatas() const { return m_LastEvaluatedDatas; }
 
 protected:
-    template <typename T>
+    template <typename T = Slot>
     std::weak_ptr<T> m_getThis() {
         static_assert(std::is_base_of<Slot, T>::value, "T must derive of ez::Slot");
         assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
@@ -199,7 +204,7 @@ protected:
     }
     void m_setThis(const SlotWeak &vThis) { m_This = vThis; }
 
-    template <typename T>
+    template <typename T = SlotDatas>
     explicit Slot(std::shared_ptr<T> vpDatas) : UUID(this), mp_SlotDatas(std::move(vpDatas)) {
         static_assert(std::is_base_of<SlotDatas, T>::value, "T must derive of ez::SlotDatas");
     }
@@ -252,7 +257,7 @@ class Node : public UUID {
 
 public:
     Node() : UUID(this) {}
-    template <typename T>
+    template <typename T=NodeDatas>
     explicit Node(const T &vDatas) : UUID(this), mp_NodeDatas(std::make_shared<T>(vDatas)) {
         static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::NodeDatas");
     }
@@ -274,16 +279,21 @@ public:
 
     // Datas
     void setParentGraph(const GraphWeak &vParentGraph) { m_ParentGraph = vParentGraph; }
-    GraphWeak getParentGraph() { return m_ParentGraph; }
+    template <typename T = Graph>
+    std::weak_ptr<T> getParentGraph() {
+        // remove the need to use a slow dynamic_cast
+        static_assert(std::is_base_of<Graph, T>::value, "T must derive of ez::Graph");
+        return std::static_pointer_cast<T>(m_ParentGraph.lock());
+    }
 
-    template <typename T>
+    template <typename T = NodeDatas>
     const T &getDatas() const {
         // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::NodeDatas");
         return static_cast<const T &>(*mp_NodeDatas);
     }
 
-    template <typename T>
+    template <typename T = NodeDatas>
     T &getDatasRef() {
         // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::NodeDatas");
@@ -307,7 +317,7 @@ protected:  // Node
         }
     }
 
-    template <typename T>
+    template <typename T = NodeDatas>
     explicit Node(std::shared_ptr<T> vpDatas) : UUID(this), mp_NodeDatas(std::move(vpDatas)) {
         static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::NodeDatas");
     }
@@ -343,13 +353,13 @@ protected:  // Node
         return ret;
     }
 
-    template <typename T>
-    SlotPtr m_addSlot(const SlotDatas &vSlotDatas, RetCodes *vOutRetCodes) {
-        static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::NodeDatas");
+    template <typename T = Slot>
+    std::shared_ptr<T> m_addSlot(const SlotDatas &vSlotDatas, RetCodes *vOutRetCodes) {
+        static_assert(std::is_base_of<Slot, T>::value, "T must derive of ez::Slot");
         if (vOutRetCodes != nullptr) {
             *vOutRetCodes = RetCodes::FAILED_NODE_PTR_NULL;
         }
-        auto slot_ptr = std::make_shared<Slot>(vSlotDatas);
+        auto slot_ptr = std::make_shared<T>(vSlotDatas);
         const auto ret_code = m_addSlot(slot_ptr);
         if (vOutRetCodes != nullptr) {
             *vOutRetCodes = ret_code;
@@ -417,7 +427,6 @@ struct GraphDatas {
 
 class Graph : public UUID {
     GraphWeak m_This;
-    GraphWeak m_ParentGraph;
     NodeWeak m_ParentNode;
     bool dirty = false;
     std::shared_ptr<GraphDatas> mp_GraphDatas;
@@ -426,7 +435,7 @@ class Graph : public UUID {
 
 public:
     Graph() : UUID(this) {}
-    template <typename T>
+    template <typename T = GraphDatas>
     explicit Graph(const T &vDatas) : UUID(this), mp_GraphDatas(std::make_shared<T>(vDatas)) {
         static_assert(std::is_base_of<GraphDatas, T>::value, "T must derive of ez::GraphDatas");
     }
@@ -446,19 +455,21 @@ public:
 
     // Datas
     void setParentNode(const NodeWeak &vParentNode) { m_ParentNode = vParentNode; }
-    NodeWeak getParentNode() { return m_ParentNode; }
+    template <typename T = Node>
+    std::weak_ptr<T> getParentNode() {
+        // remove the need to use a slow dynamic_cast
+        static_assert(std::is_base_of<Node, T>::value, "T must derive of ez::Node");
+        return std::static_pointer_cast<T>(m_ParentNode.lock());
+    }
 
-    void setParentGraph(const GraphWeak &vParentNode) { m_ParentGraph = vParentNode; }
-    GraphWeak getParentGraph() { return m_ParentGraph; }
-
-    template <typename T>
+    template <typename T = GraphDatas>
     const T &getDatas() const {
         // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<GraphDatas, T>::value, "T must derive of ez::GraphDatas");
         return static_cast<const T &>(*mp_GraphDatas);
     }
 
-    template <typename T>
+    template <typename T = GraphDatas>
     T &getDatasRef() {
         // remove the need to use a slow dynamic_cast
         static_assert(std::is_base_of<GraphDatas, T>::value, "T must derive of ez::GraphDatas");
@@ -486,7 +497,7 @@ protected:  // Node
         }
     }
 
-    template <typename T>
+    template <typename T = GraphDatas>
     explicit Graph(std::shared_ptr<T> vpDatas) : UUID(this), mp_GraphDatas(std::move(vpDatas)) {
         static_assert(std::is_base_of<GraphDatas, T>::value, "T must derive of ez::GraphDatas");
     }
