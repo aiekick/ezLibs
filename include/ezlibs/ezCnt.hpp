@@ -50,12 +50,15 @@ public:
     size_t size() const { return m_array.size(); }
     TValue& operator[](const size_t& vIdx) { return m_array[vIdx]; }
     TValue& at(const size_t& vIdx) { return m_array.at(vIdx); }
+    const TValue& operator[](const size_t& vIdx) const { return m_array[vIdx]; }
+    const TValue& at(const size_t& vIdx) const { return m_array.at(vIdx); }
     typename std::vector<TValue>::iterator begin() { return m_array.begin(); }
     typename std::vector<TValue>::const_iterator begin() const { return m_array.begin(); }
     typename std::vector<TValue>::iterator end() { return m_array.end(); }
     typename std::vector<TValue>::const_iterator end() const { return m_array.end(); }
     bool exist(const TKey& vKey) const { return (m_dico.find(vKey) != m_dico.end()); }
     TValue& value(const TKey& vKey) { return at(m_dico.at(vKey)); }
+    const TValue& value(const TKey& vKey) const { return at(m_dico.at(vKey)); }
     void resize(const size_t vNewSize) { m_array.resize(vNewSize); }
     void resize(const size_t vNewSize, const TValue& vVal) { m_array.resize(vNewSize, vVal); }
     void reserve(const size_t vNewCapacity) { m_array.reserve(vNewCapacity); }
@@ -94,6 +97,14 @@ public:
             return true;
         }
         return false;
+    }
+    // the merge can be partialy done, if already key was existing
+    bool tryMerge(const DicoVector<TKey, TValue>& vDico) {
+        bool ret = false;
+        for (const auto& it : vDico.m_dico) {
+            ret |= tryAdd(it.first, vDico.at(it.second));
+        }
+        return ret;
     }
 };
 
