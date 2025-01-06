@@ -157,17 +157,17 @@ public:
     explicit Slot(const T &vDatas) : UUID(this), mp_SlotDatas(std::make_shared<T>(vDatas)) {
         static_assert(std::is_base_of<SlotDatas, T>::value, "T must derive of ez::SlotDatas");
     }
-    ~Slot() override {
-        unit();
-    }
+    ~Slot() override { unit(); }
 
     virtual bool init() {
         assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
         return true;
     }
     virtual void unit() {
-        mp_SlotDatas.reset();
+        // we must rsdet slots
         m_ConnectedSlots.clear();
+        // befaore datas
+        mp_SlotDatas.reset();
     }
 
     template <typename T = SlotDatas>
@@ -240,8 +240,7 @@ struct NodeDatas {
     std::string type;
     UserDatas userDatas = nullptr;
     NodeDatas() = default;
-    NodeDatas(std::string vName, std::string vType, UserDatas vUserDatas = nullptr)
-        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
+    NodeDatas(std::string vName, std::string vType, UserDatas vUserDatas = nullptr) : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
 };
 
 class Node : public UUID {
@@ -257,24 +256,24 @@ class Node : public UUID {
 
 public:
     Node() : UUID(this) {}
-    template <typename T=NodeDatas>
+    template <typename T = NodeDatas>
     explicit Node(const T &vDatas) : UUID(this), mp_NodeDatas(std::make_shared<T>(vDatas)) {
         static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::NodeDatas");
     }
-    ~Node() override {
-        unit();
-    }
+    ~Node() override { unit(); }
 
     virtual bool init() {
         assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
         return true;
     }
     virtual void unit() {
+        // we must reset slots 
+        m_Inputs.clear();
+        m_Outputs.clear();
+        // before reset this ans parentGraph
         m_This.reset();
         m_ParentGraph.reset();
         mp_NodeDatas.reset();
-        m_Inputs.clear();
-        m_Outputs.clear();
     }
 
     // Datas
@@ -377,13 +376,15 @@ protected:  // Node
 
     RetCodes m_delInputSlot(const SlotWeak &vSlot) {
         auto ret = RetCodes::FAILED_SLOT_NOT_FOUND;
-        auto itShared = Utils::isSharedPtrExistInVector(vSlot.lock(), m_Inputs);
-        if (itShared != m_Inputs.end()) {
-            itShared->get()->unit();
-            m_Inputs.erase(itShared);
-            auto itWeak = Utils::isWeakPtrExistInVector(vSlot, m_InputWeaks);
-            if (itWeak != m_InputWeaks.end()) {
-                m_InputWeaks.erase(itWeak);
+        // we must detroy the weak before the related shared ptr
+        auto itWeak = Utils::isWeakPtrExistInVector(vSlot, m_InputWeaks);
+        if (itWeak != m_InputWeaks.end()) {
+            m_InputWeaks.erase(itWeak);
+            // so next, the shared ptr
+            auto itShared = Utils::isSharedPtrExistInVector(vSlot.lock(), m_Inputs);
+            if (itShared != m_Inputs.end()) {
+                itShared->get()->unit();
+                m_Inputs.erase(itShared);
                 ret = RetCodes::SUCCESS;
             }
         }
@@ -392,13 +393,15 @@ protected:  // Node
 
     RetCodes m_delOutputSlot(const SlotWeak &vSlot) {
         auto ret = RetCodes::FAILED_SLOT_NOT_FOUND;
-        const auto itShared = Utils::isSharedPtrExistInVector(vSlot.lock(), m_Outputs);
-        if (itShared != m_Outputs.end()) {
-            itShared->get()->unit();
-            m_Outputs.erase(itShared);
-            auto itWeak = Utils::isWeakPtrExistInVector(vSlot, m_OutputWeaks);
-            if (itWeak != m_OutputWeaks.end()) {
-                m_OutputWeaks.erase(itWeak);
+        // we must detroy the weak before the related shared ptr
+        auto itWeak = Utils::isWeakPtrExistInVector(vSlot, m_OutputWeaks);
+        if (itWeak != m_OutputWeaks.end()) {
+            m_OutputWeaks.erase(itWeak);
+            // so next, the shared ptr
+            const auto itShared = Utils::isSharedPtrExistInVector(vSlot.lock(), m_Outputs);
+            if (itShared != m_Outputs.end()) {
+                itShared->get()->unit();
+                m_Outputs.erase(itShared);
                 ret = RetCodes::SUCCESS;
             }
         }
@@ -421,8 +424,7 @@ struct GraphDatas {
     std::string type;
     UserDatas userDatas = nullptr;
     GraphDatas() = default;
-    GraphDatas(std::string vName, std::string vType, UserDatas vUserDatas = nullptr)
-        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
+    GraphDatas(std::string vName, std::string vType, UserDatas vUserDatas = nullptr) : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
 };
 
 class Graph : public UUID {
@@ -439,13 +441,12 @@ public:
     explicit Graph(const T &vDatas) : UUID(this), mp_GraphDatas(std::make_shared<T>(vDatas)) {
         static_assert(std::is_base_of<GraphDatas, T>::value, "T must derive of ez::GraphDatas");
     }
-    ~Graph() override {
-        unit();
-    }
+    ~Graph() override { unit(); }
 
     virtual bool init() {
         assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
-        return true; }
+        return true;
+    }
     virtual void unit() {
         m_This.reset();
         m_ParentNode.reset();
@@ -549,15 +550,13 @@ protected:  // Node
 
     static RetCodes m_disconnectSlots(const SlotWeak &vFrom, const SlotWeak &vTo) {
         auto ret = RetCodes::FAILED_SLOT_PTR_NULL;
-        if (!vFrom.expired() && !vTo.expired()) {
-            const auto fromPtr = vFrom.lock();
-            const auto toPtr = vTo.lock();
-            if (fromPtr != nullptr && toPtr != nullptr) {
-                /*ret =*/
-                fromPtr->m_disconnectSlot(vTo);
-                // even if the last is in error, we try the diconnect
-                ret = toPtr->m_disconnectSlot(vFrom);
-            }
+        const auto fromPtr = vFrom.lock();
+        const auto toPtr = vTo.lock();
+        if (fromPtr != nullptr) {
+            ret = fromPtr->m_disconnectSlot(vTo);
+        }
+        if (toPtr != nullptr) {
+            ret = toPtr->m_disconnectSlot(vFrom);
         }
         return ret;
     }
