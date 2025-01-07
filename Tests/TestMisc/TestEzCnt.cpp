@@ -1,8 +1,5 @@
-#include <TestEzFigFont.h>
-#include <ezlibs/ezFigFont.hpp>
+#include <ezlibs/ezCnt.hpp>
 #include <ezlibs/ezCTest.hpp>
-
-#include <iostream>
 #include <string>
 
 // Desactivation des warnings de conversion
@@ -20,18 +17,21 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzFigFontLoadAndPrint() {
-    ez::FigFont ff;
-    CTEST_ASSERT(ff.load(SAMPLES_PATH "big.flf").isValid());
-    const std::string expected_result = u8R"(            _____                                                       ___      __ 
-           |  __ \                                                     / _ \    /_ |
-  ___  ____| |__) |  ___  _ __    __ _  _ __ ___    ___  _ __  __   __| | | |    | |
- / _ \|_  /|  _  /  / _ \| '_ \  / _` || '_ ` _ \  / _ \| '__| \ \ / /| | | |    | |
-|  __/ / / | | \ \ |  __/| | | || (_| || | | | | ||  __/| |     \ V / | |_| | _  | |
- \___|/___||_|  \_\ \___||_| |_| \__,_||_| |_| |_| \___||_|      \_/   \___/ (_) |_|
-)";
-    auto result = ff.printString("ezRenamer v0.1");
-    CTEST_ASSERT(result == expected_result);
+bool TestEzCntGeneric() {
+    //CTEST_ASSERT(ez::str::getDigitsCountOfAIntegralNumber(050) == 2);
+    return true;
+}
+
+bool TestEzCntOneTypename() {
+    ez::cnt::DicoVector<std::string> dico;
+    CTEST_ASSERT(dico.tryAdd("toto"));
+    CTEST_ASSERT(dico.tryAdd("toto", "tata"));
+    return true;
+}
+
+bool TestEzCntTwoTypename() {
+    ez::cnt::DicoVector<std::string, int32_t> dico;
+    CTEST_ASSERT(dico.tryAdd("toto", 2));
     return true;
 }
 
@@ -43,8 +43,10 @@ bool TestEzFigFontLoadAndPrint() {
     if (vTest == std::string(#v)) \
     return v()
 
-bool TestEzFigFont(const std::string& vTest) {
-    IfTestExist(TestEzFigFontLoadAndPrint);
+bool TestEzCnt(const std::string& vTest) {
+    IfTestExist(TestEzCntGeneric);
+    else IfTestExist(TestEzCntOneTypename);
+    else IfTestExist(TestEzCntTwoTypename);
     return false;
 }
 

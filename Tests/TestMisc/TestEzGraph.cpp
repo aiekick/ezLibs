@@ -20,12 +20,15 @@ public:
         return node_ptr;
     }
 
-    template <typename T, typename = std::enable_if<std::is_base_of<TestNodeDatas, T>::value>>
-    explicit TestNode(const T &vDatas) : Node(vDatas) {}
+    template <typename T>
+    explicit TestNode(const T &vDatas) : Node(vDatas) {
+        static_assert(std::is_base_of<TestNodeDatas, T>::value, "T must derive of TestNodeDatas");
+    }
 
-    template <typename U, typename = std::enable_if<std::is_base_of<ez::Slot, U>::value>>
-    std::weak_ptr<U> addSlot(const ez::SlotDatas &vSlotDatas) {
-        auto slot_ptr = std::make_shared<U>(vSlotDatas);
+    template <typename T>
+    std::weak_ptr<T> addSlot(const ez::SlotDatas &vSlotDatas) {
+        static_assert(std::is_base_of<ez::Slot, T>::value, "T must derive of ez::Slot");
+        auto slot_ptr = std::make_shared<T>(vSlotDatas);
         if ((!slot_ptr->init()) || (m_addSlot(slot_ptr) != ez::RetCodes::SUCCESS)) {
             slot_ptr.reset();
         }
@@ -36,8 +39,9 @@ public:
         return slot_ptr;
     }
 
-    template <typename U, typename = std::enable_if<std::is_base_of<ez::Slot, U>::value>>
-    ez::RetCodes delSlot(const std::weak_ptr<U> &vSlot) {
+    template <typename T>
+    ez::RetCodes delSlot(const std::weak_ptr<T> &vSlot) {
+        static_assert(std::is_base_of<ez::Slot, T>::value, "T must derive of ez::Slot");
         return m_delSlot(vSlot.lock());
     }
 };
@@ -63,15 +67,18 @@ public:
         return graph_ptr;
     }
 
-    template <typename T, typename = std::enable_if<std::is_base_of<TestGraphDatas, T>::value>>
-    explicit TestGraph(const T &vDatas) : Graph(vDatas) {}
+    template <typename T>
+    explicit TestGraph(const T &vDatas) : Graph(vDatas) {
+        static_assert(std::is_base_of<TestGraphDatas, T>::value, "T must derive of TestGraphDatas");
+    }
 
     static ez::RetCodes connectSlots(const ez::SlotWeak &vFrom, const ez::SlotWeak &vTo) { 
         return m_connectSlots(vFrom, vTo); }
 
-    template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
-    std::weak_ptr<U> createChildNode(const TestNodeDatas &vNodeDatas) {
-        auto node_ptr = U::create(vNodeDatas);
+    template <typename T>
+    std::weak_ptr<T> createChildNode(const TestNodeDatas &vNodeDatas) {
+        static_assert(std::is_base_of<ez::Node, T>::value, "T must derive of ez::Node");
+        auto node_ptr = T::create(vNodeDatas);
         if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
             node_ptr.reset();
         }
@@ -82,8 +89,9 @@ public:
         return node_ptr;
     }
 
-    template <typename U, typename = std::enable_if<std::is_base_of<ez::Node, U>::value>>
-    ez::RetCodes delNode(const std::weak_ptr<U> &vNode) {
+    template <typename T>
+    ez::RetCodes delNode(const std::weak_ptr<T> &vNode) {
+        static_assert(std::is_base_of<ez::Node, T>::value, "T must derive of ez::Node");
         return m_delNode(vNode.lock());
     }
 };
@@ -139,8 +147,9 @@ public:
         if (outSlotPtr != nullptr) {
             auto outNodePtr = std::dynamic_pointer_cast<NodeOpAdd>(outSlotPtr->getParentNode().lock());
             if (outNodePtr != nullptr) {
-                for (const auto &inSlotPtr : m_getInputSlotsRef()) {
-                    if (inSlotPtr != nullptr) {
+                for (const auto &inSlot : m_getInputSlotsRef()) {
+                    auto inSlotPtr = inSlot.lock();
+                    if (inSlot.lock() != nullptr) {
                         for (const auto &conSlot : inSlotPtr->m_getConnectedSlots()) {
                             auto conSlotPtr = conSlot.lock();
                             if (conSlotPtr != nullptr) {

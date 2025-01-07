@@ -1,6 +1,7 @@
 #include <TestEzGraph.h>
 #include <TestEzXml.h>
 #include <TestEzStr.h>
+#include <TestEzCnt.h>
 #include <TestEzFigFont.h>
 
 #define IfTestCollectionExist(v)             \
@@ -11,6 +12,7 @@ bool TestMisc(const std::string& vTest) {
     IfTestCollectionExist(TestEzGraph);
     else IfTestCollectionExist(TestEzXml);
     else IfTestCollectionExist(TestEzStr);
+    else IfTestCollectionExist(TestEzCnt);
     else IfTestCollectionExist(TestEzFigFont);
     return false;
 }

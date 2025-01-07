@@ -13,6 +13,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX Src FILES ${PROJECT_TEST_SR
 file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezGraph.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStr.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp)
 source_group(TREE ${EZ_LIBS_INCLUDE_DIR}/ezlibs PREFIX Libs FILES ${EZ_LIBS_SOURCE})
@@ -46,6 +47,14 @@ AddTest("TestEzGraph_Evaluation")
 
 AddTest("TestEzStrGetDigitsCountOfAIntegralNumber")
 AddTest("TestEzStrSearchForPatternWithWildcards")
+
+##########################################################
+##### TESTS EzCnt ########################################
+##########################################################
+
+AddTest("TestEzCntGeneric")
+AddTest("TestEzCntOneTypename")
+AddTest("TestEzCntTwoTypename")
 
 ##########################################################
 ##### TESTS EzXml ########################################
