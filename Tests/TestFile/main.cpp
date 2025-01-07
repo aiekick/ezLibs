@@ -3,6 +3,8 @@
 #include <TestEzPng.h>
 #include <TestEzVdbWriter.h>
 #include <TestEzVoxWriter.h>
+#include <TestEzXmlConfig.h>
+#include <TestEzFileWatcher.h>
 
 #include <string>
 
@@ -20,6 +22,8 @@ bool TestFile(const std::string& vTest) {
     else IfTestCollectionExist(TestEzPng);
     else IfTestCollectionExist(TestEzVdbWriter);
     else IfTestCollectionExist(TestEzVoxWriter);
+    else IfTestCollectionExist(TestEzXmlConfig);
+    else IfTestCollectionExist(TestEzFileWatcher);
     return false;
 }
 
