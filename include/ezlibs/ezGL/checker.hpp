@@ -507,8 +507,8 @@ public:
 
 public:
     static Checker* Instance() {
-        static auto instance = std::unique_ptr<Checker>(new Checker());
-        return instance.get();
+        static auto Instance = std::unique_ptr<Checker>(new Checker());
+        return Instance.get();
     }
 
 public:

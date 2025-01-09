@@ -313,7 +313,7 @@ public:
     void write(FILE* fp) override {
         write_name(fp, m_Name);
         write_name(fp, getTypeName());
-        write_data<uint32_t>(fp, 0);  // instance parent
+        write_data<uint32_t>(fp, 0);  // Instance parent
         uint64_t stream_pos = ftell(fp);
         write_data<uint64_t>(fp, stream_pos + sizeof(uint64_t) * 3);  // grid pos
         write_data<uint64_t>(fp, 0);                                  // block pos

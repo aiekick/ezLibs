@@ -67,38 +67,38 @@ typedef long long int64;
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 
-#define IsVerboseMode (ez::Log::instance()->isVerboseMode() == true)
+#define IsVerboseMode (ez::Log::Instance()->isVerboseMode() == true)
 
-// #define LogVar(s, ...) ez::Log::instance()->logStringWithFunction(std::string(__FUNCTION__), (int)(__LINE__), s,
+// #define LogVar(s, ...) ez::Log::Instance()->logStringWithFunction(std::string(__FUNCTION__), (int)(__LINE__), s,
 // ##__VA_ARGS__)
 
 #define LogVarError(s, ...) \
-    ez::Log::instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::Instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarWarning(s, ...) \
-    ez::Log::instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::Instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarInfo(s, ...) \
-    ez::Log::instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::Instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarDebugError(s, ...) \
-    ez::Log::instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::Instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarDebugWarning(s, ...) \
-    ez::Log::instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::Instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarDebugInfo(s, ...) \
-    ez::Log::instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::Instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
-#define LogVarLightError(s, ...) ez::Log::instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, s, ##__VA_ARGS__)
+#define LogVarLightError(s, ...) ez::Log::Instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, s, ##__VA_ARGS__)
 
-#define LogVarLightWarning(s, ...) ez::Log::instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, s, ##__VA_ARGS__)
+#define LogVarLightWarning(s, ...) ez::Log::Instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, s, ##__VA_ARGS__)
 
-#define LogVarLightInfo(s, ...) ez::Log::instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, s, ##__VA_ARGS__)
+#define LogVarLightInfo(s, ...) ez::Log::Instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, s, ##__VA_ARGS__)
 
-#define LogVarTag(t, s, ...) ez::Log::instance()->logStringByTypeWithFunction(t, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+#define LogVarTag(t, s, ...) ez::Log::Instance()->logStringByTypeWithFunction(t, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
-#define LogVarLightTag(t, s, ...) ez::Log::instance()->logSimpleStringByType(t, s, ##__VA_ARGS__)
+#define LogVarLightTag(t, s, ...) ez::Log::Instance()->logSimpleStringByType(t, s, ##__VA_ARGS__)
 
 #define LogAssert(a, b, ...)               \
     if (!(a)) {                            \
@@ -107,8 +107,8 @@ typedef long long int64;
     }
 
 #ifdef USE_OPENGL
-#define LogGlError() ez::Log::instance()->logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, "")
-#define LogGlErrorVar(var) ez::Log::instance()->logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, var)
+#define LogGlError() ez::Log::Instance()->logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, "")
+#define LogGlErrorVar(var) ez::Log::Instance()->logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, var)
 #endif
 
 namespace ez {
@@ -236,7 +236,7 @@ public:
 #if defined(TRACY_ENABLE) && defined(LOG_TRACY_MESSAGES)
         ZoneScoped;
 #endif
-        if (!ez::Log::instance()->ConsoleVerbose)
+        if (!ez::Log::Instance()->ConsoleVerbose)
             return false;
 
         const GLenum err(glGetError());
@@ -412,7 +412,7 @@ private:
     }
 
 public:
-    static ez::Log* instance(ez::Log* vCopyPtr = nullptr, bool vForce = false) {
+    static ez::Log* Instance(ez::Log* vCopyPtr = nullptr, bool vForce = false) {
         static auto instance_ptr = std::unique_ptr<ez::Log>(new ez::Log());  // std::make_unique is not available in cpp11
         static ez::Log* _instance_copy = nullptr;
         if (vCopyPtr || vForce) {
