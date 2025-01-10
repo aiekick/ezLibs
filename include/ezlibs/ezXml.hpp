@@ -119,8 +119,11 @@ public:
         return *this;
     }
 
-    Node& addAttribute(const std::string& vKey, const std::string& vValue) {
-        m_Attributes[vKey] = vValue;
+    template<typename T>
+    Node& addAttribute(const std::string& vKey, const T& vValue) {
+        std::stringstream ss;
+        ss << vValue;
+        m_Attributes[vKey] = ss.str();
         return *this;
     }
 
@@ -128,12 +131,16 @@ public:
         return (m_Attributes.find(vKey) != m_Attributes.end());
     }
 
-    std::string getAttribute(const std::string& vKey) const {
+    template <typename T = std::string>
+    T getAttribute(const std::string& vKey) const {
+        T ret;
+        std::stringstream ss;
         auto it = m_Attributes.find(vKey);
         if (it != m_Attributes.end()) {
-            return it->second;
+            ss << it->second;
         }
-        return "";
+        ss >> ret;
+        return ret;
     }
 
     template <typename T>

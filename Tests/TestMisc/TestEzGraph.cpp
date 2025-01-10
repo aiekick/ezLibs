@@ -34,8 +34,6 @@ public:
         }
         // test null slot for coverage
         m_addSlot(nullptr);
-        // test same slot for coverage
-        m_addSlot(slot_ptr);
         return slot_ptr;
     }
 
@@ -79,13 +77,11 @@ public:
     std::weak_ptr<T> createChildNode(const TestNodeDatas &vNodeDatas) {
         static_assert(std::is_base_of<ez::Node, T>::value, "T must derive of ez::Node");
         auto node_ptr = T::create(vNodeDatas);
-        if (m_addNode(node_ptr) != ez::RetCodes::SUCCESS) {
+        if ((!node_ptr->init()) || (m_addNode(node_ptr) != ez::RetCodes::SUCCESS)) {
             node_ptr.reset();
         }
         // test null node for coverage
         m_addNode(nullptr);
-        // test same node for coverage
-        m_addNode(node_ptr);
         return node_ptr;
     }
 

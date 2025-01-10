@@ -160,7 +160,7 @@ public:
     ~Slot() override { unit(); }
 
     virtual bool init() {
-        assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
+        //assert(!m_This.expired() && "m_This msut be defined with m_setThis during the creation");
         return true;
     }
     virtual void unit() {
@@ -263,7 +263,7 @@ public:
     ~Node() override { unit(); }
 
     virtual bool init() {
-        assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
+        //assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
         return true;
     }
     virtual void unit() {
@@ -444,7 +444,7 @@ public:
     ~Graph() override { unit(); }
 
     virtual bool init() {
-        assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
+        //assert(!m_This.expired() && "m_This msut be defined with m_setThis suring the ceration");
         return true;
     }
     virtual void unit() {

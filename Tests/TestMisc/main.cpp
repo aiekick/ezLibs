@@ -27,5 +27,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzFigFontLoadAndPrint") ? 0 : 1;
+    return TestMisc("TestEzGraph_Evaluation") ? 0 : 1;
 }

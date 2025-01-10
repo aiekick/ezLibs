@@ -77,7 +77,7 @@ private:
 
         while (m_running) {
             if (ReadDirectoryChangesW(hDir, buffer.data(), buffer.size(), TRUE, FILE_NOTIFY_CHANGE_LAST_WRITE, &bytesReturned, NULL, NULL)) {
-                m_callback();
+             //   m_callback();
             }
         }
 

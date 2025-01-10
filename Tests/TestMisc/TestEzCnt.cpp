@@ -18,14 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 bool TestEzCntGeneric() {
-    //CTEST_ASSERT(ez::str::getDigitsCountOfAIntegralNumber(050) == 2);
     return true;
 }
 
 bool TestEzCntOneTypename() {
     ez::cnt::DicoVector<std::string> dico;
-    CTEST_ASSERT(dico.tryAdd("toto"));
-    CTEST_ASSERT(dico.tryAdd("toto", "tata"));
+    CTEST_ASSERT(dico.tryAdd("toto") == true);
+    CTEST_ASSERT(dico.tryAdd("toto", "tata") == false);
+    CTEST_ASSERT(dico.trySetExisting("toto", "tata") == true);
     return true;
 }
 

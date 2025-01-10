@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzPng_Writer() {
+bool TestEzFileWatcher_0() {
     return true;
 }
 
@@ -28,8 +28,8 @@ bool TestEzPng_Writer() {
     if (vTest == std::string(#v)) \
     return v()
 
-bool TestEzPng(const std::string& vTest) {
-    IfTestExist(TestEzPng_Writer);
+bool TestEzFileWatcher(const std::string& vTest) {
+    IfTestExist(TestEzFileWatcher_0);
     return false;
 }
 

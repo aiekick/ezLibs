@@ -2,4 +2,4 @@
 
 #include <string>
 
-bool TestEzPng(const std::string& vTest);
+bool TestEzFileWatcher(const std::string& vTest);
