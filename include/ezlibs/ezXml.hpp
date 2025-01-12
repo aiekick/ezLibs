@@ -54,12 +54,12 @@ public:
     };
 
 private:
-    std::string m_Name;
-    std::map<std::string, std::string> m_Attributes;
-    std::string m_Content;
-    std::string m_ParentNodeName;
-    Nodes m_Children;
-    Type m_Type = Type::None;
+    std::string m_name;
+    std::map<std::string, std::string> m_attributes;
+    std::string m_content;
+    std::string m_parentNodeName;
+    Nodes m_children;
+    Type m_type = Type::None;
 
 public:
     static std::string escapeXml(const std::string& vDatas) {
@@ -93,23 +93,40 @@ public:
     }
 
 public:
-    Node(const std::string& vName = "") : m_Name(vName) {
+    Node(const std::string& vName = "") : m_name(vName) {
     }
 
     Node& setName(const std::string& vName) {
-        m_Name = vName;
+        m_name = vName;
         return *this;
     }
 
     Node& addChild(const Node& vChild) {
-        m_Children.push_back(vChild);
-        m_Children.back().m_setParentNodeName(getName());
-        return m_Children.back();
+        m_children.push_back(vChild);
+        m_children.back().m_setParentNodeName(getName());
+        return m_children.back();
     }
 
     Node& addChild(const std::string& vName) {
         Node node(vName);
         return addChild(node);
+    }
+
+    Node* getChild(const std::string& vName) {
+        for (auto& child : m_children) {
+            if (child.m_name == vName) {
+                return &child;
+            }
+        }
+        return nullptr;
+    }
+
+    Node& getOrAddChild(const std::string& vName) {
+        Node* ret = getChild(vName);
+        if (ret == nullptr) {
+            ret = &addChild(vName);
+        }
+        return *ret;
     }
 
     Node& addChilds(const Nodes& vChilds) {
@@ -123,20 +140,20 @@ public:
     Node& addAttribute(const std::string& vKey, const T& vValue) {
         std::stringstream ss;
         ss << vValue;
-        m_Attributes[vKey] = ss.str();
+        m_attributes[vKey] = ss.str();
         return *this;
     }
 
     bool isAttributeExist(const std::string& vKey) const {
-        return (m_Attributes.find(vKey) != m_Attributes.end());
+        return (m_attributes.find(vKey) != m_attributes.end());
     }
 
     template <typename T = std::string>
     T getAttribute(const std::string& vKey) const {
         T ret;
         std::stringstream ss;
-        auto it = m_Attributes.find(vKey);
-        if (it != m_Attributes.end()) {
+        auto it = m_attributes.find(vKey);
+        if (it != m_attributes.end()) {
             ss << it->second;
         }
         ss >> ret;
@@ -147,29 +164,29 @@ public:
     Node& setContent(const T& vContent) {
         std::stringstream ss;
         ss << vContent;
-        m_Content = ss.str();
+        m_content = ss.str();
         return *this;
     }
 
     Node& setContent(const std::string& vContent) {
-        m_Content = vContent;
+        m_content = vContent;
         return *this;
     }
 
     const std::string& getContent() const {
-        return m_Content;
+        return m_content;
     }
 
-    const Nodes& getChildren() const {
-        return m_Children;
-    }
+    Nodes& getChildren() { return m_children; }
+
+    const Nodes& getChildren() const { return m_children; }
 
     const std::string& getParentNodeName() {
-        return m_ParentNodeName;
+        return m_parentNodeName;
     }
 
     const std::string& getName() const {
-        return m_Name;
+        return m_name;
     }
 
     std::string dump(const xml::Node& vNode, const uint32_t vLevel = 0) const {
@@ -179,7 +196,7 @@ public:
         oss << indent;
         if (vNode.m_getType() != xml::Node::Type::Comment) {
             oss << "<" << vNode.getName();
-            for (const auto& attr : vNode.m_Attributes) {
+            for (const auto& attr : vNode.m_attributes) {
                 oss << " " << attr.first << "=\"" << xml::Node::unEscapeXml(attr.second) << "\"";
             }
         }
@@ -221,25 +238,25 @@ public:
 private:
 
     void m_setAttribute(const std::string& vKey, const std::string& vValue) {
-        m_Attributes[vKey] = vValue;
+        m_attributes[vKey] = vValue;
     }
 
     void m_setType(Type vType) {
-        m_Type = vType;
+        m_type = vType;
     }
 
     Type m_getType() const {
-        return m_Type;
+        return m_type;
     }
 
     void m_setParentNodeName(const std::string& vName) {
-        m_ParentNodeName = vName;
+        m_parentNodeName = vName;
     }
 };
 
 template <>
 inline Node& Node::setContent(const bool& vContent) {
-    m_Content = vContent ? "true" : "false";
+    m_content = vContent ? "true" : "false";
     return *this;
 }
 

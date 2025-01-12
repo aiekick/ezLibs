@@ -118,8 +118,13 @@ class UUID {
 public:
     explicit UUID(void *vPtr) { m_Uuid = reinterpret_cast<Uuid>(vPtr); }
     virtual ~UUID() = default;
-    Uuid getUuid() const { return m_Uuid; }
-    void setUuid(const Uuid vUUID) { m_Uuid = vUUID; }
+    template <typename T = Uuid>
+    T getUuid() const {
+        return static_cast<T>(m_Uuid);
+    }
+    virtual void setUuid(const Uuid vUUID) {
+        m_Uuid = vUUID;
+    }
 };
 
 /////////////////////////////////////
@@ -507,6 +512,7 @@ protected:  // Node
         auto ret = RetCodes::FAILED_NODE_PTR_NULL;
         if (vNodePtr != nullptr) {
             vNodePtr->m_setThis(vNodePtr);
+            vNodePtr->setUuid(getUuid()); // call the virtual setUuid for derived classes
             vNodePtr->setParentGraph(m_getThis());
             m_Nodes.push_back(vNodePtr);
             m_NodeWeaks.push_back(vNodePtr);
