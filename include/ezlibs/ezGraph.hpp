@@ -331,6 +331,7 @@ protected:  // Node
         auto ret = RetCodes::FAILED;
         if (vSlotPtr != nullptr) {
             vSlotPtr->m_setThis(vSlotPtr);
+            vSlotPtr->setUuid(vSlotPtr->getUuid());  // call the virtual setUuid for derived classes
             const auto &datas = vSlotPtr->getDatas<SlotDatas>();
             if (datas.dir == SlotDir::INPUT) {
                 const auto it = Utils::isSharedPtrExistInVector(vSlotPtr, m_Inputs);
@@ -512,7 +513,7 @@ protected:  // Node
         auto ret = RetCodes::FAILED_NODE_PTR_NULL;
         if (vNodePtr != nullptr) {
             vNodePtr->m_setThis(vNodePtr);
-            vNodePtr->setUuid(getUuid()); // call the virtual setUuid for derived classes
+            vNodePtr->setUuid(vNodePtr->getUuid());  // call the virtual setUuid for derived classes
             vNodePtr->setParentGraph(m_getThis());
             m_Nodes.push_back(vNodePtr);
             m_NodeWeaks.push_back(vNodePtr);
