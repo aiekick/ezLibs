@@ -274,7 +274,9 @@ public:
     virtual void unit() {
         // we must reset slots 
         m_Inputs.clear();
+        m_InputWeaks.clear();
         m_Outputs.clear();
+        m_OutputWeaks.clear();
         // before reset this ans parentGraph
         m_This.reset();
         m_ParentGraph.reset();
@@ -457,7 +459,12 @@ public:
         m_This.reset();
         m_ParentNode.reset();
         mp_GraphDatas.reset();
+        clear();
+    }
+
+    virtual void clear() {
         m_Nodes.clear();
+        m_NodeWeaks.clear();
     }
 
     // Datas
