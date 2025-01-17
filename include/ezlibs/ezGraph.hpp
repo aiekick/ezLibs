@@ -83,6 +83,7 @@ enum class SlotDir { INPUT = 0, OUTPUT, Count };
 enum class RetCodes {
     SUCCESS = 0,
     FAILED,
+    FAILED_GRAPH_PTR_NULL,
     FAILED_SLOT_PTR_NULL,
     FAILED_SLOT_ALREADY_EXIST,
     FAILED_SLOT_NOT_FOUND,
@@ -374,7 +375,7 @@ protected:  // Node
         return slot_ptr;
     }
 
-    RetCodes m_delSlot(const SlotWeak &vSlot) {
+    virtual RetCodes m_delSlot(const SlotWeak &vSlot) {
         auto ret = m_delInputSlot(vSlot);
         if (ret != RetCodes::SUCCESS) {
             ret = m_delOutputSlot(vSlot);
