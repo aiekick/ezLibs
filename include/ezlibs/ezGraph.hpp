@@ -375,7 +375,7 @@ protected:  // Node
         return slot_ptr;
     }
 
-    virtual RetCodes m_delSlot(const SlotWeak &vSlot) {
+    RetCodes m_delSlot(const SlotWeak &vSlot) {
         auto ret = m_delInputSlot(vSlot);
         if (ret != RetCodes::SUCCESS) {
             ret = m_delOutputSlot(vSlot);
