@@ -55,7 +55,11 @@ SOFTWARE.
 namespace ez {
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
+#ifndef M_E
+#define M_E 2.7182818284590452353602874713527
 #endif
 
 // This function rounds a floating-point number to 'n' decimal places.
