@@ -65,6 +65,10 @@ struct vec2 {
     template <typename U>
     vec2(const vec2<U>& a) : x(static_cast<T>(a.x)), y(static_cast<T>(a.y)) {}
 
+    // Constructor with type conversion
+    template <typename U>
+    vec2(const U& a) : x(static_cast<T>(a.x)), y(static_cast<T>(a.y)) {}
+
     vec2(T a) : x(a), y(a) {}
 
     vec2(T a, T b) : x(a), y(b) {}
