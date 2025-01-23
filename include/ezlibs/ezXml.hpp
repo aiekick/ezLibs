@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezXml is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
-// ezXml is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezXml is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezXml is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <map>
 #include <stack>

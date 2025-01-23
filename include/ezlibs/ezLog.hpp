@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezLog is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
-// ezLog is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezLog is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezLog is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #pragma once
 #pragma warning(disable : 4251)

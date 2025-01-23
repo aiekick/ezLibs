@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezFdGraph is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezFdGraph is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <iostream>
 #include <memory>

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezGraph is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezGraph is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <set>
 #include <type_traits>

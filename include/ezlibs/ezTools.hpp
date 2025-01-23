@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezTools is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezTools is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <type_traits>
 #include <cmath>

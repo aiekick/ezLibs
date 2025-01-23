@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezStr is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezStr is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////

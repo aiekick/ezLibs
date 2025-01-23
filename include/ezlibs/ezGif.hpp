@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezGif is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezGif is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <unordered_map>
 #include <algorithm>
@@ -284,8 +284,8 @@ private:
     }
 
     void m_writeCompressedData(const std::vector<uint16_t> &compressedData) {
-        uint8_t bitBuffer = 0;                        // Buffer de bits pour l'écriture des octets
-        int bitCount = 0;                             // Nombre de bits accumulés dans le buffer
+        uint8_t bitBuffer = 0;                        // Buffer de bits pour l'ï¿½criture des octets
+        int bitCount = 0;                             // Nombre de bits accumulï¿½s dans le buffer
         uint8_t currentCodeSize = m_minCodeSize + 1;  // Taille actuelle des codes
 
         std::vector<uint8_t> outputBytes;
@@ -295,25 +295,25 @@ private:
             bitBuffer |= (code << bitCount);
             bitCount += currentCodeSize;
 
-            // Écrire les octets entiers dans le buffer jusqu'à ce qu'on n'ait plus de 8 bits
+            // ï¿½crire les octets entiers dans le buffer jusqu'ï¿½ ce qu'on n'ait plus de 8 bits
             while (bitCount >= 8) {
-                outputBytes.push_back(bitBuffer & 0xFF);  // Écrire le byte entier
-                bitBuffer >>= 8;                          // Décaler le buffer vers la droite de 8 bits
+                outputBytes.push_back(bitBuffer & 0xFF);  // ï¿½crire le byte entier
+                bitBuffer >>= 8;                          // Dï¿½caler le buffer vers la droite de 8 bits
                 bitCount -= 8;
             }
 
-            // Augmenter la taille des codes au fur et à mesure que le dictionnaire grandit
+            // Augmenter la taille des codes au fur et ï¿½ mesure que le dictionnaire grandit
             if (code == (1 << currentCodeSize) - 1 && currentCodeSize < 12) {
                 ++currentCodeSize;
             }
         }
 
-        // Écrire les bits restants dans le buffer (si non vide)
+        // ï¿½crire les bits restants dans le buffer (si non vide)
         if (bitCount > 0) {
             outputBytes.push_back(bitBuffer & 0xFF);
         }
 
-        // Écrire les données en blocs de 255 octets maximum
+        // ï¿½crire les donnï¿½es en blocs de 255 octets maximum
         size_t index = 0;
         while (index < outputBytes.size()) {
             size_t blockSize = std::min(size_t(255), outputBytes.size() - index);

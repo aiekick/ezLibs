@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezFile is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
-// ezFile is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezFile is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezFile is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <fstream>
 #include <iterator>

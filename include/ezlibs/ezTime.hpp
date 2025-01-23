@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezTime is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
-// ezTime is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezTime is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezTime is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <ctime>
 #include <string>

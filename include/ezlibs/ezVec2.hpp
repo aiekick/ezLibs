@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezVec2 is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezVec2 is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <cmath>
 #include <type_traits>

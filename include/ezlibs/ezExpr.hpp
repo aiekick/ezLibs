@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezExpr is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezExpr is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -555,7 +555,7 @@ protected:
                     identifier = identifier + String(ch);
                 }
                 stream.putback(ch);
-                tokens.push_back({TokenType::VARIABLE, identifier});  // Traitement générique comme identifiant
+                tokens.push_back({TokenType::VARIABLE, identifier});  // Traitement gï¿½nï¿½rique comme identifiant
             } else if (ch == '(') {
                 tokens.push_back({TokenType::LPAREN, String("(")});
             } else if (ch == ')') {
@@ -656,7 +656,7 @@ protected:
             default: throw ExprException(ErrorCode::UNKNOWN_NODE_TYPE, "Unknown node type");
         }
 
-        // Vérification du résultat pour NaN ou Inf
+        // Vï¿½rification du rï¿½sultat pour NaN ou Inf
         if (::std::isnan(vOutResult)) {
             throw ExprException(ErrorCode::EVALUATION_NAN, "Result is NaN");
         } else if (::std::isinf(vOutResult)) {
@@ -715,14 +715,14 @@ protected:
             node.value = ::std::stod(tokens[pos].value.c_str());
             ++pos;
 
-            // Gestion de l'opérateur postfixé "!" pour les nombres
+            // Gestion de l'opï¿½rateur postfixï¿½ "!" pour les nombres
             if (pos < tokens.size() && tokens[pos].type == TokenType::OPERATOR && tokens[pos].value == "!") {
                 Node opNode;
                 opNode.type = NodeType::FUNCTION;
                 opNode.name = "!";
                 opNode.childs[0] = ::std::make_shared<Node>(node);
                 opNode.childCount = 1;
-                node = opNode;  // Remplacer le nœud par l'opérateur postfixé
+                node = opNode;  // Remplacer le nï¿½ud par l'opï¿½rateur postfixï¿½
                 ++pos;
             }
         } else if (tokens[pos].type == TokenType::VARIABLE) {
@@ -735,7 +735,7 @@ protected:
                     throw ExprException(ErrorCode::FUNCTION_NOT_FOUND, "Function not found: " + identifier);
                 }
 
-                ++pos;  // Passer la parenthèse ouvrante
+                ++pos;  // Passer la parenthï¿½se ouvrante
 
                 if (pos < tokens.size() && tokens[pos].type == TokenType::RPAREN) {
                     throw ExprException(ErrorCode::FUNCTION_WRONG_ARGUMENTS_COUNT, "Function called with incorrect number of arguments: " + identifier);
@@ -772,17 +772,17 @@ protected:
                 } else {
                     node.type = NodeType::VARIABLE;
                     node.name = identifier;
-                    m_ParsedVariables[identifier] = 0.0;  // Ajout de la variable trouvée avec une valeur par défaut de 0.0
+                    m_ParsedVariables[identifier] = 0.0;  // Ajout de la variable trouvï¿½e avec une valeur par dï¿½faut de 0.0
                 }
 
-                // Gestion de l'opérateur postfixé "!" pour les variables
+                // Gestion de l'opï¿½rateur postfixï¿½ "!" pour les variables
                 if (pos < tokens.size() && tokens[pos].type == TokenType::OPERATOR && tokens[pos].value == "!") {
                     Node opNode;
                     opNode.type = NodeType::FUNCTION;
                     opNode.name = "!";
                     opNode.childs[0] = ::std::make_shared<Node>(node);
                     opNode.childCount = 1;
-                    node = opNode;  // Remplacer le nœud par l'opérateur postfixé
+                    node = opNode;  // Remplacer le nï¿½ud par l'opï¿½rateur postfixï¿½
                     ++pos;
                 }
             }
