@@ -124,23 +124,22 @@ private:
             }
         }
 
-        void sendData(const std::string& data, int client_fd = -1) {
+        void sendData(const DatasBuffer& data, int client_fd = -1) {
             int fd = (client_fd == -1) ? m_socketFileDescriptor : client_fd;
-            if (::send(fd, data.c_str(), data.size(), 0) < 0) {
+            if (::send(fd, data.data(), data.size(), 0) < 0) {
                 throw std::runtime_error("Failed to send data.");
             }
         }
 
-        std::string receiveData(int buffer_size = 1024, int client_fd = -1) {
-            std::vector<char> buffer;
+        DatasBuffer receiveData(int buffer_size = 1024, int client_fd = -1) {
+            DatasBuffer buffer;
             buffer.resize(buffer_size);
             int fd = (client_fd == -1) ? m_socketFileDescriptor : client_fd;
             int bytes_received = ::recv(fd, buffer.data(), buffer.size() - 1, 0);
             if (bytes_received < 0) {
                 throw std::runtime_error("Failed to receive data.");
             }
-            buffer[bytes_received] = '\0';
-            return std::string(buffer);
+            return buffer;
         }
 
         void closeSocket() {
