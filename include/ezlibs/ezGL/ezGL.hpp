@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// EzGL is part od the EzLibs project : https://github.com/aiekick/EzLibs.git
+// ezGL is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #pragma once
 

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// EzVdb is part od the EzLibs project : https://github.com/aiekick/EzLibs.git
+// ezVdb is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <unordered_map>
 #include <iostream>

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// EzVox is part od the EzLibs project : https://github.com/aiekick/EzLibs.git
+// ezVox is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <map>
 #include <cmath>

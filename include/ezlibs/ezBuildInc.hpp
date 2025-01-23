@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezBuildInc is part of the EzLibs project : https://github.com/aiekick/EzLibs.git
+// ezBuildInc is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <string>
 #include <cstdint>

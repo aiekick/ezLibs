@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// EzPlane is part od the EzLibs project : https://github.com/aiekick/EzLibs.git
+// ezPlane is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 namespace ez {
 

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// EzArgs is part od the EzLibs project : https://github.com/aiekick/EzLibs.git
+// ezArgs is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define WINDOWS_OS
