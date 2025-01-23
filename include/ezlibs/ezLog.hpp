@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// EzLog is part od the EzLibs project : https://github.com/aiekick/EzLibs.git
 // ezLog is part od the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #pragma once
@@ -363,7 +364,7 @@ private:
 private:
     void m_LogString(const MessageType* vType, const std::string* vFunction, const int* vLine, const char* vStr) {
         const int64 ticks = time::getTicks();
-        const double time = (ticks - m_lastTick) / 100.0;
+        const double time = (ticks - m_lastTick) / 1000.0;
 
         static char TempBufferBis[sMAX_BUFFER_SIZE + 1];
         int w = 0;
