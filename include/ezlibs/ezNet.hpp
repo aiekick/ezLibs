@@ -35,7 +35,11 @@ SOFTWARE.
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#pragma comment(lib, "Ws2_32.lib")
+#include <Windows.h>
+#include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
+#pragma comment(lib, "Ws2_32")
+#define WM_SOCKET 0x10000
 #else
 #include <sys/socket.h>
 #include <arpa/inet.h>

@@ -92,6 +92,8 @@ SOFTWARE.
 #define SLASH_CHAR "/"
 #endif
 
+#include "ezStr.hpp" // ez::str::replaceString
+
 #include <map>
 #include <vector>
 #include <string>
