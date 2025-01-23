@@ -34,8 +34,6 @@ SOFTWARE.
 #define MAC_OS
 #endif
 
-#include "ezMath.hpp"
-
 #ifdef WINDOWS_OS
 // includes
 #include <Windows.h>
@@ -123,6 +121,11 @@ public:
 
     std::string getAppPath() const { return m_AppPath; }
 
+    template <typename T>
+    inline T mini(T a, T b) {
+        return a < b ? a : b;
+    }
+
     std::string getAppPath() {
         if (m_AppPath.empty()) {
             char buffer[MAX_PATH] = {};
@@ -131,7 +134,7 @@ public:
 #elif defined(LINUX_OS)
             char szTmp[32];
             sprintf(szTmp, "/proc/%d/exe", getpid());
-            auto bytes = ez::mini<int>(readlink(szTmp, buffer, MAX_PATH), MAX_PATH - 1);
+            auto bytes = mini<int>(readlink(szTmp, buffer, MAX_PATH), MAX_PATH - 1);
             if (bytes >= 0) {
                 buffer[bytes] = '\0';
             }
@@ -148,7 +151,7 @@ public:
         return m_AppPath;
     }
 
-    std::string getCurDirectory() const {
+    static std::string getCurDirectory() {
         char cCurrentPath[FILENAME_MAX];
         if (GetCurrentDir(cCurrentPath, FILENAME_MAX)) {
             return std::string(cCurrentPath) + SLASH_CHAR;
@@ -156,7 +159,7 @@ public:
         return "";
     }
 
-    bool setCurDirectory(const std::string& vPath) const {
+    static bool setCurDirectory(const std::string& vPath) {
         auto path = vPath;
         m_correctSlashForPath(path);
         return (SetCurrentDir(path.c_str()) == 0);
