@@ -66,18 +66,19 @@ int main() {
 }
 */
 
- */
+#include <vector>
 #include <string>
 #include <stdexcept>
 #include <iostream>
 
 #ifdef _WIN32
-#include <windows.h>
+#include <Windows.h>
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <dirent.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <cstring>
 #endif
 
@@ -164,6 +165,47 @@ public:
             unlink(m_pipeName.c_str());
         }
 #endif
+    }
+
+    static std::vector<std::string> listNamedPipes() {
+        std::vector<std::string> pipeNames;
+#ifdef _WIN32
+        char buffer[4096];
+
+        // Buffer pour les résultats
+        WIN32_FIND_DATAA findFileData;
+        HANDLE hFind = FindFirstFileA("\\\\.\\pipe\\*", &findFileData);
+
+        if (hFind == INVALID_HANDLE_VALUE) {
+            std::cerr << "Failed to list named pipes. Error: " << GetLastError() << std::endl;
+            return pipeNames;
+        }
+
+        do {
+            pipeNames.push_back(findFileData.cFileName); // Ajoute le nom du pipe à la liste
+        } while (FindNextFileA(hFind, &findFileData)); // Continue à chercher
+
+        FindClose(hFind); // Ferme le handle de recherche
+#else
+        DIR* dir = opendir(directory.c_str());
+        if (!dir) {
+            throw std::runtime_error("Failed to open directory: " + directory);
+        }
+        struct dirent* entry;
+        struct stat fileStat;
+        while ((entry = readdir(dir)) != nullptr) {
+            std::string fullPath = directory + "/" + entry->d_name;
+            if (stat(fullPath.c_str(), &fileStat) == -1) {
+                std::cerr << "Failed to stat file: " << fullPath << std::endl;
+                continue;
+            }
+            if (S_ISFIFO(fileStat.st_mode)) {
+                pipeNames.push_back(fullPath);
+            }
+        }
+        closedir(dir);
+#endif
+        return pipeNames;
     }
 
     void write(const std::string& message) {
