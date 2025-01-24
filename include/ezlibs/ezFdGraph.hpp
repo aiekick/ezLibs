@@ -59,11 +59,11 @@ private:
     float m_attractionStrength = 0.1f;
 
 public:
-    Node& addNode() {
+    NodeWeak addNode() {
         auto ptr = std::make_shared<Node>();
         ptr->position = randomPosition();
         m_nodes.push_back(ptr);
-        return *ptr.get();
+        return ptr;
     }
 
     void addLink(const NodeWeak& nA, const NodeWeak& nB) {  //

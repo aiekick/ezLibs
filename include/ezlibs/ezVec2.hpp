@@ -391,6 +391,11 @@ inline T det(const vec2<T>& a, const vec2<T>& b) {
 }
 
 template <typename T>
+inline T length(const vec2<T>& v) {
+    return sqrt(dot(v,v));
+}
+
+template <typename T>
 inline vec2<T> cross(const vec2<T>& a, const vec2<T>& b) {
     return vec2<T>(a.x * b.y - a.y * b.x, a.y * b.x - a.x * b.y);
 }
