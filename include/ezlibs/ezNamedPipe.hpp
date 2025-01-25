@@ -198,7 +198,7 @@ private:
                 return false;
             }
 #else
-            m_pipeName = "/tmp/" + pipeName;
+            m_pipeName = "/tmp/" + vPipeName;
             if (mkfifo(m_pipeName.c_str(), 0666) == -1 && errno != EEXIST) {
                 return false;
             }
@@ -243,7 +243,7 @@ private:
                 return false;
             }
 #else
-            m_pipeName = "/tmp/" + pipeName;
+            m_pipeName = "/tmp/" + vPipeName;
             m_pipeFd = open(m_pipeName.c_str(), O_RDWR);
             if (m_pipeFd == -1) {
                 return false;
