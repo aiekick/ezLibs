@@ -71,23 +71,23 @@ public:
 
         FindClose(hFind);  // Ferme le handle de recherche
 #else
+        const auto directory = std::string("/tmp");
         DIR* dir = opendir(directory.c_str());
-        if (!dir) {
-            throw std::runtime_error("Failed to open directory: " + directory);
-        }
-        struct dirent* entry;
-        struct stat fileStat;
-        while ((entry = readdir(dir)) != nullptr) {
-            std::string fullPath = directory + "/" + entry->d_name;
-            if (stat(fullPath.c_str(), &fileStat) == -1) {
-                std::cerr << "Failed to stat file: " << fullPath << std::endl;
-                continue;
+        if (dir) {
+            struct dirent* entry;
+            struct stat fileStat;
+            while ((entry = readdir(dir)) != nullptr) {
+                std::string fullPath = directory + "/" + entry->d_name;
+                if (stat(fullPath.c_str(), &fileStat) == -1) {
+                    std::cerr << "Failed to stat file: " << fullPath << std::endl;
+                    continue;
+                }
+                if (S_ISFIFO(fileStat.st_mode)) {
+                    pipeNames.push_back(fullPath);
+                }
             }
-            if (S_ISFIFO(fileStat.st_mode)) {
-                pipeNames.push_back(fullPath);
-            }
+            closedir(dir);
         }
-        closedir(dir);
 #endif
         return pipeNames;
     }
@@ -132,7 +132,7 @@ private:
                 return false;
             }
 #else
-            ssize_t bytesWritten = ::write(m_pipeFd, message.c_str(), message.size());
+            auto bytesWritten = ::write(m_pipeFd, vMessage.data(), vMessage.size());
             if (bytesWritten == -1) {
                 return false;
             }
@@ -157,13 +157,12 @@ private:
             }
             return false;
 #else
-            char buffer[4096];
-            ssize_t bytesRead = ::read(m_pipeFd, buffer, sizeof(buffer) - 1);
-            if (bytesRead == -1) {
-                throw std::runtime_error("Failed to read from named pipe: " + std::string(strerror(errno)));
+            auto bytesRead = ::read(m_pipeFd, m_buffer.data(), m_buffer.size());
+            if (bytesRead != -1) {
+                m_lastMessageSize = bytesRead;
+                return true;
             }
-            buffer[bytesRead] = '\0';
-            return std::string(buffer);
+            return false;
 #endif
         }
 
@@ -222,7 +221,9 @@ private:
 #ifdef EZ_TIME
             const auto start = ez::time::getTicks();
 #endif
+#ifdef EZ_TIME
             while (m_pipeHandle == INVALID_HANDLE_VALUE) {
+#endif
                 m_pipeHandle = CreateFile(  //
                     m_pipeName.c_str(),
                     GENERIC_READ | GENERIC_WRITE,
@@ -236,8 +237,8 @@ private:
                     (ez::time::getTicks() - start) > vTimeOutInMs) {
                     break;
                 }
-#endif
             }
+#endif
             if (m_pipeHandle == INVALID_HANDLE_VALUE) {
                 return false;
             }
