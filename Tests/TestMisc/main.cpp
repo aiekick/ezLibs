@@ -1,3 +1,4 @@
+#include <TestEzCmdProcessor.h>
 #include <TestEzGraph.h>
 #include <TestEzXml.h>
 #include <TestEzStr.h>
@@ -9,7 +10,8 @@
     return v(vTest)
 
 bool TestMisc(const std::string& vTest) {
-    IfTestCollectionExist(TestEzGraph);
+    IfTestCollectionExist(TestEzCmdProcessor);
+    else IfTestCollectionExist(TestEzGraph);
     else IfTestCollectionExist(TestEzXml);
     else IfTestCollectionExist(TestEzStr);
     else IfTestCollectionExist(TestEzCnt);
@@ -27,5 +29,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzGraph_Evaluation") ? 0 : 1;
+    return TestMisc("TestEzCmdProcessor_Basis") ? 0 : 1;
 }

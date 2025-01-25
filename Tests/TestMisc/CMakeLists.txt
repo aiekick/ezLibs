@@ -11,6 +11,7 @@ file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX Src FILES ${PROJECT_TEST_SRC_RECURSE})
 
 file(GLOB EZ_LIBS_SOURCE
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCmdProcessor.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezGraph.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStr.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
@@ -33,6 +34,12 @@ set_target_properties(${PROJECT} PROPERTIES FOLDER Tests)
 target_include_directories(${PROJECT} PRIVATE 
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+##########################################################
+##### TESTS EzCmdProcessor ###############################
+##########################################################
+
+AddTest("TestEzCmdProcessor_Basis")
 
 ##########################################################
 ##### TESTS EzGraph ######################################

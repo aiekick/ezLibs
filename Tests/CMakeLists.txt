@@ -8,6 +8,7 @@ option(USE_LEAK_SANITIZER "Enable ezLibs leak sanitizer" OFF)
 option(USE_CODE_COVERAGE "Enable ezLibs code coverage" OFF)
 
 option(TESTING_APP "Enable testing of Time related libs" ON)
+option(TESTING_COMMUNICATION "Enable testing of Communication related libs" ON)
 option(TESTING_COMPRESSION "Enable testing of Compression related libs" ON)
 option(TESTING_FILE "Enable testing of File related libs" ON)
 option(TESTING_MATH "Enable testing of Math related libs" ON)
@@ -36,6 +37,10 @@ endfunction(AddTest)
 
 if (TESTING_APP)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TestApp)
+endif()
+
+if (TESTING_COMMUNICATION)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TestCom)
 endif()
 
 if (TESTING_COMPRESSION)

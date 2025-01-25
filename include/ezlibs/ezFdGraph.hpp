@@ -43,6 +43,7 @@ private:
         std::string tag;
         ez::fvec2 position;
         ez::fvec2 velocity;
+        float radius{1.0};
     };
 
     typedef std::shared_ptr<Node> NodePtr;
