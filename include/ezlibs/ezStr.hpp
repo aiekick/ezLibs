@@ -25,7 +25,10 @@ SOFTWARE.
 */
 
 // ezStr is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
-// ezStr is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
+
+#ifndef EZ_STR
+#define EZ_STR
+#endif  // EZ_STR
 
 #include <ios>
 #include <set>

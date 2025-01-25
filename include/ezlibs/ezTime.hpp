@@ -25,7 +25,6 @@ SOFTWARE.
 */
 
 // ezTime is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
-// ezTime is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <ctime>
 #include <string>
@@ -33,6 +32,10 @@ SOFTWARE.
 #include <iomanip>
 #include <sstream>
 #include <cstdint>
+
+#ifndef EZ_TIME
+#define EZ_TIME
+#endif  // EZ_TIME
 
 namespace ez {
 namespace time {

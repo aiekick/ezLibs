@@ -1,5 +1,5 @@
 #include <TestEzNamedPipe.h>
-#include <ezlibs/ezNamedPipe.hpp>*
+#include <ezlibs/ezNamedPipe.hpp>
 #include <ezlibs/ezCTest.hpp>
 
 #include <thread>

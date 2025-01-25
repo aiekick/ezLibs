@@ -180,11 +180,11 @@ private:
         }
 
     protected:
-        bool m_initServer(const std::string& pipeName, size_t vBufferSize, int32_t vMaxInstances = 1) {
+        bool m_initServer(const std::string& vPipeName, size_t vBufferSize, int32_t vMaxInstances = 1) {
             m_isServer = true;
             m_buffer.resize(vBufferSize);
 #ifdef _WIN32
-            m_pipeName = "\\\\.\\pipe\\" + pipeName;
+            m_pipeName = "\\\\.\\pipe\\" + vPipeName;
             m_pipeHandle = CreateNamedPipe(  //
                 m_pipeName.c_str(),
                 PIPE_ACCESS_DUPLEX,
@@ -211,18 +211,33 @@ private:
             return true;
         }
 
-        bool m_initClient(const std::string& pipeName) {
+        bool m_initClient(const std::string& vPipeName
+#ifdef EZ_TIME
+            , size_t vTimeOutInMs = 1000u
+#endif
+        ) {
             m_isServer = false;
 #ifdef _WIN32
-            m_pipeName = "\\\\.\\pipe\\" + pipeName;
-            m_pipeHandle = CreateFile(  //
-                m_pipeName.c_str(),
-                GENERIC_READ | GENERIC_WRITE,
-                0,
-                nullptr,
-                OPEN_EXISTING,
-                0,
-                nullptr);
+            m_pipeName = "\\\\.\\pipe\\" + vPipeName;
+#ifdef EZ_TIME
+            const auto start = ez::time::getTicks();
+#endif
+            while (m_pipeHandle == INVALID_HANDLE_VALUE) {
+                m_pipeHandle = CreateFile(  //
+                    m_pipeName.c_str(),
+                    GENERIC_READ | GENERIC_WRITE,
+                    0,
+                    nullptr,
+                    OPEN_ALWAYS,
+                    0,
+                    nullptr);
+#ifdef EZ_TIME
+                if (m_pipeHandle == INVALID_HANDLE_VALUE && //
+                    (ez::time::getTicks() - start) > vTimeOutInMs) {
+                    break;
+                }
+#endif
+            }
             if (m_pipeHandle == INVALID_HANDLE_VALUE) {
                 return false;
             }
@@ -240,7 +255,11 @@ private:
 public:
     class Server : public Backend {
     public:
-        static std::shared_ptr<Server> create(const std::string& pipeName, size_t vBufferSize, int32_t vMaxInstances = 1) {
+        typedef std::shared_ptr<Server> Ptr;
+        typedef std::weak_ptr<Server> Weak;
+
+    public:
+        static Ptr create(const std::string& pipeName, size_t vBufferSize, int32_t vMaxInstances = 1) {
             auto ret = std::make_shared<Server>();
             if (!ret->m_initServer(pipeName, vBufferSize, vMaxInstances)) {
                 ret.reset();
@@ -251,9 +270,14 @@ public:
         ~Server() override { unit(); }
     };
 
+
     class Client : public Backend {
     public:
-        static std::shared_ptr<Client> create(const std::string& pipeName) {
+        typedef std::shared_ptr<Client> Ptr;
+        typedef std::weak_ptr<Client> Weak;
+
+    public:
+        static Ptr create(const std::string& pipeName) {
             auto ret = std::make_shared<Client>();
             if (!ret->m_initClient(pipeName)) {
                 ret.reset();

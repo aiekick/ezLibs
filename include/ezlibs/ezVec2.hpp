@@ -73,6 +73,17 @@ struct vec2 {
 
     vec2(T a, T b) : x(a), y(b) {}
 
+#ifdef EZ_STR
+    vec2(const std::vector<std::string>& vArray) {
+        const size_t s = vArray.size();
+        if (s > 0) {
+            str::stringToNumber(vArray.at(0), x);
+        }
+        if (s > 1) {
+            str::stringToNumber(vArray.at(1), y);
+        }
+    };
+
     vec2(const std::string& vec, char c = ';', const vec2<T>* def = nullptr) {
         if (def) {
             x = def->x;
@@ -80,11 +91,14 @@ struct vec2 {
         }
         std::vector<T> result = str::stringToNumberVector<T>(vec, c);
         const size_t s = result.size();
-        if (s > 0)
-            x = result[0];
-        if (s > 1)
-            y = result[1];
+        if (s > 0) {
+            x = result.at(0);
+        }
+        if (s > 1) {
+            x = result.at(1);
+        }
     }
+#endif
 
     // Element access operator
     T& operator[](size_t i) { return (&x)[i]; }
@@ -216,8 +230,11 @@ struct vec2 {
 
     bool emptyOR() const { return x == static_cast<T>(0) || y == static_cast<T>(0); }
 
+#ifdef EZ_STR
     // Convert to string
     std::string string(char c = ';') const { return str::toStr(x) + c + str::toStr(y); }
+    std::vector<std::string> array(char c = ';') const { return {str::toStr(x), str::toStr(y)}; }
+#endif
 
     // Ratio functions
     template <typename U>
@@ -486,19 +503,25 @@ inline ivec2 convert(const fvec2& v) {
     return ivec2(static_cast<int>(v.x), static_cast<int>(v.y));
 }
 
+#ifdef floatIsValid
 // Float validation
 inline bool valid(const fvec2& a) {
     return floatIsValid(a.x) && floatIsValid(a.y);
 }
+#endif
 
+#ifdef isEqual
 // Float comparison operators
 inline bool operator==(const fvec2& v, const fvec2& f) {
     return isEqual(f.x, v.x) && isEqual(f.y, v.y);
 }
+#endif
 
+#ifdef isDifferent
 inline bool operator!=(const fvec2& v, const fvec2& f) {
     return isDifferent(f.x, v.x) || isDifferent(f.y, v.y);
 }
+#endif
 
 // Function to compute the angle in radians from a vec2, only for floating-point types
 // Allowed types: float, double, long double
