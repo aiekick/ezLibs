@@ -38,12 +38,28 @@ SOFTWARE.
 namespace ez {
 
 class FdGraph {
-private:
-    struct Node {
+public:
+    class Node {
+    private:
+        uint32_t connCount{0};
+
+    public:
         std::string tag;
-        ez::fvec2 position;
-        ez::fvec2 velocity;
-        float radius{1.0};
+        ez::fvec2 pos;
+        ez::fvec2 force;
+        float mass{1.0f};
+        float radius{2.0f};
+
+        void update() {  //
+            if (mass > 0.0f) {
+                pos += force / mass;
+            }
+        }
+        void addConn(const uint32_t vCount = 1U) {  //
+            connCount += vCount;
+            mass = 5.0f * connCount;
+            radius = 2.0f * connCount;
+        }
     };
 
     typedef std::shared_ptr<Node> NodePtr;
@@ -54,53 +70,66 @@ private:
         NodeWeak to;
     };
 
+private:
+
     std::vector<NodePtr> m_nodes;
     std::vector<Link> m_links;
-    float m_repulsionStrength = 100.0f;
-    float m_attractionStrength = 0.1f;
+
+    float m_centralGravityFactor = 1.1f;
+    float m_forceFactor = 1000.0f;
 
 public:
     NodeWeak addNode() {
         auto ptr = std::make_shared<Node>();
-        ptr->position = randomPosition();
+        ptr->pos = randomPosition();
         m_nodes.push_back(ptr);
         return ptr;
     }
 
     void addLink(const NodeWeak& nA, const NodeWeak& nB) {  //
-        m_links.push_back({nA, nB});
+        if (!nA.expired() && !nB.expired()) {
+            m_links.push_back({nA, nB});
+            nA.lock()->addConn();
+            nB.lock()->addConn();
+        }
     }
 
-    void update(float deltaTime) {
-        // Apply repulsion
-        for (auto& node_a_ptr : m_nodes) {
-            for (auto& node_b_ptr : m_nodes) {
-                if (node_a_ptr == node_b_ptr) {
-                    continue;
-                }
+    void setForceFactor(float vFactor = 1000.0f) { m_forceFactor = vFactor; }
+    void setCentralGravityFactor(float vFactor = 1.1f) { m_centralGravityFactor = vFactor; }
 
-                ez::fvec2 diff = node_a_ptr->position - node_b_ptr->position;
-                float distance = diff.length() + 1.0f;  // Avoid division by zero
-                ez::fvec2 repulsionForce = diff.normalize() * (m_repulsionStrength / (distance * distance));
-                node_a_ptr->velocity = node_a_ptr->velocity + repulsionForce * deltaTime;
+    void updateForces(float deltaTime) {
+        // gravity (for let the graph around the center
+        for (const auto& node_ptr : m_nodes) {
+            node_ptr->force = node_ptr->pos * -m_centralGravityFactor * deltaTime;
+        }
+
+        // apply repulsive force between nodes
+        for (const auto& node_a_ptr : m_nodes) {
+            for (const auto& node_b_ptr : m_nodes) {
+                if (node_a_ptr != node_b_ptr) {
+                    auto pos = node_a_ptr->pos;
+                    auto dir = node_b_ptr->pos - node_a_ptr->pos;
+                    auto force = dir * m_forceFactor / ez::dot(dir, dir);
+                    node_a_ptr->force -= force * deltaTime;
+                    node_b_ptr->force += force * deltaTime;
+                }
             }
         }
 
-        // Apply attraction
+        // apply forces applied by connections
         for (const auto& link : m_links) {
-            auto node_from_ptr = link.from.lock();
-            auto node_to_ptr = link.to.lock();
-
-            ez::fvec2 diff = node_to_ptr->position - node_to_ptr->position;
-            ez::fvec2 attractionForce = diff * m_attractionStrength;
-            node_to_ptr->velocity = node_to_ptr->velocity + attractionForce * deltaTime;
-            node_to_ptr->velocity = node_to_ptr->velocity - attractionForce * deltaTime;
+            auto node_a_ptr = link.from.lock();
+            auto node_b_ptr = link.to.lock();
+            if (node_a_ptr != node_b_ptr) {
+                auto div = node_a_ptr->pos - node_b_ptr->pos;
+                node_a_ptr->force -= div * deltaTime;
+                node_b_ptr->force += div * deltaTime;
+            }
         }
 
-        // Update positions
-        for (auto& node_ptr : m_nodes) {
-            node_ptr->position = node_ptr->position + node_ptr->velocity * deltaTime;
-            node_ptr->velocity = node_ptr->velocity * 0.9f;  // Damping
+        // update forces
+        for (const auto& node_ptr : m_nodes) {
+            node_ptr->update();
         }
     }
 
