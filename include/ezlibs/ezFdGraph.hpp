@@ -58,7 +58,7 @@ public:
         void addConn(const uint32_t vCount = 1U) {  //
             connCount += vCount;
             mass = 5.0f * connCount;
-            radius = 2.0f * connCount;
+            radius = 1.1f * connCount;
         }
     };
 
