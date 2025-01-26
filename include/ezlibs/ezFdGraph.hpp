@@ -39,26 +39,48 @@ namespace ez {
 
 class FdGraph {
 public:
-    class Node {
-    private:
-        uint32_t connCount{0};
-
-    public:
-        std::string tag;
+    typedef void* UserDatas;
+    struct NodeDatas {
         ez::fvec2 pos;
         ez::fvec2 force;
         float mass{1.0f};
-        float radius{2.0f};
+        UserDatas userDatas = nullptr;
+        NodeDatas() = default;
+        NodeDatas(const ez::fvec2& vPos, const ez::fvec2& vForce, float vMass) : pos(vPos), force(vForce), mass(vMass) {}
+    };
+    class Node {
+    private:
+        uint32_t connCount{0};
+        std::shared_ptr<NodeDatas> mp_NodeDatas;
 
-        void update() {  //
-            if (mass > 0.0f) {
-                pos += force / mass;
+    public:
+        template <typename T = NodeDatas>
+        explicit Node(const T& vDatas) : mp_NodeDatas(std::make_shared<T>(vDatas)) {
+            static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::FdGraph::NodeDatas");
+        }
+
+        template <typename T = NodeDatas>
+        const T& getDatas() const {
+            // remove the need to use a slow dynamic_cast
+            static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::FdGraph::NodeDatas");
+            return static_cast<const T&>(*mp_NodeDatas);
+        }
+
+        template <typename T = NodeDatas>
+        T& getDatasRef() {
+            // remove the need to use a slow dynamic_cast
+            static_assert(std::is_base_of<NodeDatas, T>::value, "T must derive of ez::FdGraph::NodeDatas");
+            return static_cast<T&>(*mp_NodeDatas);
+        }
+
+        virtual void update() {  //
+            if (getDatas().mass > 0.0f) {
+                getDatasRef().pos += getDatas().force / getDatas().mass;
             }
         }
-        void addConn(const uint32_t vCount = 1U) {  //
+        virtual void addConn(const uint32_t vCount = 1U) {  //
             connCount += vCount;
-            mass = 5.0f * connCount;
-            radius = 1.1f * connCount;
+            getDatasRef().mass = 5.0f * connCount;
         }
     };
 
@@ -75,18 +97,22 @@ private:
     std::vector<NodePtr> m_nodes;
     std::vector<Link> m_links;
 
-    float m_centralGravityFactor = 1.1f;
-    float m_forceFactor = 1000.0f;
+    struct Config {
+        float centralGravityFactor = 1.1f;
+        float forceFactor = 1000.0f;
+    } m_config;
 
 public:
-    NodeWeak addNode() {
-        auto ptr = std::make_shared<Node>();
-        ptr->pos = randomPosition();
+    template <typename T = Node, typename U = NodeDatas>
+    std::weak_ptr<T> addNode(const U& vDatas) {
+        static_assert(std::is_base_of<Node, T>::value, "T must derive of ez::FdGraph::Node");
+        static_assert(std::is_base_of<NodeDatas, U>::value, "U must derive of ez::FdGraph::NodeDatas");
+        auto ptr = std::make_shared<T>(vDatas);
         m_nodes.push_back(ptr);
         return ptr;
     }
 
-    void addLink(const NodeWeak& nA, const NodeWeak& nB) {  //
+     void addLink(const NodeWeak& nA, const NodeWeak& nB) {  //
         if (!nA.expired() && !nB.expired()) {
             m_links.push_back({nA, nB});
             nA.lock()->addConn();
@@ -94,35 +120,35 @@ public:
         }
     }
 
-    void setForceFactor(float vFactor = 1000.0f) { m_forceFactor = vFactor; }
-    void setCentralGravityFactor(float vFactor = 1.1f) { m_centralGravityFactor = vFactor; }
+     const Config& getConfig() const { return m_config; }
+     Config& getConfigRef() { return m_config; }
 
     void updateForces(float deltaTime) {
         // gravity (for let the graph around the center
-        for (const auto& node_ptr : m_nodes) {
-            node_ptr->force = node_ptr->pos * -m_centralGravityFactor * deltaTime;
+        for (auto& node_ptr : m_nodes) {
+            node_ptr->getDatasRef().force = node_ptr->getDatas().pos * -m_config.centralGravityFactor * deltaTime;
         }
 
         // apply repulsive force between nodes
-        for (const auto& node_a_ptr : m_nodes) {
-            for (const auto& node_b_ptr : m_nodes) {
+        for (auto& node_a_ptr : m_nodes) {
+            for (auto& node_b_ptr : m_nodes) {
                 if (node_a_ptr != node_b_ptr) {
-                    auto dir = node_b_ptr->pos - node_a_ptr->pos;
-                    auto force = dir * m_forceFactor / ez::dot(dir, dir);
-                    node_a_ptr->force -= force * deltaTime;
-                    node_b_ptr->force += force * deltaTime;
+                    auto dir = node_b_ptr->getDatas().pos - node_a_ptr->getDatas().pos;
+                    auto force = dir * m_config.forceFactor / ez::dot(dir, dir);
+                    node_a_ptr->getDatasRef().force -= force * deltaTime;
+                    node_b_ptr->getDatasRef().force += force * deltaTime;
                 }
             }
         }
 
         // apply forces applied by connections
-        for (const auto& link : m_links) {
+        for (auto& link : m_links) {
             auto node_a_ptr = link.from.lock();
             auto node_b_ptr = link.to.lock();
             if (node_a_ptr != node_b_ptr) {
-                auto div = node_a_ptr->pos - node_b_ptr->pos;
-                node_a_ptr->force -= div * deltaTime;
-                node_b_ptr->force += div * deltaTime;
+                auto div = node_a_ptr->getDatas().pos - node_b_ptr->getDatas().pos;
+                node_a_ptr->getDatasRef().force -= div * deltaTime;
+                node_b_ptr->getDatasRef().force += div * deltaTime;
             }
         }
 
@@ -133,8 +159,10 @@ public:
     }
 
     const std::vector<NodePtr>& getNodes() const { return m_nodes; }
+    std::vector<NodePtr>& getNodesRef() { return m_nodes; }
 
     const std::vector<Link>& getLinks() const { return m_links; }
+    std::vector<Link>& getLinksRef() { return m_links; }
 
 private:
     ez::fvec2 randomPosition() const { return ez::fvec2(static_cast<float>(rand() % 100), static_cast<float>(rand() % 100)); }

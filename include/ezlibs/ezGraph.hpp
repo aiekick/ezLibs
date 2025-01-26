@@ -138,7 +138,7 @@ struct SlotDatas {
     UserDatas userDatas = nullptr;
     SlotDir dir = SlotDir::INPUT;
     SlotDatas() = default;
-    SlotDatas(std::string vName, std::string vType, const SlotDir vSlotDir, UserDatas vUserDatas = nullptr)
+    SlotDatas(const std::string &vName, const std::string &vType, const SlotDir vSlotDir, UserDatas vUserDatas = nullptr)
         : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas), dir(vSlotDir) {}
 };
 
@@ -246,7 +246,8 @@ struct NodeDatas {
     std::string type;
     UserDatas userDatas = nullptr;
     NodeDatas() = default;
-    NodeDatas(std::string vName, std::string vType, UserDatas vUserDatas = nullptr) : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
+    NodeDatas(const std::string &vName, const std::string &vType, UserDatas vUserDatas = nullptr)
+        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
 };
 
 class Node : public UUID {
@@ -433,7 +434,8 @@ struct GraphDatas {
     std::string type;
     UserDatas userDatas = nullptr;
     GraphDatas() = default;
-    GraphDatas(std::string vName, std::string vType, UserDatas vUserDatas = nullptr) : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
+    GraphDatas(const std::string &vName, const std::string &vType, UserDatas vUserDatas = nullptr)
+        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
 };
 
 class Graph : public UUID {
