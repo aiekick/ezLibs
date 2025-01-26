@@ -107,7 +107,6 @@ public:
         for (const auto& node_a_ptr : m_nodes) {
             for (const auto& node_b_ptr : m_nodes) {
                 if (node_a_ptr != node_b_ptr) {
-                    auto pos = node_a_ptr->pos;
                     auto dir = node_b_ptr->pos - node_a_ptr->pos;
                     auto force = dir * m_forceFactor / ez::dot(dir, dir);
                     node_a_ptr->force -= force * deltaTime;
