@@ -42,7 +42,6 @@ SOFTWARE.
 #pragma comment(lib, "shlwapi.lib")
 #include <direct.h>  // _chdir
 // defines
-#define stat _stat
 #define S_IFDIR _S_IFDIR
 #define GetCurrentDir _getcwd
 #define SetCurrentDir _chdir

@@ -95,7 +95,7 @@ private:
         headerStream >> magicNumber;
         if (magicNumber.substr(0, 5) != "flf2a") {
 #ifdef EZ_TOOLS_LOG
-            LogVarError("Not a valid FIGfont file");
+            LogVarError("%s", "Not a valid FIGfont file");
 #endif  // EZ_TOOLS_LOG
             return false;
         }

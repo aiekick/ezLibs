@@ -44,13 +44,13 @@ public:
         ez::fvec2 pos;
         ez::fvec2 force;
         float mass{1.0f};
+        uint32_t connCount{0};
         UserDatas userDatas = nullptr;
         NodeDatas() = default;
         NodeDatas(const ez::fvec2& vPos, const ez::fvec2& vForce, float vMass) : pos(vPos), force(vForce), mass(vMass) {}
     };
     class Node {
     private:
-        uint32_t connCount{0};
         std::shared_ptr<NodeDatas> mp_NodeDatas;
 
     public:
@@ -79,8 +79,7 @@ public:
             }
         }
         virtual void addConn(const uint32_t vCount = 1U) {  //
-            connCount += vCount;
-            getDatasRef().mass = 5.0f * connCount;
+            getDatasRef().connCount += vCount;
         }
     };
 
