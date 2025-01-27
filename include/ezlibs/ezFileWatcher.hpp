@@ -117,7 +117,7 @@ private:
             return;
         }
 
-        int wd = inotify_add_watch(fd, path_.c_str(), IN_MODIFY);
+        int wd = inotify_add_watch(fd, m_filePathName.c_str(), IN_MODIFY);
         if (wd < 0) {
             std::cerr << "Error: Unable to add watch.\n";
             close(fd);
