@@ -38,7 +38,7 @@ bool TestEzArgs_parsing() {
     return true;
 }
 
-bool TestEzArgs_delimiters() {
+bool TestEzArgs_optional_delimiters() {
     try {
         std::vector<char*> arr{"-s", "sample.txt", "-t=target.txt", "-n:5"};
         ez::Args args("Test");
@@ -79,7 +79,7 @@ bool TestEzArgs_delimiters() {
     return true;
 }
 
-bool TestEzArgs_delimiters_empties() {
+bool TestEzArgs_optional_delimiters_empties() {
     try {
         std::vector<char*> arr{"-s", "-t", "-n"};
         ez::Args args("Test");
@@ -138,7 +138,7 @@ bool TestEzArgs_delimiters_empties() {
     return true;
 }
 
-bool TestEzArgs_groupeds() {
+bool TestEzArgs_optional_groupeds() {
     try {
         std::vector<char*> arr{"cvzf", "sample.txt", "-ff=mode2"};
         ez::Args args("Test");
@@ -155,19 +155,19 @@ bool TestEzArgs_groupeds() {
         if (!args.isPresent("c")) {
             return false;
         }
-        if (args.getValue<std::string>("c") == "sample.txt") {
+        if (args.getValue<std::string>("c") != "") {
             return false;
         }
         if (!args.isPresent("v")) {
             return false;
         }
-        if (args.getValue<std::string>("v") == "sample.txt") {
+        if (args.getValue<std::string>("v") != "") {
             return false;
         }
         if (!args.isPresent("z")) {
             return false;
         }
-        if (args.getValue<std::string>("z") == "sample.txt") {
+        if (args.getValue<std::string>("z") != "") {
             return false;
         }
         if (!args.isPresent("f")) {
@@ -194,6 +194,91 @@ bool TestEzArgs_groupeds() {
     return true;
 }
 
+bool TestEzArgs_positional_0() {
+    try {
+        std::vector<char*> arr{"file1.txt", "file2.xml", "file3.csv"};
+        ez::Args args("Test");
+        args.addArgument("file1").help("file 1");
+        args.addArgument("file2").help("file 2");
+        args.addArgument("file3").help("file 3");
+        if (!args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U)) {
+            return false;
+        }
+        if (!args.hasValue("file1")) {
+            return false;
+        }
+        if (args.getValue<std::string>("file1") != "file1.txt") {
+            return false;
+        }
+        if (!args.hasValue("file2")) {
+            return false;
+        }
+        if (args.getValue<std::string>("file2") != "file2.xml") {
+            return false;
+        }
+        if (!args.hasValue("file3")) {
+            return false;
+        }
+        if (args.getValue<std::string>("file3") != "file3.csv") {
+            return false;
+        }
+    } catch (std::exception&) {
+        return false;
+    }
+    return true;
+}
+
+bool TestEzArgs_positional_optional_0() {
+    try {
+        std::vector<char*> arr{"TestApp", "-cvzf", "project.tar.gz"};
+        ez::Args args("Test");
+        args.addArgument("project").help("project");
+        args.addOptional("c").help("compress");
+        args.addOptional("v").help("verbose");
+        args.addOptional("z").help("gzip");
+        args.addOptional("f").help("file").delimiter(' ');
+        if (!args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U)) {
+            return false;
+        }
+        if (!args.hasValue("project")) {
+            return false;
+        }
+        if (args.getValue<std::string>("project") != "TestApp") {
+            return false;
+        }
+        if (!args.isPresent("c")) {
+            return false;
+        }
+        if (args.getValue<std::string>("c") != "") {
+            return false;
+        }
+        if (!args.isPresent("v")) {
+            return false;
+        }
+        if (args.getValue<std::string>("v") != "") {
+            return false;
+        }
+        if (!args.isPresent("z")) {
+            return false;
+        }
+        if (args.getValue<std::string>("z") != "") {
+            return false;
+        }
+        if (!args.isPresent("f")) {
+            return false;
+        }
+        if (!args.hasValue("f")) {
+            return false;
+        }
+        if (args.getValue<std::string>("f") != "project.tar.gz") {
+            return false;
+        }
+    } catch (std::exception&) {
+        return false;
+    }
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -204,9 +289,11 @@ bool TestEzArgs_groupeds() {
 
 bool TestEzArgs(const std::string& vTest) {
     IfTestExist(TestEzArgs_parsing);
-    else IfTestExist(TestEzArgs_delimiters);
-    else IfTestExist(TestEzArgs_delimiters_empties);
-    else IfTestExist(TestEzArgs_groupeds);
+    else IfTestExist(TestEzArgs_optional_delimiters);
+    else IfTestExist(TestEzArgs_optional_delimiters_empties);
+    else IfTestExist(TestEzArgs_optional_groupeds);
+    else IfTestExist(TestEzArgs_positional_0);
+    else IfTestExist(TestEzArgs_positional_optional_0);
     return false;
 }
 
