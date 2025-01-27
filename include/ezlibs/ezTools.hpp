@@ -79,11 +79,15 @@ namespace ez {
 namespace ez {
 
 // https://www.shadertoy.com/view/ld3fzf
-inline fvec4 getRainBowColor(const int32_t& vIdx, const int32_t& vCount) {
-    float r = (float)(vIdx + 1U) / (float)vCount;
-    auto c = cos(fvec4(0.0f, 23.0f, 21.0f, 1.0f) + r * 6.3f) * 0.5f + 0.5f;
+inline fvec4 getRainBowColor(float vRatio) {
+    auto c = cos(fvec4(0.0f, 23.0f, 21.0f, 1.0f) + vRatio * 6.3f) * 0.5f + 0.5f;
     c.w = 0.75f;
     return c;
+}
+
+inline fvec4 getRainBowColor(int32_t vIdx,  int32_t vCount) {
+    float r = (float)(vIdx + 1U) / (float)vCount;
+    return getRainBowColor(r);
 }
 
 }  // namespace ez
