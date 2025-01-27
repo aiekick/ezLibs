@@ -128,7 +128,7 @@ private:
         while (m_running) {
             int length = read(fd, buffer.data(), buffer.size());
             if (length > 0) {
-                m_callback();
+            //    m_callback();
             }
         }
 
