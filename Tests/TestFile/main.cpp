@@ -1,6 +1,7 @@
 #include <TestEzBmp.h>
 #include <TestEzGif.h>
 #include <TestEzPng.h>
+#include <TestEzSvg.h>
 #include <TestEzVdbWriter.h>
 #include <TestEzVoxWriter.h>
 #include <TestEzXmlConfig.h>
@@ -20,6 +21,7 @@ bool TestFile(const std::string& vTest) {
     IfTestCollectionExist(TestEzBmp);
     else IfTestCollectionExist(TestEzGif);
     else IfTestCollectionExist(TestEzPng);
+    else IfTestCollectionExist(TestEzSvg);
     else IfTestCollectionExist(TestEzVdbWriter);
     else IfTestCollectionExist(TestEzVoxWriter);
     else IfTestCollectionExist(TestEzXmlConfig);
