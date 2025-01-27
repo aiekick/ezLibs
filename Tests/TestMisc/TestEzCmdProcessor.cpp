@@ -37,14 +37,12 @@ bool TestEzCmdProcessor_Basis() {
     ez::CmdProcessor cmdProc;
 
     // registering
-    Cmd lambdaAttendeeCmd;
     ez::CmdProcessor::Command lambdaCmd;
     ez::CmdProcessor::Arguments lambdaArgs;
     for (const auto& cmd : good_commands) {
-        lambdaAttendeeCmd = cmd;
         auto cmdRegistered = cmdProc.registerCmd(
             cmd.cmd,  //
-            [this](const ez::CmdProcessor::Command& vCmd, const ez::CmdProcessor::Arguments& vArgs) {
+            [&lambdaCmd, &lambdaArgs](const ez::CmdProcessor::Command& vCmd, const ez::CmdProcessor::Arguments& vArgs) {
                 lambdaCmd = vCmd;
                 lambdaArgs = vArgs;
             });
@@ -75,8 +73,9 @@ bool TestEzCmdProcessor_Basis() {
     CTEST_ASSERT_MESSAGE(cmdProc.encode("toto", {"eee", "tete"}, 'e').empty(), "Cmd 'toto' failing to encode since delimiter is rpesent in some args ?");
     
     // decoding command
+    size_t idx = 0;
     for (const auto& processedCmd : processedCommands) {
-        lambdaAttendeeCmd={};
+        Cmd lambdaAttendeeCmd = good_commands.at(idx++);
         lambdaCmd.clear();
         lambdaArgs.clear();
         CTEST_ASSERT_MESSAGE(cmdProc.decode(processedCmd), "Cmd decoded ?");
