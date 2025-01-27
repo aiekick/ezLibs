@@ -313,6 +313,7 @@ namespace ez {
                         auto &positional = m_Positionals.at(positional_idx);
                         positional.m_value = arg;
                         positional.m_has_value = true;
+                        ++positional_idx;
                     }
                 }
             }
