@@ -37,15 +37,14 @@ bool TestEzCmdProcessor_Basis() {
     ez::CmdProcessor cmdProc;
 
     // registering
+    ez::CmdProcessor::Command lambdaCmd;
+    ez::CmdProcessor::Arguments lambdaArgs;
     for (const auto& cmd : good_commands) {
         auto cmdRegistered = cmdProc.registerCmd(
             cmd.cmd,  //
             [=](const ez::CmdProcessor::Command& vCmd, const ez::CmdProcessor::Arguments& vArgs) {
-                CTEST_ASSERT_MESSAGE(vCmd == cmd.cmd, "Cmd is the good one ?");
-                CTEST_ASSERT_MESSAGE(vArgs.size() == cmd.args.size(), "Cmd args have the good count ?");
-                for (size_t idx = 0; idx < vArgs.size(); ++idx) {
-                    CTEST_ASSERT_MESSAGE(vArgs.at(idx) == cmd.args.at(idx), "same arg at same index ?");
-                }
+                lambdaCmd = vCmd;
+                lambdaArgs = vArgs;
             });
         CTEST_ASSERT_MESSAGE(cmdRegistered, "Cmd Registered ?");
     }
@@ -75,7 +74,15 @@ bool TestEzCmdProcessor_Basis() {
     
     // decoding command
     for (const auto& processedCmd : processedCommands) {
+        lambdaCmd.clear();
+        lambdaArgs.clear();
         CTEST_ASSERT_MESSAGE(cmdProc.decode(processedCmd), "Cmd decoded ?");
+        // lambdaCmd and lambdaArgs are filled by the lambda called by cmdProc.decode
+        CTEST_ASSERT_MESSAGE(lambdaCmd == cmd.cmd, "Cmd is the good one ?");
+        CTEST_ASSERT_MESSAGE(lambdaArgs.size() == cmd.args.size(), "Cmd args have the good count ?");
+        for (size_t idx = 0; idx < lambdaArgs.size(); ++idx) {
+            CTEST_ASSERT_MESSAGE(lambdaArgs.at(idx) == cmd.args.at(idx), "same arg at same index ?");
+        }
     }
     
     // un registering
