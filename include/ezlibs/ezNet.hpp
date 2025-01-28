@@ -26,13 +26,15 @@ SOFTWARE.
 
 // ezNet is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
+#include "ezOS.hpp"
+
 #include <iostream>
 #include <memory>
 #include <vector>
 #include <string>
 #include <cmath>
 
-#ifdef _WIN32
+#ifdef WINDOWS_OS
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <Windows.h>
@@ -64,7 +66,7 @@ private:
         enum class Protocol { TCP, UDP };
 
         Net() : m_socketFileDescriptor(-1) {
-#ifdef _WIN32
+#ifdef WINDOWS_OS
             WSADATA wsaData;
             if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
                 throw std::runtime_error("Failed to initialize Winsock.");
@@ -74,7 +76,7 @@ private:
 
         ~Net() {
             closeSocket();
-#ifdef _WIN32
+#ifdef WINDOWS_OS
             WSACleanup();
 #endif
         }
@@ -147,7 +149,7 @@ private:
 
         void closeSocket() {
             if (m_socketFileDescriptor != -1) {
-#ifdef _WIN32
+#ifdef WINDOWS_OS
                 closesocket(m_socketFileDescriptor);
 #else
                 close(m_socketFileDescriptor);

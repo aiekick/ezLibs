@@ -26,6 +26,8 @@ SOFTWARE.
 
 // ezNamedPipes is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
+#include "ezOS.hpp"
+
 #include <vector>
 #include <string>
 #include <cstdint>
@@ -33,7 +35,7 @@ SOFTWARE.
 #include <stdexcept>
 #include <iostream>
 
-#ifdef _WIN32
+#ifdef WINDOWS_OS
 #include <Windows.h>
 #else
 #include <sys/types.h>
@@ -53,7 +55,7 @@ public:
 public:
     static std::vector<std::string> getActivePipes() {
         std::vector<std::string> pipeNames;
-#ifdef _WIN32
+#ifdef WINDOWS_OS
         char buffer[4096];
 
         // Buffer pour les résultats
@@ -99,7 +101,7 @@ private:
         std::vector<char> m_buffer;
         std::string m_pipeName;
         bool m_isServer{};
-#ifdef _WIN32
+#ifdef WINDOWS_OS
         HANDLE m_pipeHandle = INVALID_HANDLE_VALUE;
 #else
         int32_t m_pipeFd = -1;
@@ -109,7 +111,7 @@ private:
         virtual ~Backend() { unit(); }
 
         void unit() {
-#ifdef _WIN32
+#ifdef WINDOWS_OS
             if (m_pipeHandle != INVALID_HANDLE_VALUE) {
                 CloseHandle(m_pipeHandle);
             }
@@ -126,7 +128,7 @@ private:
         }
 
         bool writeBuffer(const DatasBuffer& vMessage) {
-#ifdef _WIN32
+#ifdef WINDOWS_OS
             DWORD bytesWritten;
             if (!WriteFile(m_pipeHandle, vMessage.data(), vMessage.size(), &bytesWritten, nullptr)) {
                 return false;
@@ -149,7 +151,7 @@ private:
         }
 
         bool isMessageReceived() {
-#ifdef _WIN32
+#ifdef WINDOWS_OS
             DWORD bytesRead;
             if (ReadFile(m_pipeHandle, m_buffer.data(), m_buffer.size(), &bytesRead, nullptr) == TRUE) {
                 m_lastMessageSize = bytesRead;
@@ -182,7 +184,7 @@ private:
         bool m_initServer(const std::string& vPipeName, size_t vBufferSize, int32_t vMaxInstances = 1) {
             m_isServer = true;
             m_buffer.resize(vBufferSize);
-#ifdef _WIN32
+#ifdef WINDOWS_OS
             m_pipeName = "\\\\.\\pipe\\" + vPipeName;
             m_pipeHandle = CreateNamedPipe(  //
                 m_pipeName.c_str(),
@@ -216,7 +218,7 @@ private:
 #endif
         ) {
             m_isServer = false;
-#ifdef _WIN32
+#ifdef WINDOWS_OS
             m_pipeName = "\\\\.\\pipe\\" + vPipeName;
 #ifdef EZ_TIME
             const auto start = ez::time::getTicks();

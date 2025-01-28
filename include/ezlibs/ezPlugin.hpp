@@ -26,6 +26,8 @@ SOFTWARE.
 
 // ezDll is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
+#include "ezOS.hpp"
+
 #include <fstream>
 #include <iterator>
 #include <sstream>
@@ -36,7 +38,7 @@ SOFTWARE.
 
 #include "ezLog.hpp"
 
-#ifdef WIN32
+#ifdef WINDOWS_OS
 #include "Windows.h"
 #else
 #include <dlfcn.h>
@@ -47,11 +49,11 @@ namespace ez::plugin {
 template <class T>
 class Loader {
 private:
-#ifdef WIN32
+#ifdef WINDOWS_OS
     HMODULE _handle = nullptr;
 #else // UNIX
     void *_handle = nullptr;
-#endif // WIN32 / UNIX
+#endif // WINDOWS_OS / UNIX
 
     std::string _pathToLib;
     std::string _allocClassSymbol;
@@ -69,7 +71,7 @@ public:
     bool isAPlugin() const  { return _isAPlugin; }
 
     void dlOpenLib() {
-#ifdef WIN32
+#ifdef WINDOWS_OS
         _handle = LoadLibraryExA(
             _pathToLib.c_str(),
             NULL,  //
@@ -87,20 +89,20 @@ public:
         if (!isValid()) {
             LogVarError("%s", dlerror());
         }
-#endif  // WIN32 / UNIX
+#endif  // WINDOWS_OS / UNIX
     }
 
     std::shared_ptr<T> dlGetInstance() {
         using allocClass = T *(*)();
         using deleteClass = void (*)(T *);
         if (isValid()) {
-#ifdef WIN32
+#ifdef WINDOWS_OS
             auto allocFunc = reinterpret_cast<allocClass>(GetProcAddress(_handle, _allocClassSymbol.c_str()));
             auto deleteFunc = reinterpret_cast<deleteClass>(GetProcAddress(_handle, _deleteClassSymbol.c_str()));
 #else  // UNIX
             auto allocFunc = reinterpret_cast<allocClass>(dlsym(_handle, _allocClassSymbol.c_str()));
             auto deleteFunc = reinterpret_cast<deleteClass>(dlsym(_handle, _deleteClassSymbol.c_str()));
-#endif  // WIN32 / UNIX
+#endif  // WINDOWS_OS / UNIX
             if (!allocFunc || !deleteFunc) {
                 _isAPlugin = false;
                 dlCloseLib();
@@ -113,18 +115,18 @@ public:
     }
 
     void dlCloseLib() {
-#ifdef WIN32
+#ifdef WINDOWS_OS
         if (isValid() && (FreeLibrary(_handle) == 0)) {
 #else  // UNIX
         if (isValid() && (dlclose(_handle) != 0)) {
-#endif  // WIN32 / UNIX
+#endif  // WINDOWS_OS / UNIX
         // LogVarDebugError("Can't close %s", _pathToLib.c_str());
         }
     }
 };
 
 inline std::string getDLLExtention() {
-#ifdef WIN32
+#ifdef WINDOWS_OS
     return "dll";
 #elif defined(__linux__)
     return "so";

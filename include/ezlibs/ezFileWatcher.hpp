@@ -26,6 +26,8 @@ SOFTWARE.
 
 // ezFileWatcher is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
+#include "ezOS.hpp"
+
 #include <array>
 #include <vector>
 #include <string>
@@ -34,9 +36,9 @@ SOFTWARE.
 #include <iostream>
 #include <functional>
 
-#if defined(_WIN32)
+#ifdef WINDOWS_OS
 #include <windows.h>
-#elif defined(__unix__) || defined(__APPLE__)
+#elif defined(UNIX_OS)
 #include <sys/inotify.h>
 #include <unistd.h>
 #else
@@ -70,7 +72,7 @@ public:
         }
         m_running = true;
 
-#if defined(_WIN32)
+#if defined(WINDOWS_OS)
         m_thread = std::thread(&FileWatcher::watchWindows, this);
 #else
         m_thread = std::thread(&FileWatcher::watchUnix, this);
@@ -88,7 +90,7 @@ public:
     }
 
 private:
-#if defined(_WIN32)
+#if defined(WINDOWS_OS)
     void watchWindows() {
         auto hDir = CreateFile(
             m_filePathName.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);

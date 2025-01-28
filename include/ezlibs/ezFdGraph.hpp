@@ -114,13 +114,6 @@ public:
         const NodeWeak& getToNode() const { return m_to; }
     };
 
-public:
-    static ez::fvec2 randomPosition() {  //
-        return ez::fvec2(
-            static_cast<float>(rand() % 100),  //
-            static_cast<float>(rand() % 100));
-    }
-
 private:
     std::vector<NodePtr> m_nodes;
     std::vector<Link> m_links;

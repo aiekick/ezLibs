@@ -1,7 +1,7 @@
 #include <TestEzNamedPipe.h>
+#include <ezlibs/ezOS.hpp>
 #include <ezlibs/ezNamedPipe.hpp>
 #include <ezlibs/ezCTest.hpp>
-
 #include <thread>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ bool TestEzNamedPipeBasis() {
     CTEST_ASSERT_MESSAGE(serverPtr->readString() == message1, "the message is the good one");
     serverPtr->unit(); // destroying the pipe
     const std::string message2 = "GOODBYE OR YOU ARE ALREADY SLEEPING";
-#ifdef _WIN32
+#ifdef WINDOWS_OS
     // on windows the client can send nothing if the server is not joinable
     CTEST_ASSERT_MESSAGE(!clientPtr->writeString(message2), "client sending failed ?");
 #else

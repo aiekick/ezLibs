@@ -25,7 +25,6 @@ SOFTWARE.
 */
 
 // ezFile is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
-// ezFile is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <fstream>
 #include <iterator>

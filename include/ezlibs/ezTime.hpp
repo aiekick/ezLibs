@@ -26,6 +26,8 @@ SOFTWARE.
 
 // ezTime is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
+#include "ezOS.hpp"
+
 #include <ctime>
 #include <string>
 #include <chrono>
@@ -50,7 +52,7 @@ inline bool iso8601ToEpoch(const std::string& vIsoDateTime, const std::string& v
             time.tm_hour = 0;
             time.tm_min = 0;
             time.tm_sec = 0;
-#ifdef _WIN32
+#ifdef WINDOWS_OS
             vOutTime = _mkgmtime(&time);
 #else
             vOutTime = timegm(&time);
