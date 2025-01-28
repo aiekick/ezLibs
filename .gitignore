@@ -41,3 +41,4 @@
 /*.vox
 /.vscode
 /TestResults
+/*.gcov

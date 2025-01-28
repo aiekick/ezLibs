@@ -73,11 +73,11 @@ if (USE_CODE_COVERAGE)
 	add_custom_target(cov DEPENDS ${COVERAGE_WEB_PAGE} ${COVERAGE_XML})
 	add_custom_command(
 		OUTPUT ${COVERAGE_WEB_PAGE}
-		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --exclude-unreachable-branches --exclude-throw-branches --exclude-noncode-lines --html-single-page --html-details ${COVERAGE_WEB_PAGE}
+		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --decisions --calls --exclude-unreachable-branches --exclude-throw-branches --exclude-noncode-lines --html-single-page --html-details ${COVERAGE_WEB_PAGE}
 	)
 	add_custom_command(
 		OUTPUT ${COVERAGE_XML}
-		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --exclude-unreachable-branches --exclude-throw-branches --exclude-noncode-lines --cobertura > ${COVERAGE_XML}
+		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --decisions --calls --exclude-unreachable-branches --exclude-throw-branches --exclude-noncode-lines --cobertura > ${COVERAGE_XML}
 	)
 	set_directory_properties(PROPERTIES
 		ADDITIONAL_CLEAN_FILES ${COVERAGE_WEB_PAGE}
