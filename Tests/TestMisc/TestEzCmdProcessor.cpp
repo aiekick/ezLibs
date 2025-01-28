@@ -2,6 +2,7 @@
 #include <ezlibs/ezCmdProcessor.hpp>
 #include <ezlibs/ezCTest.hpp>
 #include <string>
+#include <utility>
 
 // Desactivation des warnings de conversion
 #ifdef _MSC_VER
@@ -23,15 +24,20 @@ struct Cmd {
     ez::CmdProcessor::Arguments args;
     ez::CmdProcessor::ProcessedCommand processed;
     char delimiter{';'};
+    Cmd(ez::CmdProcessor::Command  cmd,
+        ez::CmdProcessor::Arguments  args,
+        ez::CmdProcessor::ProcessedCommand  processed,
+        char delimiter = ';')
+        : cmd(std::move(cmd)), args(std::move(args)), processed(std::move(processed)), delimiter(delimiter) {}
 };
 
 bool TestEzCmdProcessor_Basis() {
     std::vector<Cmd> good_commands{
-        Cmd{"ManyArgsCmd", {"23.5", "50.6", "0.8", "0.9", "0.7", "1.0"}, "ManyArgsCmd(;23.5;50.6;0.8;0.9;0.7;1.0)", ';'},
-        Cmd{"ManyArgsCmd2", {"120.6", "100.75"}, "ManyArgsCmd2(@120.6@100.75)", '@'},
-        Cmd{"ManyEmptyArgsCmd", {"", "", ""}, "ManyEmptyArgsCmd(%%%)",'%'},
-        Cmd{"OneArgCmd", {"120.6"}, "OneArgCmd(120.6)"},
-        Cmd{"NoArgCmd", {}, "NoArgCmd()"},
+        Cmd("ManyArgsCmd", {"23.5", "50.6", "0.8", "0.9", "0.7", "1.0"}, "ManyArgsCmd(;23.5;50.6;0.8;0.9;0.7;1.0)", ';'),
+        Cmd("ManyArgsCmd2", {"120.6", "100.75"}, "ManyArgsCmd2(@120.6@100.75)", '@'),
+        Cmd("ManyEmptyArgsCmd", {"", "", ""}, "ManyEmptyArgsCmd(%%%)",'%'),
+        Cmd("OneArgCmd", {"120.6"}, "OneArgCmd(120.6)"),
+        Cmd("NoArgCmd", {}, "NoArgCmd()")
     };
 
     ez::CmdProcessor cmdProc;

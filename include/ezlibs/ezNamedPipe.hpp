@@ -75,7 +75,7 @@ public:
         DIR* dir = opendir(directory.c_str());
         if (dir) {
             struct dirent* entry;
-            struct stat fileStat;
+            struct stat fileStat{};
             while ((entry = readdir(dir)) != nullptr) {
                 std::string fullPath = directory + "/" + entry->d_name;
                 if (stat(fullPath.c_str(), &fileStat) == -1) {
@@ -98,7 +98,7 @@ private:
         size_t m_lastMessageSize{0};
         std::vector<char> m_buffer;
         std::string m_pipeName;
-        bool m_isServer;
+        bool m_isServer{};
 #ifdef _WIN32
         HANDLE m_pipeHandle = INVALID_HANDLE_VALUE;
 #else

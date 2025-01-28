@@ -35,7 +35,13 @@ bool TestEzNamedPipeBasis() {
     CTEST_ASSERT_MESSAGE(serverPtr->readString() == message1, "the message is the good one");
     serverPtr->unit(); // destroying the pipe
     const std::string message2 = "GOODBYE OR YOU ARE ALREADY SLEEPING";
-    CTEST_ASSERT_MESSAGE(!clientPtr->writeString(message2), "client sending failed ?"); // the message will be send on a destroyed pipe
+#ifdef _WIN32
+    // on windows the client can send nothing if the server is not joinable
+    CTEST_ASSERT_MESSAGE(!clientPtr->writeString(message2), "client sending failed ?");
+#else
+    // but on linux we can always send even if the server is not joinable
+    CTEST_ASSERT_MESSAGE(clientPtr->writeString(message2), "client sending failed ?");
+#endif
     CTEST_ASSERT_MESSAGE(!serverPtr->isMessageReceived(), "server received nothing ?");
     CTEST_ASSERT_MESSAGE(serverPtr->readString() == message1, "server message is the oldest ?");
     clientPtr->unit(); // destroying the client
