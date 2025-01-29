@@ -131,30 +131,38 @@ bool TestEzXmlParsingNOK_1() {
 }
 
 bool TestEzXmlWriting_1() {
-    /*
- <config>
-	<!-- Comment 1 -->
-    <NumberOneLine>60</NumberOneLine>
-    <Tests>
-	    <!-- Comment 2 -->
-        <Test name="test1" number="50"/>
-        <Test name ="test2" number="100"/>
-        <Test name= "test3" number="150"/>
-        <Test name = "test4" number="200">
-            <SubTest name="subTest1" number="250"/>
-            <SubTest name="subTest2" number="300"/>
-        </Test>
-    </Tests>
-</config>
-     */
-    ez::xml::Node node("test");
-    node.setName("config");
-    node.addChild("<!-- Comment 1 -->");
-    node.addChild("NumberOneLine").setContent(60);
-    auto &testsNode = node.addChild("Tests");
-    testsNode.addChild("<!-- Comment 2 -->");
+    ez::xml::Node configNode("test");
+    configNode.setName("config");
+    configNode.addComment("Comment 1");
+    configNode.addChild("NumberOneLine").setContent(60);
+    auto &testsNode = configNode.addChild("Tests");
+    testsNode.addComment("Comment 2");
     testsNode.addChild("Test").addAttribute("name", "test1").addAttribute("number") << 50;
+    testsNode.addChild("Test").addAttribute("name", "test2").addAttribute("number") << 100;
+    testsNode.addChild("Test").addAttribute("name", "test3").addAttribute("number") << 150;
+    auto &subNode = testsNode.addChild("Test");
+    subNode.addAttribute("name", "test4").addAttribute("number") << 200;
+    subNode.addChild("SubTest").addAttribute("name", "subTest1").addAttribute("number") << 250;
+    subNode.addChild("SubTest").addAttribute("name", "subTest2").addAttribute("number") << 300;
 
+    const auto result = configNode.dump();
+    const auto expected = u8R"(<config>
+  <!-- Comment 1 -->
+  <NumberOneLine>60</NumberOneLine>
+  <Tests>
+    <!-- Comment 2 -->
+    <Test name="test1" number="50"/>
+    <Test name="test2" number="100"/>
+    <Test name="test3" number="150"/>
+    <Test name="test4" number="200">
+      <SubTest name="subTest1" number="250"/>
+      <SubTest name="subTest2" number="300"/>
+    </Test>
+  </Tests>
+</config>
+)";
+
+    CTEST_ASSERT(result == expected);
     return true;
 }
 

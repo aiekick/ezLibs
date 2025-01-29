@@ -141,6 +141,12 @@ namespace ez {
                 return addChild(node);
             }
 
+            Node &addComment(const std::string &vComment) {
+                Node node;
+                node.setContent(vComment).m_setType(Type::Comment);
+                return addChild(node);
+            }
+
             Node *getChild(const std::string &vName) {
                 for (auto &child: m_children) {
                     if (child.m_name == vName) {
@@ -232,6 +238,8 @@ namespace ez {
                     for (const auto &attr: vNode.m_attributes) {
                         oss << " " << attr.first << "=\"" << xml::Node::unEscapeXml(attr.second.getValue()) << "\"";
                     }
+                } else {
+                    oss << "<!-- ";
                 }
 
                 const auto &content = vNode.getContent();
@@ -247,7 +255,7 @@ namespace ez {
                         oss << xml::Node::unEscapeXml(content);
                     }
                     if (vNode.m_getType() == xml::Node::Type::Comment) {
-                        oss << std::endl;
+                        oss << " -->" << std::endl;
                     }
                     if (!children.empty()) {
                         oss << std::endl;
