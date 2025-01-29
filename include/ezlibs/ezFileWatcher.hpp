@@ -38,9 +38,11 @@ SOFTWARE.
 
 #ifdef WINDOWS_OS
 #include <windows.h>
-#elif defined(UNIX_OS)
+#elif defined(LINUX_OS)
 #include <sys/inotify.h>
 #include <unistd.h>
+#elif defined(MAC_OS)
+#include <CoreServices/CoreServices.h>
 #else
 #error "Platform not supported"
 #endif
@@ -49,7 +51,7 @@ namespace ez {
 
 class FileWatcher {
 public:
-    using Callback = std::function<void(const std::vector<std::string>& vFiles)>;
+    using Callback = std::function<void(const std::vector<std::string>&)>;
 
 private:
     std::string m_filePathName;
@@ -67,22 +69,22 @@ public:
     }
 
     void start() {
-        if (m_running) {
+        if (m_running)
             return;
-        }
         m_running = true;
 
-#if defined(WINDOWS_OS)
+#ifdef _WIN32
         m_thread = std::thread(&FileWatcher::watchWindows, this);
-#else
-        m_thread = std::thread(&FileWatcher::watchUnix, this);
+#elif defined(LINUX_OS)
+        m_thread = std::thread(&FileWatcher::watchLinux, this);
+#elif defined(MAC_OS)
+        m_thread = std::thread(&FileWatcher::watchMacOS, this);
 #endif
     }
 
     void stop() {
-        if (!m_running) {
+        if (!m_running)
             return;
-        }
         m_running = false;
         if (m_thread.joinable()) {
             m_thread.join();
@@ -90,10 +92,18 @@ public:
     }
 
 private:
-#if defined(WINDOWS_OS)
+#ifdef _WIN32
     void watchWindows() {
         auto hDir = CreateFile(
-            m_filePathName.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+            m_filePathName.c_str(),
+            FILE_LIST_DIRECTORY,
+            FILE_SHARE_READ |  //
+                FILE_SHARE_WRITE |  //
+                FILE_SHARE_DELETE,
+            NULL,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS,
+            NULL);
 
         if (hDir == INVALID_HANDLE_VALUE) {
             std::cerr << "Error: Unable to open directory.\n";
@@ -105,14 +115,18 @@ private:
 
         while (m_running) {
             if (ReadDirectoryChangesW(hDir, buffer.data(), buffer.size(), TRUE, FILE_NOTIFY_CHANGE_LAST_WRITE, &bytesReturned, NULL, NULL)) {
-             //   m_callback();
+                // Exécuter le callback
+                if (m_callback) {
+                    m_callback({m_filePathName});
+                }
             }
         }
 
         CloseHandle(hDir);
     }
-#else
-    void watchUnix() {
+
+#elif defined(LINUX_OS)
+    void watchLinux() {
         int fd = inotify_init();
         if (fd < 0) {
             std::cerr << "Error: Unable to initialize inotify.\n";
@@ -130,12 +144,66 @@ private:
         while (m_running) {
             int length = read(fd, buffer.data(), buffer.size());
             if (length > 0) {
-            //    m_callback();
+                if (m_callback) {
+                    m_callback({m_filePathName});
+                }
             }
         }
 
         inotify_rm_watch(fd, wd);
         close(fd);
+    }
+
+#elif defined(MAC_OS)
+    static void fileChangedCallback(
+        ConstFSEventStreamRef streamRef,
+        void* userData,
+        size_t numEvents,
+        void* eventPaths,
+        const FSEventStreamEventFlags* eventFlags,
+        const FSEventStreamEventId* eventIds) {
+        auto* watcher = static_cast<FileWatcher*>(userData);
+        if (!watcher->m_running)
+            return;
+
+        char** paths = static_cast<char**>(eventPaths);
+        std::vector<std::string> changedFiles;
+        for (size_t i = 0; i < numEvents; i++) {
+            changedFiles.emplace_back(paths[i]);
+        }
+
+        if (watcher->m_callback) {
+            watcher->m_callback(changedFiles);
+        }
+    }
+
+    void watchMacOS() {
+        CFStringRef path = CFStringCreateWithCString(NULL, m_filePathName.c_str(), kCFStringEncodingUTF8);
+        CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void**)&path, 1, NULL);
+
+        FSEventStreamContext context = {0, this, NULL, NULL, NULL};
+        FSEventStreamRef stream =
+            FSEventStreamCreate(NULL, &fileChangedCallback, &context, pathsToWatch, kFSEventStreamEventIdSinceNow, 0.5, kFSEventStreamCreateFlagNone);
+
+        if (!stream) {
+            std::cerr << "Error: Unable to create FSEventStream.\n";
+            CFRelease(path);
+            CFRelease(pathsToWatch);
+            return;
+        }
+
+        FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        FSEventStreamStart(stream);
+
+        while (m_running) {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.5, true);
+        }
+
+        FSEventStreamStop(stream);
+        FSEventStreamInvalidate(stream);
+        FSEventStreamRelease(stream);
+        CFRelease(path);
+        CFRelease(pathsToWatch);
     }
 #endif
 };
