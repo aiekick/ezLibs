@@ -1,5 +1,6 @@
 #include <TestEzXml.h>
 #include <ezlibs/ezXml.hpp>
+#include <ezlibs/ezCTest.hpp>
 
 #include <iostream>
 #include <string>
@@ -20,8 +21,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 bool TestEzXmlParsingOK() {
-    const auto& doc =
-        u8R"(
+    const auto &doc =
+            u8R"(
  < config > 
 	<!-- Comment 1 -->
     <NumberOneLine>60</NumberOneLine>
@@ -43,12 +44,12 @@ bool TestEzXmlParsingOK() {
     std::cout << xml.dump() << std::endl;
     if (xml.getRoot().getChildren().empty())
         return false;
-    const auto& rootChildrens = xml.getRoot().getChildren();
+    const auto &rootChildrens = xml.getRoot().getChildren();
     if (rootChildrens.size() != 1U)
         return false;
     if (rootChildrens[0].getName() != "config")
         return false;
-    const auto& configChildrens = rootChildrens[0].getChildren();
+    const auto &configChildrens = rootChildrens[0].getChildren();
     if (configChildrens.size() != 3U)
         return false;
     if (configChildrens[0].getContent() != "<!-- Comment 1 -->")
@@ -59,12 +60,16 @@ bool TestEzXmlParsingOK() {
         return false;
     if (configChildrens[2].getName() != "Tests")
         return false;
-    const auto& testsChildrens = configChildrens[2].getChildren();
+    const auto &testsChildrens = configChildrens[2].getChildren();
     if (testsChildrens.size() != 5U)
         return false;
     if (testsChildrens[0].getContent() != "<!-- Comment 2 -->")
         return false;
     if (testsChildrens[1].getName() != "Test")
+        return false;
+    if (testsChildrens[1].getParentNodeName() != "Tests")
+        return false;
+    if (!testsChildrens[1].isAttributeExist("name"))
         return false;
     if (testsChildrens[1].getAttribute("name") != "test1")
         return false;
@@ -82,7 +87,7 @@ bool TestEzXmlParsingOK() {
         return false;
     if (testsChildrens[4].getAttribute("number") != "200")
         return false;
-    const auto& test4Childrens = testsChildrens[4].getChildren();
+    const auto &test4Childrens = testsChildrens[4].getChildren();
     if (test4Childrens.size() != 2U)
         return false;
     if (test4Childrens[0].getAttribute("name") != "subTest1")
@@ -98,8 +103,8 @@ bool TestEzXmlParsingOK() {
 
 // all attributes value must be some strings
 bool TestEzXmlParsingNOK_0() {
-    const auto& doc =
-        u8R"(
+    const auto &doc =
+            u8R"(
 <config>
     <Test name="test1" number=5/>
 </config>
@@ -113,8 +118,8 @@ bool TestEzXmlParsingNOK_0() {
 
 // to tag end
 bool TestEzXmlParsingNOK_1() {
-    const auto& doc =
-        u8R"(
+    const auto &doc =
+            u8R"(
 <config>
 <config>
 )";
@@ -122,6 +127,34 @@ bool TestEzXmlParsingNOK_1() {
     if (!xml.parseString(doc))
         return false;
     std::cout << xml.dump() << std::endl;
+    return true;
+}
+
+bool TestEzXmlWriting_1() {
+    /*
+ <config>
+	<!-- Comment 1 -->
+    <NumberOneLine>60</NumberOneLine>
+    <Tests>
+	    <!-- Comment 2 -->
+        <Test name="test1" number="50"/>
+        <Test name ="test2" number="100"/>
+        <Test name= "test3" number="150"/>
+        <Test name = "test4" number="200">
+            <SubTest name="subTest1" number="250"/>
+            <SubTest name="subTest2" number="300"/>
+        </Test>
+    </Tests>
+</config>
+     */
+    ez::xml::Node node("test");
+    node.setName("config");
+    node.addChild("<!-- Comment 1 -->");
+    node.addChild("NumberOneLine").setContent(60);
+    auto &testsNode = node.addChild("Tests");
+    testsNode.addChild("<!-- Comment 2 -->");
+    testsNode.addChild("Test").addAttribute("name", "test1").addAttribute("number") << 50;
+
     return true;
 }
 
@@ -133,10 +166,11 @@ bool TestEzXmlParsingNOK_1() {
     if (vTest == std::string(#v)) \
     return v()
 
-bool TestEzXml(const std::string& vTest) {
+bool TestEzXml(const std::string &vTest) {
     IfTestExist(TestEzXmlParsingOK);
     else IfTestExist(TestEzXmlParsingNOK_0);
     else IfTestExist(TestEzXmlParsingNOK_1);
+    else IfTestExist(TestEzXmlWriting_1);
     return false;
 }
 
