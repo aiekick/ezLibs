@@ -131,11 +131,12 @@ bool TestEzXmlParsingNOK_1() {
 }
 
 bool TestEzXmlWriting_1() {
-    ez::xml::Node configNode("test");
-    configNode.setName("config");
-    configNode.addComment("Comment 1");
-    configNode.addChild("NumberOneLine").setContent(60);
-    auto &testsNode = configNode.addChild("Tests");
+    ez::Xml xml("test");
+    auto &rootNode = xml.getRoot();
+    rootNode.setName("config");
+    rootNode.addComment("Comment 1");
+    rootNode.addChild("NumberOneLine").setContent(60);
+    auto &testsNode = rootNode.addChild("Tests");
     testsNode.addComment("Comment 2");
     testsNode.addChild("Test").addAttribute("name", "test1").addAttribute("number") << 50;
     testsNode.addChild("Test").addAttribute("name", "test2").addAttribute("number") << 100;
@@ -145,7 +146,7 @@ bool TestEzXmlWriting_1() {
     subNode.addChild("SubTest").addAttribute("name", "subTest1").addAttribute("number") << 250;
     subNode.addChild("SubTest").addAttribute("name", "subTest2").addAttribute("number") << 300;
 
-    const auto result = configNode.dump();
+    const auto result = xml.dump();
     const auto expected = u8R"(<config>
   <!-- Comment 1 -->
   <NumberOneLine>60</NumberOneLine>

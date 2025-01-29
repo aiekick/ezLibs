@@ -236,7 +236,7 @@ namespace ez {
                 if (vNode.m_getType() != xml::Node::Type::Comment) {
                     oss << "<" << vNode.getName();
                     for (const auto &attr: vNode.m_attributes) {
-                        oss << " " << attr.first << "=\"" << xml::Node::unEscapeXml(attr.second.getValue()) << "\"";
+                        oss << " " << attr.first << "=\"" << xml::Node::escapeXml(attr.second.getValue()) << "\"";
                     }
                 } else {
                     oss << "<!-- ";
@@ -252,7 +252,7 @@ namespace ez {
                         oss << ">";
                     }
                     if (!content.empty()) {
-                        oss << xml::Node::unEscapeXml(content);
+                        oss << xml::Node::escapeXml(content);
                     }
                     if (vNode.m_getType() == xml::Node::Type::Comment) {
                         oss << " -->" << std::endl;
