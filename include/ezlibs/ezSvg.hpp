@@ -64,95 +64,149 @@ int main() {
 #include <fstream>
 #include <sstream>
 
+#include "ezVec2.hpp"
+#include "ezXml.hpp"
+
 namespace ez {
 namespace img {
 
 class Svg {
 private:
-    std::string width;
-    std::string height;
-    std::vector<std::string> elements;
-    std::vector<std::string> gradients;  // Stockage des dégradés
+    ez::uvec2 m_size{800};
+    std::vector<ez::xml::Node> m_elements;
+    std::vector<ez::xml::Node> m_gradients;
 
-    std::string generateStyle(const std::string& fillColor, const std::string& strokeColor, int strokeWidth) {
+public:
+    Svg(const ez::uvec2& vSize = 800U) : m_size(vSize) {}
+
+    void addRectangle(  //
+        const ez::uvec2& vMin,
+        const ez::uvec2& vMax,
+        const std::string& fillColor = "none",
+        const std::string& strokeColor = "black",
+        int strokeWidth = 1) {
+        ez::xml::Node node("rect");  //
+        node.addAttribute("x", vMin.x)  //
+            .addAttribute("y", vMin.y)  //
+            .addAttribute("width", vMax.x)  //
+            .addAttribute("height", vMax.y)
+            .addAttribute("style", m_generateStyle(fillColor, strokeColor, strokeWidth));
+        m_elements.push_back(node);
+    }
+
+    void addText(  //
+        const ez::uvec2& vPos,
+        const std::string& text,
+        const std::string& color = "black",
+        int32_t fontSize = 16) {
+        ez::xml::Node node("text");
+        node.addAttribute("x", vPos.x)  //
+            .addAttribute("y", vPos.y)  //
+            .addAttribute("fill", color)  //
+            .addAttribute("font-size", fontSize)  //
+            .setContent(text);
+        m_elements.push_back(node);
+    }
+
+    void addCircle(  //
+        const ez::uvec2& vPos,
+        int32_t vRadius,
+        const std::string& fillColor = "none",
+        const std::string& strokeColor = "black",
+        int32_t strokeWidth = 1) {
+        ez::xml::Node node("circle");
+        node.addAttribute("cx", vPos.x)  //
+            .addAttribute("cy", vPos.y)  //
+            .addAttribute("r", vRadius)  //
+            .addAttribute("style", m_generateStyle(fillColor, strokeColor, strokeWidth));
+        m_elements.push_back(node);
+    }
+
+    void addLine(  //
+        const ez::uvec2& vPos1,  //
+        const ez::uvec2& vPos2,  //
+        const std::string& strokeColor = "black",
+        int32_t strokeWidth = 1) {
+        ez::xml::Node node("line");
+        node.addAttribute("x1", vPos1.x)  //
+            .addAttribute("y1", vPos1.y)  //
+            .addAttribute("x2", vPos2.x)  //
+            .addAttribute("y2", vPos2.y)  //
+            .addAttribute("style", m_generateStyle(strokeColor, strokeWidth));
+        m_elements.push_back(node);
+    }
+
+    void addLinearGradient(  //
+        const std::string& id,
+        const std::vector<std::pair<std::string, float>>& stops) {
+        ez::xml::Node node("linearGradient");
+        node.addAttribute("id", id);
+        for (const auto& stop : stops) {
+            node.addChild("stop")  //
+             // .addAttribute("offset") << stop.second * 100.0f << "%";
+                .addAttribute("offset", ez::str::toStr("%f%", stop.second * 100.0f))  //
+                .addAttribute("style", ez::str::toStr("stop-color:%s;", stop.first.c_str()));
+        }
+        m_gradients.push_back(node);
+    }
+
+    // Utiliser un dégradé dans les formes
+    void addRectangleWithGradient(//
+        const ez::uvec2& vMin,
+        const ez::uvec2& vMax,
+        const std::string& gradientId,
+        const std::string& strokeColor = "black",
+        int32_t strokeWidth = 1) {
+        ez::xml::Node node("rect");  //
+        node.addAttribute("x", vMin.x)  //
+            .addAttribute("y", vMin.y)  //
+            .addAttribute("width", vMax.x)  //
+            .addAttribute("height", vMax.y)
+            .addAttribute("style", m_generateStyle("url(#" + gradientId + ")", strokeColor, strokeWidth));  //
+        m_elements.push_back(node);
+    }
+
+    void exportToFile(const std::string& filename) {
+        std::ofstream file(filename);
+        if (file.is_open()) {
+            ez::xml::Node node("svg");
+            node.addAttribute("xmlns", "http://www.w3.org/2000/svg")  //
+                .addAttribute("width", m_size.x)  //
+                .addAttribute("height", m_size.y);
+
+            // Ajouter les dégradés
+            if (!m_gradients.empty()) {
+                auto& defs_node = node.addChild("defs");
+                for (const auto& gradient_node : m_gradients) {
+                    defs_node.addChild(gradient_node);
+                }
+            }
+
+            // Ajouter les éléments
+            for (const auto& elem_node : m_elements) {
+                node.addChild(elem_node);
+            }
+
+            file << node.dump();
+
+            file.close();
+        }
+    }
+
+private:
+    std::string m_generateStyle(const std::string& strokeColor, int strokeWidth) {
+        std::ostringstream style;
+        style << "stroke:" << strokeColor << ";"
+              << "stroke-width:" << strokeWidth << ";";
+        return style.str();
+    }
+
+    std::string m_generateStyle(const std::string& fillColor, const std::string& strokeColor, int strokeWidth) {
         std::ostringstream style;
         style << "fill:" << fillColor << ";"
               << "stroke:" << strokeColor << ";"
               << "stroke-width:" << strokeWidth << ";";
         return style.str();
-    }
-
-public:
-    Svg(const std::string& width = "800", const std::string& height = "600") : width(width), height(height) {}
-
-    void addRectangle(int x, int y, int w, int h, const std::string& fillColor = "none", const std::string& strokeColor = "black", int strokeWidth = 1) {
-        std::ostringstream rect;
-        rect << "<rect x=\"" << x << "\" y=\"" << y << "\" width=\"" << w << "\" height=\"" << h << "\" style=\"" << generateStyle(fillColor, strokeColor, strokeWidth)
-             << "\" />";
-        elements.push_back(rect.str());
-    }
-
-    void addText(int x, int y, const std::string& text, const std::string& color = "black", int fontSize = 16) {
-        std::ostringstream txt;
-        txt << "<text x=\"" << x << "\" y=\"" << y << "\" fill=\"" << color << "\" font-size=\"" << fontSize << "\">" << text << "</text>";
-        elements.push_back(txt.str());
-    }
-
-    void addCircle(int cx, int cy, int r, const std::string& fillColor = "none", const std::string& strokeColor = "black", int strokeWidth = 1) {
-        std::ostringstream circle;
-        circle << "<circle cx=\"" << cx << "\" cy=\"" << cy << "\" r=\"" << r << "\" style=\"" << generateStyle(fillColor, strokeColor, strokeWidth) << "\" />";
-        elements.push_back(circle.str());
-    }
-
-    void addLine(int x1, int y1, int x2, int y2, const std::string& strokeColor = "black", int strokeWidth = 1) {
-        std::ostringstream line;
-        line << "<line x1=\"" << x1 << "\" y1=\"" << y1 << "\" x2=\"" << x2 << "\" y2=\"" << y2 << "\" style=\"stroke:" << strokeColor << ";stroke-width:" << strokeWidth
-             << ";\" />";
-        elements.push_back(line.str());
-    }
-
-    // Ajouter un dégradé linéaire
-    void addLinearGradient(const std::string& id, const std::vector<std::pair<std::string, float>>& stops) {
-        std::ostringstream gradient;
-        gradient << "<linearGradient id=\"" << id << "\">\n";
-        for (const auto& stop : stops) {
-            gradient << "  <stop offset=\"" << stop.second * 100 << "%\" style=\"stop-color:" << stop.first << ";\" />\n";
-        }
-        gradient << "</linearGradient>";
-        gradients.push_back(gradient.str());
-    }
-
-    // Utiliser un dégradé dans les formes
-    void addRectangleWithGradient(int x, int y, int w, int h, const std::string& gradientId, const std::string& strokeColor = "black", int strokeWidth = 1) {
-        std::ostringstream rect;
-        rect << "<rect x=\"" << x << "\" y=\"" << y << "\" width=\"" << w << "\" height=\"" << h << "\" style=\"fill:url(#" << gradientId << ");stroke:" << strokeColor
-             << ";stroke-width:" << strokeWidth << ";\" />";
-        elements.push_back(rect.str());
-    }
-
-    void exportToFile(const std::string& filename) {
-        std::ofstream file(filename);
-        if (!file) {
-            throw std::runtime_error("Unable to open file: " + filename);
-        }
-
-        file << "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" << width << "\" height=\"" << height << "\">\n";
-
-        // Ajouter les dégradés
-        if (!gradients.empty()) {
-            file << "  <defs>\n";
-            for (const auto& gradient : gradients) {
-                file << "    " << gradient << "\n";
-            }
-            file << "  </defs>\n";
-        }
-
-        // Ajouter les éléments
-        for (const auto& elem : elements) {
-            file << "  " << elem << "\n";
-        }
-        file << "</svg>";
-        file.close();
     }
 };
 

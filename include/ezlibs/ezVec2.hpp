@@ -112,6 +112,21 @@ struct vec2 {
         y = vY;
     }
 
+    vec2 lerp(const vec2<T>& vPos, T vLerpValue) {
+        static_assert(std::is_floating_point<T>::value, "lerp is only valid for floating point types");
+        return vec2(  //
+            ez::lerp(x, vPos.x, vLerpValue),
+            ez::lerp(y, vPos.y, vLerpValue));
+
+    }
+
+    vec2 lerp(const vec2<T>& vPos, const vec2<T>& vLerpValue) {
+        static_assert(std::is_floating_point<T>::value, "lerp is only valid for floating point types");
+        return vec2(  //
+            ez::lerp(x, vPos.x, vLerpValue.x),
+            ez::lerp(y, vPos.y, vLerpValue.y));
+    }
+
     // Negation operator
     vec2 operator-() const {
         static_assert(std::is_signed<T>::value, "Negation operator is only valid for signed types");

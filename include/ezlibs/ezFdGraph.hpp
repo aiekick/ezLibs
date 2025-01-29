@@ -121,7 +121,7 @@ private:
     struct Config {
         float centralGravityFactor = 1.1f;
         float forceFactor = 1000.0f;
-        float deltaTimeFactor = 2.0f;
+        float deltaTimeFactor = 10.0f;
     } m_config;
 
 public:
