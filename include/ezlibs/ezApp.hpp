@@ -134,10 +134,9 @@ public:
                 buffer[bytes] = '\0';
             }
 #elif defined(MAC_OS)
-            Dl_info module_info;
-            if (dladdr((void*)main, &module_info)) {
-                m_AppPath = std::string(module_info.dli_fname);
-            }
+            auto path = m_getMacOsAppPath();
+            auto pos = path.find_last_of("\\/");
+            m_AppPath = path.substr(0, pos);
 #endif
 #if defined(WINDOWS_OS) || defined(LINUX_OS)
             auto pos = std::string(buffer).find_last_of("\\/");
@@ -167,6 +166,16 @@ private:
         str::replaceString(vPath, "\\", SLASH_CHAR);
         str::replaceString(vPath, "/", SLASH_CHAR);
     }
+
+#if defined(MAC_OS)
+    static std::string m_getMacOsAppPath() {
+        Dl_info module_info;
+        if (dladdr((void*)getAppPath, &module_info)) {
+            return std::string(module_info.dli_fname);
+        }
+        return "";
+    }
+#endif
 };
 
 }  // namespace ez
