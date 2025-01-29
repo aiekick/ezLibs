@@ -33,14 +33,14 @@ SOFTWARE.
 int main() {
     ez::SVG svg("1024", "768");
 
-    // Ajouter un dégradé linéaire
+    // Ajouter un dï¿½gradï¿½ linï¿½aire
     svg.addLinearGradient("gradient1", {
         {"rgba(255,0,0,1)", 0.0},
         {"rgba(0,255,0,1)", 0.5},
         {"rgba(0,0,255,1)", 1.0}
     });
 
-    // Ajouter un rectangle avec un dégradé
+    // Ajouter un rectangle avec un dï¿½gradï¿½
     svg.addRectangleWithGradient(50, 50, 300, 150, "gradient1");
 
     // Ajouter un cercle avec une couleur RGBA
@@ -64,151 +64,151 @@ int main() {
 #include <fstream>
 #include <sstream>
 
-#include "ezVec2.hpp"
+#include "ezMath.hpp"
 #include "ezXml.hpp"
 
 namespace ez {
-namespace img {
+    namespace img {
 
-class Svg {
-private:
-    ez::uvec2 m_size{800};
-    std::vector<ez::xml::Node> m_elements;
-    std::vector<ez::xml::Node> m_gradients;
+        class Svg {
+        private:
+            ez::uvec2 m_size{800U};
+            std::vector<ez::xml::Node> m_elements;
+            std::vector<ez::xml::Node> m_gradients;
 
-public:
-    Svg(const ez::uvec2& vSize = 800U) : m_size(vSize) {}
+        public:
+            Svg(const ez::uvec2 &vSize = 800U) : m_size(vSize) {}
 
-    void addRectangle(  //
-        const ez::uvec2& vMin,
-        const ez::uvec2& vMax,
-        const std::string& fillColor = "none",
-        const std::string& strokeColor = "black",
-        int strokeWidth = 1) {
-        ez::xml::Node node("rect");  //
-        node.addAttribute("x", vMin.x)  //
-            .addAttribute("y", vMin.y)  //
-            .addAttribute("width", vMax.x)  //
-            .addAttribute("height", vMax.y)
-            .addAttribute("style", m_generateStyle(fillColor, strokeColor, strokeWidth));
-        m_elements.push_back(node);
-    }
+            void addRectangle(  //
+                    const ez::uvec2 &vMin,
+                    const ez::uvec2 &vMax,
+                    const std::string &fillColor = "none",
+                    const std::string &strokeColor = "black",
+                    int strokeWidth = 1) {
+                ez::xml::Node node("rect");  //
+                node.addAttribute("x", vMin.x)  //
+                        .addAttribute("y", vMin.y)  //
+                        .addAttribute("width", vMax.x)  //
+                        .addAttribute("height", vMax.y)
+                        .addAttribute("style", m_generateStyle(fillColor, strokeColor, strokeWidth));
+                m_elements.push_back(node);
+            }
 
-    void addText(  //
-        const ez::uvec2& vPos,
-        const std::string& text,
-        const std::string& color = "black",
-        int32_t fontSize = 16) {
-        ez::xml::Node node("text");
-        node.addAttribute("x", vPos.x)  //
-            .addAttribute("y", vPos.y)  //
-            .addAttribute("fill", color)  //
-            .addAttribute("font-size", fontSize)  //
-            .setContent(text);
-        m_elements.push_back(node);
-    }
+            void addText(  //
+                    const ez::uvec2 &vPos,
+                    const std::string &text,
+                    const std::string &color = "black",
+                    int32_t fontSize = 16) {
+                ez::xml::Node node("text");
+                node.addAttribute("x", vPos.x)  //
+                        .addAttribute("y", vPos.y)  //
+                        .addAttribute("fill", color)  //
+                        .addAttribute("font-size", fontSize)  //
+                        .setContent(text);
+                m_elements.push_back(node);
+            }
 
-    void addCircle(  //
-        const ez::uvec2& vPos,
-        int32_t vRadius,
-        const std::string& fillColor = "none",
-        const std::string& strokeColor = "black",
-        int32_t strokeWidth = 1) {
-        ez::xml::Node node("circle");
-        node.addAttribute("cx", vPos.x)  //
-            .addAttribute("cy", vPos.y)  //
-            .addAttribute("r", vRadius)  //
-            .addAttribute("style", m_generateStyle(fillColor, strokeColor, strokeWidth));
-        m_elements.push_back(node);
-    }
+            void addCircle(  //
+                    const ez::uvec2 &vPos,
+                    int32_t vRadius,
+                    const std::string &fillColor = "none",
+                    const std::string &strokeColor = "black",
+                    int32_t strokeWidth = 1) {
+                ez::xml::Node node("circle");
+                node.addAttribute("cx", vPos.x)  //
+                        .addAttribute("cy", vPos.y)  //
+                        .addAttribute("r", vRadius)  //
+                        .addAttribute("style", m_generateStyle(fillColor, strokeColor, strokeWidth));
+                m_elements.push_back(node);
+            }
 
-    void addLine(  //
-        const ez::uvec2& vPos1,  //
-        const ez::uvec2& vPos2,  //
-        const std::string& strokeColor = "black",
-        int32_t strokeWidth = 1) {
-        ez::xml::Node node("line");
-        node.addAttribute("x1", vPos1.x)  //
-            .addAttribute("y1", vPos1.y)  //
-            .addAttribute("x2", vPos2.x)  //
-            .addAttribute("y2", vPos2.y)  //
-            .addAttribute("style", m_generateStyle(strokeColor, strokeWidth));
-        m_elements.push_back(node);
-    }
+            void addLine(  //
+                    const ez::uvec2 &vPos1,  //
+                    const ez::uvec2 &vPos2,  //
+                    const std::string &strokeColor = "black",
+                    int32_t strokeWidth = 1) {
+                ez::xml::Node node("line");
+                node.addAttribute("x1", vPos1.x)  //
+                        .addAttribute("y1", vPos1.y)  //
+                        .addAttribute("x2", vPos2.x)  //
+                        .addAttribute("y2", vPos2.y)  //
+                        .addAttribute("style", m_generateStyle(strokeColor, strokeWidth));
+                m_elements.push_back(node);
+            }
 
-    void addLinearGradient(  //
-        const std::string& id,
-        const std::vector<std::pair<std::string, float>>& stops) {
-        ez::xml::Node node("linearGradient");
-        node.addAttribute("id", id);
-        for (const auto& stop : stops) {
-            node.addChild("stop")  //
-             // .addAttribute("offset") << stop.second * 100.0f << "%";
-                .addAttribute("offset", ez::str::toStr("%f%", stop.second * 100.0f))  //
-                .addAttribute("style", ez::str::toStr("stop-color:%s;", stop.first.c_str()));
-        }
-        m_gradients.push_back(node);
-    }
+            void addLinearGradient(  //
+                    const std::string &id,
+                    const std::vector<std::pair<std::string, float>> &stops) {
+                ez::xml::Node node("linearGradient");
+                node.addAttribute("id", id);
+                for (const auto &stop: stops) {
+                    auto &stopNode = node.addChild("stop");
+                    stopNode.addAttribute("style") << "stop-color:" << stop.first << "%";
+                    stopNode.addAttribute("offset") << stop.second * 100.0f << "%";
+                }
+                m_gradients.push_back(node);
+            }
 
-    // Utiliser un dégradé dans les formes
-    void addRectangleWithGradient(//
-        const ez::uvec2& vMin,
-        const ez::uvec2& vMax,
-        const std::string& gradientId,
-        const std::string& strokeColor = "black",
-        int32_t strokeWidth = 1) {
-        ez::xml::Node node("rect");  //
-        node.addAttribute("x", vMin.x)  //
-            .addAttribute("y", vMin.y)  //
-            .addAttribute("width", vMax.x)  //
-            .addAttribute("height", vMax.y)
-            .addAttribute("style", m_generateStyle("url(#" + gradientId + ")", strokeColor, strokeWidth));  //
-        m_elements.push_back(node);
-    }
+            // Utiliser un dï¿½gradï¿½ dans les formes
+            void addRectangleWithGradient(//
+                    const ez::uvec2 &vMin,
+                    const ez::uvec2 &vMax,
+                    const std::string &gradientId,
+                    const std::string &strokeColor = "black",
+                    int32_t strokeWidth = 1) {
+                ez::xml::Node node("rect");  //
+                node.addAttribute("x", vMin.x)  //
+                        .addAttribute("y", vMin.y)  //
+                        .addAttribute("width", vMax.x)  //
+                        .addAttribute("height", vMax.y)
+                        .addAttribute("style",
+                                      m_generateStyle("url(#" + gradientId + ")", strokeColor, strokeWidth));  //
+                m_elements.push_back(node);
+            }
 
-    void exportToFile(const std::string& filename) {
-        std::ofstream file(filename);
-        if (file.is_open()) {
-            ez::xml::Node node("svg");
-            node.addAttribute("xmlns", "http://www.w3.org/2000/svg")  //
-                .addAttribute("width", m_size.x)  //
-                .addAttribute("height", m_size.y);
+            void exportToFile(const std::string &filename) {
+                std::ofstream file(filename);
+                if (file.is_open()) {
+                    ez::xml::Node node("svg");
+                    node.addAttribute("xmlns", "http://www.w3.org/2000/svg")  //
+                            .addAttribute("width", m_size.x)  //
+                            .addAttribute("height", m_size.y);
 
-            // Ajouter les dégradés
-            if (!m_gradients.empty()) {
-                auto& defs_node = node.addChild("defs");
-                for (const auto& gradient_node : m_gradients) {
-                    defs_node.addChild(gradient_node);
+                    // Ajouter les dï¿½gradï¿½s
+                    if (!m_gradients.empty()) {
+                        auto &defs_node = node.addChild("defs");
+                        for (const auto &gradient_node: m_gradients) {
+                            defs_node.addChild(gradient_node);
+                        }
+                    }
+
+                    // Ajouter les ï¿½lï¿½ments
+                    for (const auto &elem_node: m_elements) {
+                        node.addChild(elem_node);
+                    }
+
+                    file << node.dump();
+
+                    file.close();
                 }
             }
 
-            // Ajouter les éléments
-            for (const auto& elem_node : m_elements) {
-                node.addChild(elem_node);
+        private:
+            std::string m_generateStyle(const std::string &strokeColor, int strokeWidth) {
+                std::ostringstream style;
+                style << "stroke:" << strokeColor << ";"
+                      << "stroke-width:" << strokeWidth << ";";
+                return style.str();
             }
 
-            file << node.dump();
+            std::string m_generateStyle(const std::string &fillColor, const std::string &strokeColor, int strokeWidth) {
+                std::ostringstream style;
+                style << "fill:" << fillColor << ";"
+                      << "stroke:" << strokeColor << ";"
+                      << "stroke-width:" << strokeWidth << ";";
+                return style.str();
+            }
+        };
 
-            file.close();
-        }
-    }
-
-private:
-    std::string m_generateStyle(const std::string& strokeColor, int strokeWidth) {
-        std::ostringstream style;
-        style << "stroke:" << strokeColor << ";"
-              << "stroke-width:" << strokeWidth << ";";
-        return style.str();
-    }
-
-    std::string m_generateStyle(const std::string& fillColor, const std::string& strokeColor, int strokeWidth) {
-        std::ostringstream style;
-        style << "fill:" << fillColor << ";"
-              << "stroke:" << strokeColor << ";"
-              << "stroke-width:" << strokeWidth << ";";
-        return style.str();
-    }
-};
-
-}  // namespace img
+    }  // namespace img
 }  // namespace ez
