@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 bool TestEzSvg_Writer() {
+    ez::img::Svg svg(400U);
+    svg.addLinearGradient("45", {std::make_pair("fdf", 2.0f)});
     return true;
 }
 
