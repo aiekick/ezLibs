@@ -170,7 +170,7 @@ private:
 #if defined(MAC_OS)
     static std::string m_getMacOsAppPath() {
         Dl_info module_info;
-        if (dladdr((void*)getAppPath, &module_info)) {
+        if (dladdr((void*)getCurDirectory, &module_info)) { // use of getCurDirectory who is a static function
             return std::string(module_info.dli_fname);
         }
         return "";
