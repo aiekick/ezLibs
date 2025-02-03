@@ -42,6 +42,7 @@ SOFTWARE.
 #ifdef WIN32
 #define EZ_FILE_SLASH_TYPE "\\"
 #include <Windows.h>
+#include <shellapi.h> // ShellExecute
 #define stat _stat
 #else  // UNIX
 #define EZ_FILE_SLASH_TYPE "/"
