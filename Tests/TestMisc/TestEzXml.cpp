@@ -34,6 +34,8 @@ bool TestEzXmlParsingOK() {
         <Test name = "test4" number="200">
             <SubTest name="subTest1" number="250"/>
             <SubTest name="subTest2" number="300"/>
+            <bool>false</bool>
+            <bool>true</bool>
         </Test>
     </Tests>
 </config>
@@ -88,15 +90,27 @@ bool TestEzXmlParsingOK() {
     if (testsChildrens[4].getAttribute("number") != "200")
         return false;
     const auto &test4Childrens = testsChildrens[4].getChildren();
-    if (test4Childrens.size() != 2U)
+    if (test4Childrens.size() != 4U)
+        return false;
+    if (test4Childrens[0].getName() != "SubTest")
         return false;
     if (test4Childrens[0].getAttribute("name") != "subTest1")
         return false;
     if (test4Childrens[0].getAttribute("number") != "250")
         return false;
+    if (test4Childrens[1].getName() != "SubTest")
+        return false;
     if (test4Childrens[1].getAttribute("name") != "subTest2")
         return false;
     if (test4Childrens[1].getAttribute<int32_t>("number") != 300)
+        return false;
+    if (test4Childrens[2].getName() != "bool")
+        return false;
+    if (test4Childrens[2].getContent<bool>() != false)
+        return false;
+    if (test4Childrens[3].getName() != "bool")
+        return false;
+    if (test4Childrens[3].getContent<bool>() != true)
         return false;
     return true;
 }

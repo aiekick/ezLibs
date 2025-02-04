@@ -212,16 +212,25 @@ namespace ez {
                 return *this;
             }
 
+            // specific case for std::string
             template <typename T = std::string>
-            T getContent() const {
+            typename std::enable_if<std::is_same<T, std::string>::value, T>::type getContent() const {
+                return m_content;
+            }
+
+            // specific case for bool
+            template <typename T>
+            typename std::enable_if<std::is_same<T, bool>::value, T>::type getContent() const {
+                return (m_content == "true");
+            }
+
+            // general cases (exclude std::string and bool)
+            template <typename T>
+            typename std::enable_if<!std::is_same<T, std::string>::value && !std::is_same<T, bool>::value, T>::type getContent() const {
                 T ret;
                 std::stringstream ss;
                 ss << m_content;
-                if constexpr (std::is_same<T, std::string>::value) {
-                    ret = ss.str();  // keep spaces in content for strings (ss >> ret is splited by spaces)
-                } else {
-                    ss >> ret;
-                }
+                ss >> ret;
                 return ret;
             }
 
@@ -310,10 +319,12 @@ namespace ez {
             return *this;
         }
 
+#if __cplusplus >= 201703L  // c++17
         template <>
         inline bool Node::getContent() const {
             return (m_content == "true");
         }
+#endif
 
     }  // namespace xml
 
