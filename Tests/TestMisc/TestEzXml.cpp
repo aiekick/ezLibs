@@ -96,7 +96,7 @@ bool TestEzXmlParsingOK() {
         return false;
     if (test4Childrens[1].getAttribute("name") != "subTest2")
         return false;
-    if (test4Childrens[1].getAttribute("number") != "300")
+    if (test4Childrens[1].getAttribute<int32_t>("number") != 300)
         return false;
     return true;
 }

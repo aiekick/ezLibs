@@ -217,7 +217,11 @@ namespace ez {
                 T ret;
                 std::stringstream ss;
                 ss << m_content;
-                ss >> ret;
+                if constexpr (std::is_same_v<T, std::string>) {
+                    ret = ss.str();  // keep spaces in content for strings (ss >> ret is splited by spaces)
+                } else {
+                    ss >> ret;
+                }
                 return ret;
             }
 

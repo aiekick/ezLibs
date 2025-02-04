@@ -29,5 +29,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzXmlWriting_1") ? 0 : 1;
+    return TestMisc("TestEzXmlParsingOK") ? 0 : 1;
 }
