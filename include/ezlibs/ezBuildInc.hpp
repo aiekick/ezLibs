@@ -50,6 +50,7 @@ namespace ez {
 
 class BuildInc {
 private:
+    bool m_lastWriteStatus = false;
     std::string m_buildFileHeader;
     std::string m_project;
     std::string m_label;
@@ -121,7 +122,11 @@ public:
         build_id << "Build Id : " << m_majorNumber << "." << m_minorNumber << "." << m_buildNumber;
         build_id_str = build_id.str();
         size_t row_len = build_id_str.size();
-        file << "In file : " << m_buildFileHeader;
+        if (m_lastWriteStatus) {
+            file << "In file : " << m_buildFileHeader;
+        } else {
+            file << "failed to write to : " << m_buildFileHeader;
+        }
         file_str = file.str();
         if (row_len < file_str.size()) {
             row_len = file_str.size();
@@ -183,6 +188,7 @@ public:
     }
 #endif  // EZ_FIG_FONT
     BuildInc& write() {
+        m_lastWriteStatus = false;
         std::stringstream content;
         content << "#pragma once" << std::endl;
         content << std::endl;
@@ -208,6 +214,7 @@ public:
         if (!configFileWriter.bad()) {
             configFileWriter << content.str();
             configFileWriter.close();
+            m_lastWriteStatus = true;
         }
         return *this;
     }

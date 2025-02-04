@@ -134,7 +134,6 @@ private:
         std::array<size_t, additionnal_chars_count> additionnal_chars{196, 214, 220, 228, 246, 252, 223};
         size_t cChar = baseChar;
         while (file) {
-            std::string line;
             std::vector<std::string> asciiArt;
             if (idx < required_chars_count) {
                 cChar = idx + baseChar;
