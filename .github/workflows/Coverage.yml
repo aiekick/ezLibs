@@ -41,7 +41,7 @@ jobs:
       - name: Setup web pages
         uses: actions/configure-pages@v3
       - name: Upload coverage web pages
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           path: ./build/coverage_web
       - name: Upload coverage xml to Codecov
