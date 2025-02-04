@@ -212,8 +212,13 @@ namespace ez {
                 return *this;
             }
 
-            const std::string &getContent() const {
-                return m_content;
+            template <typename T = std::string>
+            T getContent() const {
+                T ret;
+                std::stringstream ss;
+                ss << m_content;
+                ss >> ret;
+                return ret;
             }
 
             Nodes &getChildren() { return m_children; }
@@ -299,6 +304,11 @@ namespace ez {
         inline Node &Node::setContent(const bool &vContent) {
             m_content = vContent ? "true" : "false";
             return *this;
+        }
+
+        template <>
+        inline bool Node::getContent() const {
+            return (m_content == "true");
         }
 
     }  // namespace xml
