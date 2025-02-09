@@ -34,9 +34,9 @@ namespace ez {
 class Actions {
 private:
     typedef std::function<bool()> ConditonalActionStamp;
-    typedef std::function<void()> BasicActionStamp;
+    typedef std::function<void()> ImmediateActionStamp;
     std::list<ConditonalActionStamp> m_conditionalActions;
-    std::list<BasicActionStamp> m_basicActions;
+    std::list<ImmediateActionStamp> m_immediateActions;
 
 public:
     // insert an action at first, cause :
@@ -47,9 +47,9 @@ public:
         }
     }
 
-    void pushFrontBasicAction(BasicActionStamp vAction) {
+    void pushFrontImmediateAction(ImmediateActionStamp vAction) {
         if (vAction) {
-            m_basicActions.push_front(vAction);
+            m_immediateActions.push_front(vAction);
         }
     }
 
@@ -60,16 +60,16 @@ public:
             m_conditionalActions.push_back(vAction);
         }
     }
-    void pushBackBasicAction(BasicActionStamp vAction) {
+    void pushBackImmediateAction(ImmediateActionStamp vAction) {
         if (vAction) {
-            m_basicActions.push_back(vAction);
+            m_immediateActions.push_back(vAction);
         }
     }
 
     // clear all actions
     void clear() {
         m_conditionalActions.clear();
-        m_basicActions.clear();
+        m_immediateActions.clear();
     }
 
     // usefull for immediate mode gui actions (imgui or similar)
@@ -90,12 +90,12 @@ public:
     // standard pre registered action
     // will execute all action in the list from front to back
     // then will clear the list
-    void runBasicActions() {
-        while (!m_basicActions.empty()) {
-            const auto action = *m_basicActions.begin();
+    void runImmediateActions() {
+        while (!m_immediateActions.empty()) {
+            const auto action = *m_immediateActions.begin();
             action();
-            if (!m_basicActions.empty()) {  // because an action can clear actions
-                m_basicActions.pop_front();
+            if (!m_immediateActions.empty()) {  // because an action can clear actions
+                m_immediateActions.pop_front();
             }
         }
     }
