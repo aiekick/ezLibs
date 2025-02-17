@@ -26,6 +26,10 @@ SOFTWARE.
 
 // ezBmp is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
+#ifndef EZ_BMP
+#define EZ_BMP
+#endif  // EZ_BMP
+
 #include <fstream>
 #include <vector>
 #include <cstdint>
@@ -93,7 +97,7 @@ public:
     }
 
     // Sauvegarde l'image en tant que fichier BMP
-    Bmp& save(const std::string& filename) {
+    Bmp& write(const std::string& filename) {
         std::ofstream file(filename, std::ios::binary);
         if (!file) {
             throw std::runtime_error("Impossible d'ouvrir le fichier.");

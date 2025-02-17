@@ -15,7 +15,8 @@ file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStr.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
-	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp)
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/derived/ezQrCode.hpp)
 source_group(TREE ${EZ_LIBS_INCLUDE_DIR}/ezlibs PREFIX Libs FILES ${EZ_LIBS_SOURCE})
 
 file(GLOB_RECURSE PROJECT_TEST_RES_RECURSE 
@@ -75,3 +76,9 @@ AddTest("TestEzXmlParsingNOK_1")
 ##########################################################
 
 AddTest("TestEzFigFontLoadAndPrint")
+
+##########################################################
+##### TESTS EzQrCode #####################################
+##########################################################
+
+AddTest("TestEzQrCodeBase")

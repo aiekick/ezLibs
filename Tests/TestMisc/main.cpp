@@ -4,6 +4,7 @@
 #include <TestEzStr.h>
 #include <TestEzCnt.h>
 #include <TestEzFigFont.h>
+#include <TestEzQrCode.h>
 
 #define IfTestCollectionExist(v)             \
     if (vTest.find(#v) != std::string::npos) \
@@ -16,6 +17,7 @@ bool TestMisc(const std::string& vTest) {
     else IfTestCollectionExist(TestEzStr);
     else IfTestCollectionExist(TestEzCnt);
     else IfTestCollectionExist(TestEzFigFont);
+    else IfTestCollectionExist(TestEzQrCode);
     return false;
 }
 
@@ -29,5 +31,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzXmlParsingOK") ? 0 : 1;
+    return TestMisc("TestEzQrCodeBase") ? 0 : 1;
 }

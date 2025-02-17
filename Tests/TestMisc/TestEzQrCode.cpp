@@ -1,4 +1,6 @@
 #include <ezlibs/ezBmp.hpp>
+#include <ezlibs/derived/ezQrCode.hpp>
+#include <ezlibs/ezCTest.hpp>
 #include <string>
 
 // Desactivation des warnings de conversion
@@ -16,33 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzBmp_Writer() {
-    ez::img::Bmp bmp;
-    bmp.setSize(100, 100);
-    for (int y = 0; y < 100; ++y) {
-        for (int x = 0; x < 100; ++x) {
-            uint8_t colorIndex = (x / 25) + (y / 25);  // one color per block of 25x25
-            switch (colorIndex) {
-                case 0:
-                case 6: {
-                    bmp.setPixel(x, y, 255, 0, 0);
-                } break;
-                case 1:
-                case 5: {
-                    bmp.setPixel(x, y, 0, 255, 0);
-                } break;
-                case 2:
-                case 4: {
-                    bmp.setPixel(x, y, 0, 0, 255);
-                } break;
-                case 3: {
-                    bmp.setPixel(x, y, 255, 255, 0);
-                } break;
-                default: break;
-            }
-        }
-    }
-    bmp.write(RESULTS_PATH "/test.bmp");
+bool TestEzQrCodeBase() {
+    ez::QrCode<5> qr;
+    CTEST_ASSERT_MESSAGE(qr.encode("https://www.shadertoy.com/view/tcl3Ds", ez::Ecc::H), "QrCode Encode ?");
+    CTEST_ASSERT_MESSAGE(qr.write(RESULTS_PATH "/qr_code_test.bmp"));
     return true;
 }
 
@@ -54,8 +33,8 @@ bool TestEzBmp_Writer() {
     if (vTest == std::string(#v)) \
     return v()
 
-bool TestEzBmp(const std::string& vTest) {
-    IfTestExist(TestEzBmp_Writer);
+bool TestEzQrCode(const std::string& vTest) {
+    IfTestExist(TestEzQrCodeBase);
     return false;
 }
 
