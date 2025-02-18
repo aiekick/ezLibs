@@ -316,6 +316,7 @@ public:
     constexpr auto side_size() const { return SIDE; }
     bool module(int x, int y) const;
     bool encode(const std::string &vContent, Ecc ecc, int mask = -1);
+    std::vector<uint8_t> getImageBuffer(uint8_t vChannelCount, int32_t &vOutSize) const;
 
 #ifdef EZ_BMP
     bool write(const std::string &vFilePathName) {
@@ -409,6 +410,32 @@ bool QrCode<V>::encode(const std::string& vContent, Ecc ecc, int mask) {
     m_apply_mask(mask, patterns);
 
     return m_status = true;
+}
+
+template <int V>
+std::vector<uint8_t> QrCode<V>::getImageBuffer(uint8_t vChannelCount, int32_t &vOutSize) const {
+    std::vector<uint8_t> ret;
+    if (vChannelCount > 0 && vChannelCount < 5) {
+        vOutSize = side_size() + 2;
+        ret.resize(vOutSize * vOutSize * vChannelCount);
+        for (int y = 0; y < vOutSize; ++y) {
+            for (int x = 0; x < vOutSize; ++x) {
+                auto offset = (x + y * vOutSize) * vChannelCount;
+                if (x > 0 && x < (vOutSize - 1) && y > 0 && y < (vOutSize - 1)) {
+                    if (!module(x - 1, y - 1)) {
+                        for (uint8_t c = 0; c < vChannelCount; ++c) {
+                            ret[offset + c] = 255;
+                        }
+                    }
+                } else {
+                    for (uint8_t c = 0; c < vChannelCount; ++c) {
+                        ret[offset + c] = 255;
+                    }
+                }
+            }
+        }
+    }
+    return ret;
 }
 
 template <int V>
