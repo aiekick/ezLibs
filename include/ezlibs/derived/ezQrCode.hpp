@@ -135,17 +135,17 @@ constexpr int ALIGN_POS[41][7] = {
 };
 
 // How many bytes necessary to store `n` bits.
-constexpr size_t bytes_in_bits(size_t n) {
+size_t bytes_in_bits(size_t n) {
     return (n >> 3) + !!(n & 7);
 }
 
 // Return n-th bit of arr starting from MSB.
-constexpr uint8_t get_bit_r(const uint8_t *arr, int n) {
+uint8_t get_bit_r(const uint8_t *arr, int n) {
     return (arr[n >> 3] >> (7 - (n & 7))) & 1;
 }
 
 // Get n-th bit of an integer.
-constexpr bool get_bit(uint8_t x, unsigned n) {
+bool get_bit(uint8_t x, unsigned n) {
     return (x >> n) & 1;
 }
 
@@ -160,7 +160,7 @@ void clr_bit(uint8_t &x, unsigned n) {
 }
 
 // Get n-th bit in array of words (starting from LSB).
-constexpr uint8_t get_arr_bit(const uint8_t *p, unsigned n) {
+uint8_t get_arr_bit(const uint8_t *p, unsigned n) {
     return get_bit(p[n >> 3], n & 7);
 }
 
@@ -183,7 +183,7 @@ void add_bits(uint16_t data, int n, uint8_t *arr, size_t &pos) {
 }
 
 // Translate char to alphanumeric encoding value,
-constexpr int alphanumeric(char c) {
+int alphanumeric(char c) {
     if (c >= '0' && c <= '9')
         return c - '0';
 
@@ -205,7 +205,7 @@ constexpr int alphanumeric(char c) {
 }
 
 // Check if string can be encoded in alphanumeric mode.
-constexpr bool is_alphanumeric(const char *str, size_t len) {
+bool is_alphanumeric(const char *str, size_t len) {
     for (size_t i = 0; i < len; ++i)
         if (alphanumeric(str[i]) == -1)
             return false;
@@ -213,7 +213,7 @@ constexpr bool is_alphanumeric(const char *str, size_t len) {
 }
 
 // Check if string can be encoded in numeric mode.
-constexpr bool is_numeric(const char *str, size_t len) {
+bool is_numeric(const char *str, size_t len) {
     for (size_t i = 0; i < len; ++i)
         if (str[i] < '0' || str[i] > '9')
             return false;
@@ -221,7 +221,7 @@ constexpr bool is_numeric(const char *str, size_t len) {
 }
 
 // Check if string can be encoded in kanji mode.
-constexpr bool is_kanji(const char *str, size_t len) {
+bool is_kanji(const char *str, size_t len) {
     for (size_t i = 0; i < len; i += 2) {
         uint16_t val = uint16_t(str[i]) | (uint16_t(str[i + 1]) << 8);
         if (val < 0x8140 || val > 0xebbf || (val > 0x9ffc && val < 0xe040))
@@ -231,7 +231,7 @@ constexpr bool is_kanji(const char *str, size_t len) {
 }
 
 // Galois 2^8 field multiplication.
-constexpr uint8_t gf_mul(uint8_t x, uint8_t y) {
+uint8_t gf_mul(uint8_t x, uint8_t y) {
     uint8_t r = 0;
 
     while (y) {
@@ -285,7 +285,7 @@ enum Mode {
 };
 
 // Select appropriate encoding mode for string.
-constexpr Mode select_mode(const char *str, size_t len) {
+Mode select_mode(const char *str, size_t len) {
     if (is_numeric(str, len))
         return M_NUMERIC;
     if (is_alphanumeric(str, len))
@@ -296,7 +296,7 @@ constexpr Mode select_mode(const char *str, size_t len) {
 }
 
 // Return size of Character Control Indicator in bits for given version and mode.
-constexpr int cci(int ver, Mode mode) {
+int cci(int ver, Mode mode) {
     constexpr int cnt[4][3] = {
         {10, 12, 14},
         {9, 11, 13},
