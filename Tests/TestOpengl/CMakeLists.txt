@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-set(PROJECT TestOpengl)
+set(PROJECT EzLibs_TestOpengl)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 

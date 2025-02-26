@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(PROJECT TestCom)
+set(PROJECT EzLibs_TestCom)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
