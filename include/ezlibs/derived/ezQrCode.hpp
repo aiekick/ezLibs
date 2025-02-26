@@ -135,47 +135,47 @@ constexpr int ALIGN_POS[41][7] = {
 };
 
 // How many bytes necessary to store `n` bits.
-size_t bytes_in_bits(size_t n) {
+static size_t bytes_in_bits(size_t n) {
     return (n >> 3) + !!(n & 7);
 }
 
 // Return n-th bit of arr starting from MSB.
-uint8_t get_bit_r(const uint8_t *arr, int n) {
+static uint8_t get_bit_r(const uint8_t *arr, int n) {
     return (arr[n >> 3] >> (7 - (n & 7))) & 1;
 }
 
 // Get n-th bit of an integer.
-bool get_bit(uint8_t x, unsigned n) {
+static bool get_bit(uint8_t x, unsigned n) {
     return (x >> n) & 1;
 }
 
 // Set n-th bit of an integer.
-void set_bit(uint8_t &x, unsigned n) {
+static void set_bit(uint8_t &x, unsigned n) {
     x |= (1 << n);
 }
 
 // Clear n-th bit of an integer.
-void clr_bit(uint8_t &x, unsigned n) {
+static void clr_bit(uint8_t &x, unsigned n) {
     x &= ~(1 << n);
 }
 
 // Get n-th bit in array of words (starting from LSB).
-uint8_t get_arr_bit(const uint8_t *p, unsigned n) {
+static uint8_t get_arr_bit(const uint8_t *p, unsigned n) {
     return get_bit(p[n >> 3], n & 7);
 }
 
 // Set n-th bit in array of words (starting from LSB).
-void set_arr_bit(uint8_t *p, unsigned n) {
+static void set_arr_bit(uint8_t *p, unsigned n) {
     set_bit(p[n >> 3], n & 7);
 }
 
 // Clear n-th bit in array of words (starting from LSB).
-void clr_arr_bit(uint8_t *p, int n) {
+static void clr_arr_bit(uint8_t *p, int n) {
     clr_bit(p[n >> 3], n & 7);
 }
 
 // Add up to 16 bits to arr. Data starts from MSB as well as each byte of an array.
-void add_bits(uint16_t data, int n, uint8_t *arr, size_t &pos) {
+static void add_bits(uint16_t data, int n, uint8_t *arr, size_t &pos) {
     while (n--) {
         arr[pos >> 3] |= ((data >> n) & 1) << (7 - (pos & 7));
         ++pos;
@@ -183,7 +183,7 @@ void add_bits(uint16_t data, int n, uint8_t *arr, size_t &pos) {
 }
 
 // Translate char to alphanumeric encoding value,
-int alphanumeric(char c) {
+static int alphanumeric(char c) {
     if (c >= '0' && c <= '9')
         return c - '0';
 
@@ -205,7 +205,7 @@ int alphanumeric(char c) {
 }
 
 // Check if string can be encoded in alphanumeric mode.
-bool is_alphanumeric(const char *str, size_t len) {
+static bool is_alphanumeric(const char *str, size_t len) {
     for (size_t i = 0; i < len; ++i)
         if (alphanumeric(str[i]) == -1)
             return false;
@@ -213,7 +213,7 @@ bool is_alphanumeric(const char *str, size_t len) {
 }
 
 // Check if string can be encoded in numeric mode.
-bool is_numeric(const char *str, size_t len) {
+static bool is_numeric(const char *str, size_t len) {
     for (size_t i = 0; i < len; ++i)
         if (str[i] < '0' || str[i] > '9')
             return false;
@@ -221,7 +221,7 @@ bool is_numeric(const char *str, size_t len) {
 }
 
 // Check if string can be encoded in kanji mode.
-bool is_kanji(const char *str, size_t len) {
+static bool is_kanji(const char *str, size_t len) {
     for (size_t i = 0; i < len; i += 2) {
         uint16_t val = uint16_t(str[i]) | (uint16_t(str[i + 1]) << 8);
         if (val < 0x8140 || val > 0xebbf || (val > 0x9ffc && val < 0xe040))
@@ -231,7 +231,7 @@ bool is_kanji(const char *str, size_t len) {
 }
 
 // Galois 2^8 field multiplication.
-uint8_t gf_mul(uint8_t x, uint8_t y) {
+static uint8_t gf_mul(uint8_t x, uint8_t y) {
     uint8_t r = 0;
 
     while (y) {
@@ -244,7 +244,7 @@ uint8_t gf_mul(uint8_t x, uint8_t y) {
 }
 
 // Reed-Solomon Ecc generator polynomial for the given degree.
-void gf_gen_poly(int degree, uint8_t *poly) {
+static void gf_gen_poly(int degree, uint8_t *poly) {
     memset(poly, 0, degree);
 
     uint8_t root = poly[degree - 1] = 1;
@@ -258,7 +258,7 @@ void gf_gen_poly(int degree, uint8_t *poly) {
 }
 
 // Polynomial division if Galois Field.
-void gf_poly_div(const uint8_t *dividend, size_t len, const uint8_t *divisor, int degree, uint8_t *result) {
+static oid gf_poly_div(const uint8_t *dividend, size_t len, const uint8_t *divisor, int degree, uint8_t *result) {
     memset(result, 0, degree);
 
     for (size_t i = 0; i < len; ++i) {
@@ -285,7 +285,7 @@ enum Mode {
 };
 
 // Select appropriate encoding mode for string.
-Mode select_mode(const char *str, size_t len) {
+static Mode select_mode(const char *str, size_t len) {
     if (is_numeric(str, len))
         return M_NUMERIC;
     if (is_alphanumeric(str, len))
@@ -369,8 +369,8 @@ private:
     static constexpr int N_TIMING_BITS = (SIDE - 16) * 2 - (10 * (V > 1 ? N_ALIGN - 2 : 0));
     static constexpr int N_VER_BITS = V > 6 ? 36 : 0;
     static constexpr int N_DAT_BITS = N_BITS - (192 + N_ALIGN_BITS + N_TIMING_BITS + 31 + N_VER_BITS);
-    static constexpr int N_BYTES = bytes_in_bits(N_BITS);  // Actual number of bytes_in_bits required to store whole QrCode m_code
-    static constexpr int N_DAT_BYTES = bytes_in_bits(N_DAT_BITS);  // Actual number of bytes_in_bits required to store [data + ecc]
+    static int N_BYTES = bytes_in_bits(N_BITS);  // Actual number of bytes_in_bits required to store whole QrCode m_code
+    static int N_DAT_BYTES = bytes_in_bits(N_DAT_BITS);  // Actual number of bytes_in_bits required to store [data + ecc]
     static constexpr int N_DAT_CAPACITY = N_DAT_BITS >> 3;  // Capacity of [data + ecc] without remainder bits
 private:
     uint8_t m_code[N_BYTES] = {};
