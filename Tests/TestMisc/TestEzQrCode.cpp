@@ -21,7 +21,7 @@
 bool TestEzQrCodeBase() {
     ez::QrCode<5> qr;
     CTEST_ASSERT_MESSAGE(qr.encode("https://www.shadertoy.com/view/tcl3Ds", ez::Ecc::H), "QrCode Encode ?");
-    CTEST_ASSERT_MESSAGE(qr.write(RESULTS_PATH "/qr_code_test.bmp"));
+    CTEST_ASSERT_MESSAGE(qr.write(RESULTS_PATH "/qr_code_test.bmp"), "QrCode Writen ?");
     return true;
 }
 

@@ -313,7 +313,7 @@ constexpr int cci(int ver, Mode mode) {
 template <int V>
 class QrCode {
 public:
-    constexpr auto side_size() const { return SIDE; }
+    int side_size() const { return SIDE; }
     bool module(int x, int y) const;
     bool encode(const std::string &vContent, Ecc ecc, int mask = -1);
     std::vector<uint8_t> getImageBuffer(uint8_t vChannelCount, int32_t &vOutSize) const;
