@@ -32,6 +32,10 @@ SOFTWARE.
 #define EZ_TOOLS_LOG
 #endif  // EZ_TOOLS_LOG
 
+#ifndef EZ_LOG_APP_NAME
+#define EZ_LOG_APP_NAME "App"
+#endif
+
 #include "ezStr.hpp"
 #include "ezTime.hpp"
 
@@ -66,6 +70,10 @@ typedef long long int64;
 
 #ifdef _MSC_VER
 #define __PRETTY_FUNCTION__ __FUNCSIG__
+#endif
+
+#ifdef __ANDROID__
+#include <android/log.h>
 #endif
 
 #define IsVerboseMode (ez::Log::Instance()->isVerboseMode() == true)
@@ -381,7 +389,18 @@ private:
             TracyMessageL(m_messages[m_messages.size() - 1U].c_str());
 #endif
 
+#ifdef __ANDROID__
+            if (*vType == MessageTypeEnum::LOGGING_MESSAGE_TYPE_INFOS) {
+                __android_log_write(ANDROID_LOG_INFO, EZ_LOG_APP_NAME, msg.c_str());
+            } else if (*vType == MessageTypeEnum::LOGGING_MESSAGE_TYPE_WARNING) {
+                __android_log_write(ANDROID_LOG_WARN, EZ_LOG_APP_NAME, msg.c_str());
+            } else if (*vType == MessageTypeEnum::LOGGING_MESSAGE_TYPE_ERROR) {
+                __android_log_write(ANDROID_LOG_ERROR, EZ_LOG_APP_NAME, msg.c_str());
+            }
+#else
             std::cout << msg << std::endl;
+#endif
+
 
             if (vStr && m_standardLogFunction) {
                 int type = 0;
