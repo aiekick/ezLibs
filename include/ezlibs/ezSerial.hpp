@@ -59,16 +59,21 @@ namespace net {
 class SerialPort {
 private:
     bool m_isOpen = false;
+    std::string m_portName;
 
 public:
-    SerialPort() {}
+    SerialPort() = default;
     ~SerialPort() { close(); }
 
+    /* SerialPort contient un HANDLE Windows ou un file - descriptor POSIX;
+       ces ressources ne se copient pas proprement → la classe est marquée non copiable(SerialPort(const SerialPort&) = delete;),
+       du coup sa présence supprime la copie de SerialDevice */
     SerialPort(const SerialPort&) = delete;
     SerialPort& operator=(const SerialPort&) = delete;
 
     /* ------------------------ open / close ------------------------------- */
     void open(const std::string& portName, uint32_t baud) {
+        m_portName = portName;
 #ifdef WINDOWS_OS
         std::string fullName = (portName.rfind("COM", 0) == 0 && portName.size() > 4) ? std::string("\\\\.\\") + portName : portName;
         handle_ = CreateFileA(fullName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
@@ -109,7 +114,7 @@ public:
         }
 #endif
         m_isOpen = true;
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     void close() {
@@ -172,7 +177,25 @@ public:
         return false;
     }
 
-    bool isConnected() const { return m_isOpen; }
+    bool isConnected(bool vCheckByOSApi) {
+        if (vCheckByOSApi && !m_portName.empty()) {
+#ifdef WINDOWS_OS
+            HANDLE hSerial;
+            hSerial = CreateFile(m_portName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+            if (hSerial == INVALID_HANDLE_VALUE) {
+                close();
+            }
+            CloseHandle(hSerial);
+#else
+            int serial_port = open("/dev/ttyACM0", O_RDWR);
+            if (serial_port < 0) {
+                close();
+            }
+            close(serial_port);
+#endif
+        }
+        return m_isOpen;
+    }
 
     /* ---------------------- static helpers ------------------------------ */
     static std::vector<std::string> listPorts() {
@@ -180,7 +203,7 @@ public:
 #ifdef WINDOWS_OS
         for (int i = 1; i <= 256; ++i) {
             const std::string n = "COM" + std::to_string(i);
-            HANDLE h = CreateFileA(("\\\\." + n).c_str(), 0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+            HANDLE h = CreateFileA(("\\\\.\\" + n).c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, nullptr);
             if (h != INVALID_HANDLE_VALUE) {
                 v.push_back(n);
                 CloseHandle(h);
@@ -261,7 +284,24 @@ class SerialDevice {
 public:
     typedef std::function<void(bool /*connected*/, const std::string& /*port*/)> Callback;
 
-    SerialDevice(uint32_t baud = 115200, const std::string& handshake = "PING", const std::string& expected = "PONG", uint16_t vid = 0, uint16_t pid = 0)
+private:
+    uint16_t m_vid{0};
+    uint16_t m_pid{0};
+    SerialPort m_serialPort;
+    uint32_t m_baud{0};
+    std::string m_portName;
+    std::string m_expected;
+    std::string m_handshake;
+    std::atomic<bool> m_running{false};
+    std::thread m_thread;
+    Callback m_cb;
+
+public:
+    /* SerialDevice contient aussi un std::thread.Un thread est déplaçable mais pas copiable;
+       si tu ne définis pas explicitement un move constructeur / opérateur,
+       le compilateur supprime également le move de l’objet englobant. */    
+    SerialDevice() = default;
+    explicit SerialDevice(uint32_t baud = 115200, const std::string& handshake = "PING", const std::string& expected = "PONG", uint16_t vid = 0, uint16_t pid = 0)
         : m_baud(baud), m_handshake(handshake), m_expected(expected), m_vid(vid), m_pid(pid) {}
 
     ~SerialDevice() {
@@ -278,11 +318,11 @@ public:
     }
 
     bool connect(const std::string& port) {
-        if (m_port.isConnected()) {
+        if (m_serialPort.isConnected(true)) {
             disconnect();
         }
         try {
-            m_port.open(port, m_baud);
+            m_serialPort.open(port, m_baud);
             m_portName = port;
             return true;
         } catch (...) {
@@ -292,7 +332,7 @@ public:
     }
 
     void disconnect() {
-        m_port.close();
+        m_serialPort.close();
         m_portName.clear();
     }
 
@@ -300,7 +340,7 @@ public:
     const std::string& portName() const { return m_portName; }
     uint32_t baudRate() const { return m_baud; }
 
-    SerialPort& port() { return m_port; }
+    SerialPort& port() { return m_serialPort; }
 
     void startWatchdog(uint32_t periodMs = 1000, Callback cb = Callback()) {
         if (m_running) {
@@ -330,19 +370,9 @@ public:
     }
 
 private:
-    SerialPort m_port;
-    uint32_t m_baud;
-    std::string m_handshake, m_expected;
-    uint16_t m_vid, m_pid;
-    std::string m_portName;  // empty == not connected
-
-    std::atomic<bool> m_running{false};
-    std::thread m_thread;
-    Callback m_cb;
-
     bool autoDetect(std::string& outPort) {
         if (m_vid || m_pid) {
-            const std::vector<std::string> ports = listPortsByVidPid(m_vid, m_pid);
+            const auto ports = listPortsByVidPid(m_vid, m_pid);
             for (size_t i = 0; i < ports.size(); ++i) {
                 if (testHandshake(ports[i])) {
                     outPort = ports[i];
@@ -359,8 +389,7 @@ private:
             SerialPort sp;
             sp.open(port, m_baud);
             std::string dump;
-            while (sp.readLine(dump, 50)) {
-            }
+            while (sp.readLine(dump, 50)) {}
             sp.writeLine(m_handshake);
             std::string r;
             const bool ok = sp.readLine(r, 300);
@@ -373,18 +402,18 @@ private:
 
     /* ----------------------- watchdog loop --------------------------- */
     void watchLoop(uint32_t periodMs) {
-        bool prevConnected = isConnected();
+        bool prevConnected = m_serialPort.isConnected(true);
         while (m_running) {
             bool nowConnected = prevConnected;
             if (prevConnected) {
-                const std::vector<std::string> ports = SerialPort::listPorts();
-                if (std::find(ports.begin(), ports.end(), m_portName) == ports.end()) {
+                if (!m_serialPort.isConnected(true)) {
                     disconnect();
                     nowConnected = false;
                 }
             } else {
                 if (connect()) {
                     nowConnected = true;
+                    std::this_thread::sleep_for(std::chrono::seconds(2));
                 }
             }
             if (nowConnected != prevConnected && m_cb) {
@@ -398,7 +427,6 @@ private:
     static std::vector<std::string> listPortsByVidPid(uint16_t vid, uint16_t pid) {
         std::vector<std::string> out;
 #ifdef WINDOWS_OS
-        std::vector<std::string> out;
         const GUID gCom = {0x86E0D1E0, 0x8089, 0x11D0, {0x9C, 0xE4, 0x08, 0x00, 0x3E, 0x30, 0x1F, 0x73}};
         HDEVINFO info = SetupDiGetClassDevs(&gCom, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
         if (info == INVALID_HANDLE_VALUE) {
@@ -416,8 +444,13 @@ private:
             devData.cbSize = sizeof(devData);
             if (SetupDiGetDeviceInterfaceDetail(info, &ifData, detail, req, NULL, &devData)) {
                 std::string devPath = detail->DevicePath;
+                std::cout << "devPath : " << devPath << std::endl;
                 char pattern[32];
-                sprintf(pattern, "VID_%04X&PID_%04X", vid, pid);
+                if (pid) {
+                    sprintf(pattern, "vid_%04X&pid_%04X", vid, pid);
+                } else {
+                    sprintf(pattern, "vid_%04X&pid", vid);
+                }
                 if (devPath.find(pattern) != std::string::npos) {
                     HKEY hKey = SetupDiOpenDevRegKey(info, &devData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
                     if (hKey != INVALID_HANDLE_VALUE) {
