@@ -35,6 +35,15 @@ bool TestEzStrSearchForPatternWithWildcards() {
     return true;
 }
 
+bool TestEzStrExtractWildcardsFromPattern() {
+    std::string buffer = "TOTO VA AU ZOO ET C'EST BEAU";
+    const auto arr = ez::str::extractWildcardsFromPattern(buffer, "*TOTO*ZOO*BEAU*");
+    CTEST_ASSERT(arr.size() == 2U);
+    CTEST_ASSERT(arr.at(0) == " VA AU ");
+    CTEST_ASSERT(arr.at(1) == " ET C'EST ");
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -46,6 +55,7 @@ bool TestEzStrSearchForPatternWithWildcards() {
 bool TestEzStr(const std::string& vTest) {
     IfTestExist(TestEzStrGetDigitsCountOfAIntegralNumber);
     else IfTestExist(TestEzStrSearchForPatternWithWildcards);
+    else IfTestExist(TestEzStrExtractWildcardsFromPattern);
     return false;
 }
 

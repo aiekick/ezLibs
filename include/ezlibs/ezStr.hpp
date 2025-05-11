@@ -498,6 +498,30 @@ inline std::string encodeBase64(const std::string& in) {
     return out;
 }
 
+// todo: to test
+inline std::vector<std::string> extractWildcardsFromPattern(const std::string& vBuffer, const std::string& vPattern) {
+    std::vector<std::string> res;
+    auto patterns = splitStringToVector(vPattern, '*', false);
+    std::pair<size_t, size_t> range;
+    range.first = std::string::npos;
+    range.second = 0U;
+    for (const std::string& pattern : patterns) {
+        auto start = vBuffer.find(pattern, range.second);
+        if (start != std::string::npos) {
+            if (range.first != std::string::npos) {
+                range.second = start;
+                res.push_back(vBuffer.substr(range.first, range.second - range.first));
+            }
+            range.first = start + pattern.size();
+        } else {
+            range.first = std::string::npos;
+            range.second = std::string::npos;
+            break;
+        }
+    }
+    return res;
+}
+
 }  // namespace ez
 }  // namespace ez
 

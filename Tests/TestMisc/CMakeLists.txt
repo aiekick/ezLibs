@@ -54,6 +54,7 @@ AddTest("TestEzGraph_Evaluation")
 
 AddTest("TestEzStrGetDigitsCountOfAIntegralNumber")
 AddTest("TestEzStrSearchForPatternWithWildcards")
+AddTest("TestEzStrExtractWildcardsFromPattern")
 
 ##########################################################
 ##### TESTS EzCnt ########################################

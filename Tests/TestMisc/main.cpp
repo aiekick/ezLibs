@@ -31,5 +31,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzQrCodeBase") ? 0 : 1;
+    return TestMisc("TestEzStrExtractWildcardsFromPattern") ? 0 : 1;
 }

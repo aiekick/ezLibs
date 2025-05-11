@@ -50,7 +50,7 @@ namespace ez {
     private:
         std::unordered_map<Command, CmdFunctor> m_cmdFunctors;
 
-        /* a processed commande will have this format : (space are not aprt of the process command, jsut for syntax clarity)
+        /* a processed commande will have this format : (space are not part of the process command, jsut for syntax clarity)
         * COMMAND(DELIMITER ARG1 DELIMITER ARG2 DELIMITER ARG3)
         *
         * if not argument are sent :
