@@ -1,4 +1,4 @@
-#include <ezlibs/ezSvg.hpp>
+#include <ezlibs/wip/ezSvg.hpp>
 #include <string>
 
 // Desactivation des warnings de conversion

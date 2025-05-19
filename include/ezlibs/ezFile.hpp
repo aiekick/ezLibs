@@ -52,7 +52,7 @@ SOFTWARE.
 namespace ez {
 namespace file {
 
-inline std::string loadFileToString(const std::string &vFilePathName) {
+inline std::string loadFileToString(const std::string &vFilePathName, bool vVerbose = true) {
     std::string ret;
     std::ifstream docFile(vFilePathName, std::ios::in);
     if (docFile.is_open()) {
@@ -63,9 +63,11 @@ inline std::string loadFileToString(const std::string &vFilePathName) {
         ez::str::replaceString(ret, "\r", "\n");
         docFile.close();
     } else {
+        if (vVerbose) {
 #ifdef EZ_TOOLS_LOG
-        LogVarError("File \"%s\" Not Found !\n", vFilePathName.c_str());
+            LogVarError("File \"%s\" Not Found !\n", vFilePathName.c_str());
 #endif
+        }
     }
     return ret;
 }

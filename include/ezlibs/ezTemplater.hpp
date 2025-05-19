@@ -104,22 +104,14 @@ public:
 private:
     bool m_precheck() {
         try {
-            auto pos = m_template.find("[[[");
-            if (pos != std::string::npos) {
-                throw std::runtime_error("Invalid syntax: three consecutive opening brackets at position " + std::to_string(pos));
-            }
-            pos = m_template.find("]]]");
-            if (pos != std::string::npos) {
-                throw std::runtime_error("Invalid syntax: three consecutive closing brackets at position " + std::to_string(pos));
-            }
-            size_t cntOpen = 0, cntClose = 0;
+            /*size_t cntOpen = 0, cntClose = 0;
             for (size_t p = 0; (p = m_template.find("[[", p)) != std::string::npos; ++p)
                 ++cntOpen;
             for (size_t p = 0; (p = m_template.find("]]", p)) != std::string::npos; ++p)
                 ++cntClose;
             if (cntOpen != cntClose) {
                 throw std::runtime_error("Unequal number of [[ and ]] tags");
-            }
+            }*/
         } catch (const std::runtime_error &e) {
             std::cout << "Error: " << e.what() << std::endl;
             return false;
