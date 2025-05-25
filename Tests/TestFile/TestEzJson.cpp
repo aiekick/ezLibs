@@ -1,6 +1,7 @@
 #ifdef TESTING_WIP
 
 #include <ezlibs/wip/ezJson.hpp>
+#include <ezlibs/ezCTest.hpp>
 #include <string>
 
 // Desactivation des warnings de conversion
@@ -18,8 +19,15 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzJson_Read() {
-    
+bool TestEzJson_Parse_1() {
+    ez::Json js;
+    CTEST_ASSERT(js.parse(R"({"nom":"Bob","age":25,"amis":["Alice","Marc"],"actif":true})"));
+    auto& root = js.getRootRef();
+    CTEST_ASSERT(root["nom"].asString() == "Bob");
+    CTEST_ASSERT(root["age"].asNumber() == 25);
+    CTEST_ASSERT(root["actif"].asBool() == true);
+    root["ville"] = ez::json::Value("Lyon");
+    CTEST_ASSERT(root["ville"].asString() == "Lyon");
     return true;
 }
 
@@ -32,7 +40,7 @@ bool TestEzJson_Read() {
     return v()
 
 bool TestEzJson(const std::string& vTest) {
-    IfTestExist(TestEzJson_Read);
+    IfTestExist(TestEzJson_Parse_1);
     return false;
 }
 
