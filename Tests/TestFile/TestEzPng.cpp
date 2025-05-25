@@ -1,5 +1,5 @@
 #ifdef TESTING_WIP
-#include <ezlibs/ezPng.hpp>
+#include <ezlibs/wip/ezPng.hpp>
 #include <string>
 
 // Desactivation des warnings de conversion

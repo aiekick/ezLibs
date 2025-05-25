@@ -1,5 +1,5 @@
 #ifdef TESTING_WIP
-#include <ezlibs/ezLzw.hpp>
+#include <ezlibs/wip/ezLzw.hpp>
 #include <string>
 
 // Desactivation des warnings de conversion

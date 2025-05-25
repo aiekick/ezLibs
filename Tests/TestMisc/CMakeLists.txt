@@ -82,4 +82,6 @@ AddTest("TestEzFigFontLoadAndPrint")
 ##### TESTS EzQrCode #####################################
 ##########################################################
 
-AddTest("TestEzQrCodeBase")
+if (TESTING_WIP)
+	AddTest("TestEzQrCodeBase")
+endif()

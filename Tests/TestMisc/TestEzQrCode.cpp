@@ -1,5 +1,7 @@
+#ifdef TESTING_WIP
+
 #include <ezlibs/ezBmp.hpp>
-//#include <ezlibs/derived/ezQrCode.hpp>
+#include <ezlibs/wip/derived/ezQrCode.hpp>
 #include <ezlibs/ezCTest.hpp>
 #include <string>
 
@@ -19,9 +21,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 bool TestEzQrCodeBase() {
-    //ez::QrCode<5> qr;
-    //CTEST_ASSERT_MESSAGE(qr.encode("https://www.shadertoy.com/view/tcl3Ds", ez::Ecc::H), "QrCode Encode ?");
-    //CTEST_ASSERT_MESSAGE(qr.write(RESULTS_PATH "/qr_code_test.bmp"), "QrCode Writen ?");
+    ez::QrCode<5> qr;
+    CTEST_ASSERT_MESSAGE(qr.encode("https://www.shadertoy.com/view/tcl3Ds", ez::Ecc::H), "QrCode Encode ?");
+    CTEST_ASSERT_MESSAGE(qr.write(RESULTS_PATH "/qr_code_test.bmp"), "QrCode Writen ?");
     return true;
 }
 
@@ -51,3 +53,5 @@ bool TestEzQrCode(const std::string& vTest) {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
+
+#endif

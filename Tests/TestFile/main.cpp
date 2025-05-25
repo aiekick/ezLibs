@@ -3,6 +3,7 @@
 #include <TestEzGif.h>
 #include <TestEzPng.h>
 #include <TestEzSvg.h>
+#include <TestEzJson.h>
 #endif
 #include <TestEzVdbWriter.h>
 #include <TestEzVoxWriter.h>
@@ -25,6 +26,7 @@ bool TestFile(const std::string& vTest) {
     else IfTestCollectionExist(TestEzGif);
     else IfTestCollectionExist(TestEzPng);
     else IfTestCollectionExist(TestEzSvg);
+    else IfTestCollectionExist(TestEzJson);
 #endif
     else IfTestCollectionExist(TestEzVdbWriter);
     else IfTestCollectionExist(TestEzVoxWriter);
@@ -43,5 +45,5 @@ int main(int argc, char** argv) {
         return TestFile(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestFile("TestEzGif_Writer") ? 0 : 1;
+    return TestFile("TestEzJson_Read") ? 0 : 1;
 }
