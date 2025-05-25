@@ -14,10 +14,10 @@ file(GLOB SRC_RECURSE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezIni.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezLog.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezBmp.hpp
-	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezGif.hpp
-	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezPng.hpp
-	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezSvg.hpp
-	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezJson.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/ezGif.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/ezPng.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/ezSvg.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/ezJson.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFile.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezVdbWriter.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezVoxWriter.hpp
