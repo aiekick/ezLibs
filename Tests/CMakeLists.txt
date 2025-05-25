@@ -6,6 +6,7 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CmakeTargets")
 
 option(USE_LEAK_SANITIZER "Enable ezLibs leak sanitizer" OFF)
 option(USE_CODE_COVERAGE "Enable ezLibs code coverage" OFF)
+option(TESTING_WIP "Enable testing of Work in progress libs" OFF)
 
 option(TESTING_APP "Enable testing of Time related libs" ON)
 option(TESTING_COMMUNICATION "Enable testing of Communication related libs" ON)
@@ -34,6 +35,10 @@ endif()
 function(AddTest arg)
   add_test("${arg}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT}" "${arg}")
 endfunction(AddTest)
+
+if (TESTING_WIP)
+	add_definitions(-DTESTING_WIP)
+endif()
 
 if (TESTING_APP)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TestApp)

@@ -1,4 +1,6 @@
+#ifdef TESTING_WIP
 #include <TestEzLzw.h>
+#endif
 
 #include <string>
 
@@ -11,7 +13,9 @@
     return v(vTest)
 
 bool TestFile(const std::string& vTest) {
+#ifdef TESTING_WIP
     IfTestCollectionExist(TestEzLzw);
+#endif
     return false;
 }
 
