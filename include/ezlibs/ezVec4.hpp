@@ -534,4 +534,21 @@ inline bool operator!=(const fvec4& v, const fvec4& f) {
     return isDifferent(f.x, v.x) || isDifferent(f.y, v.y) || isDifferent(f.z, v.z) || isDifferent(f.w, v.w);
 }
 
+template <typename T>
+inline std::istream& operator>>(std::istream& vIn, vec4<T>& vType) {
+    char separator;
+    if (vIn >> vType.x >> separator >> vType.y >> separator >> vType.z >> separator >> vType.w) {
+        if (separator != ';') {
+            vIn.setstate(std::ios::failbit);
+        }
+    }
+    return vIn;
+}
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream& vOut, const vec4<T>& vType) {
+    vOut << vType.x << ";" << vType.y << ";" << vType.z << ";" << vType.w;
+    return vOut;
+}
+
 }  // namespace ez

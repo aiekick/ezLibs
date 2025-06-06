@@ -510,4 +510,21 @@ inline bool valid(const fvec3& a) {
     return floatIsValid(a.x) && floatIsValid(a.y) && floatIsValid(a.z);
 }
 
+template <typename T>
+inline std::istream& operator>>(std::istream& vIn, vec3<T>& vType) {
+    char separator;
+    if (vIn >> vType.x >> separator >> vType.y >> separator >> vType.z) {
+        if (separator != ';') {
+            vIn.setstate(std::ios::failbit);
+        }
+    }
+    return vIn;
+}
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream& vOut, const vec3<T>& vType) {
+    vOut << vType.x << ";" << vType.y << ";" << vType.z;
+    return vOut;
+}
+
 }  // namespace ez

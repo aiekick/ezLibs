@@ -562,4 +562,21 @@ inline typename std::enable_if<std::is_floating_point<T>::value, T>::type radAng
     return angle - angleOffset;
 }
 
+template <typename T>
+inline std::istream& operator>>(std::istream& vIn, vec2<T>& vType) {
+    char separator;
+    if (vIn >> vType.x >> separator >> vType.y) {
+        if (separator != ';') {
+            vIn.setstate(std::ios::failbit);
+        }
+    }
+    return vIn;
+}
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream& vOut, const vec2<T>& vType) {
+    vOut << vType.x << ";" << vType.y;
+    return vOut;
+}
+
 }  // namespace ez
