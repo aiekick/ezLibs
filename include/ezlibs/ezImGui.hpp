@@ -72,4 +72,5 @@ inline std::ostream& operator<<(std::ostream& vOut, const ImGuiKey vType) {
     vOut << static_cast<int32_t>(vType);
     return vOut;
 }
+
 #endif  // IMGUI_API
