@@ -31,6 +31,7 @@ namespace imgui {}   // namespace imgui
 namespace implot {}  // namespace implot
 }  // namespace ez
 
+#include <cstdint>
 #include <ezlibs/ezVec2.hpp>
 #include <ezlibs/ezVec4.hpp>
 
@@ -57,3 +58,18 @@ namespace implot {}  // namespace implot
         Y.Max = v.w;                 \
     }
 #endif
+
+#ifdef IMGUI_API
+enum ImGuiKey : int32_t;
+inline std::istream& operator>>(std::istream& vIn, ImGuiKey& vType) {
+    int32_t key{0};
+    vIn >> key;
+    vType = static_cast<ImGuiKey>(vType);
+    return vIn;
+}
+
+inline std::ostream& operator<<(std::ostream& vOut, const ImGuiKey vType) {
+    vOut << static_cast<int32_t>(vType);
+    return vOut;
+}
+#endif  // IMGUI_API
