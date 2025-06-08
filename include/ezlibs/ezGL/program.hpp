@@ -24,12 +24,12 @@ SOFTWARE.
 
 #pragma once
 
-#include "ezGL.hpp"
 #include <vector>
 #include <memory>
 #include <string>
 #include <cassert>
 #include <functional>
+#include "ezGL.hpp"
 
 namespace ez {
 namespace gl {
@@ -51,28 +51,14 @@ public:
         uint32_t* datas_u = nullptr;  // uint
         bool* datas_b = nullptr;      // bool
         int32_t data_s2d = -1;        // sampler2D
-        int32_t matrix_size = 0;      // matricSize 2,3,4
+        int32_t matrix_size = 0;      // matrixSize 2,3,4
         GLint loc = -1;
         GLuint channels = 0U;
         bool used = false;
         bool showed = false;
+        BufferBlock* buffer_ptr = nullptr;  // a buffer block ex: UBO /SSBO
+        int32_t bufferBinding = -1; // the binding point in the sahder of the buffer block
         UniformWidgetFunctor widget_functor = nullptr;
-    };
-    struct UBO;
-    typedef std::function<void(UBO&)> UBOWidgetFunctor;
-    struct UBO {
-        GLuint ubo = 0;
-        GLenum usage = 0;
-        void* datas = nullptr; 
-        size_t datas_size = 0U;
-        bool showed = false;
-        UBOWidgetFunctor widget_functor = nullptr;
-    };
-    struct SSBO;
-    typedef std::function<void(SSBO&)> SSBOWidgetFunctor;
-    struct SSBO {
-        GLuint ssbo = 0;
-        SSBOWidgetFunctor widget_functor = nullptr;
     };
 
 private:
@@ -155,15 +141,17 @@ public:
     void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) {
         m_UniformPreUploadFunctor = vUniformPreUploadFunctor;
     }
-    void addUniformBufferObject(const GLenum vUsage, void* vDatasPtr, const size_t vDatasSize, const bool vShowWidget, const UBOWidgetFunctor& vWidgetFunctor) {
-        UBO ubo;
-        ubo.usage = vUsage;
-        ubo.datas = vDatasPtr;
-        ubo.datas_size = vDatasSize;
-        ubo.showed = vShowWidget;
-        ubo.widget_functor = vWidgetFunctor;
+    void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock* vBufferPtr) {
+        assert(vShaderType > 0);
+        assert(!vBufferName.empty());
+        assert(vBinding > -1);
+        assert(vBufferPtr > 0);
+        Uniform uni;
+        uni.name = vBufferName;
+        uni.bufferBinding = vBinding;
+        uni.buffer_ptr = vBufferPtr;
+        m_Uniforms[vShaderType][vBufferName] = uni;
     }
-
     void addUniformFloat(const GLenum vShaderType,
                          const std::string& vUniformName,
                          float* vUniformPtr,
@@ -430,6 +418,10 @@ public:
                         CheckGLErrors;
                         ++textureSlotId;
                     }
+                } 
+                // buffer have no widgets, and no use infos
+                if (uni.second.bufferBinding > -1 && uni.second.buffer_ptr != nullptr && uni.second.buffer_ptr->id() > 0U) {
+                    uni.second.buffer_ptr->bind(uni.second.bufferBinding);
                 }
             }
         }

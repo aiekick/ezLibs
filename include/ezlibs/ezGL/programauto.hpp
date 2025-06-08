@@ -24,17 +24,17 @@ SOFTWARE.
 
 #pragma once
 
-#include "ezGL.hpp"
-
-#ifdef IMGUI_INCLUDE
-#include IMGUI_INCLUDE
-#endif
-
 #include <vector>
 #include <memory>
 #include <string>
 #include <cassert>
 #include <functional>
+
+#include "ezGL.hpp"
+
+#ifdef IMGUI_INCLUDE
+#include IMGUI_INCLUDE
+#endif
 
 namespace ez {
 namespace gl {
@@ -58,6 +58,8 @@ public:
         GLuint channels = 1U;
         bool used = false;
         bool showed = false;
+        BufferBlock* buffer_ptr = nullptr;  // a buffer block ex: UBO /SSBO
+        int32_t bufferBinding = -1;  // the binding point in the sahder of the buffer block
         UniformWidgetFunctor widget_functor = nullptr;
     };
 
@@ -136,8 +138,16 @@ public:
         }
         return res;
     }
-    void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) {
-        m_UniformPreUploadFunctor = vUniformPreUploadFunctor;
+    void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) { m_UniformPreUploadFunctor = vUniformPreUploadFunctor; }
+    void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock* vBufferPtr) {
+        assert(vShaderType > 0);
+        assert(!vBufferName.empty());
+        assert(vBinding > 0);
+        assert(vBufferPtr > 0);
+        Uniform uni;
+        uni.bufferBinding = vBinding;
+        uni.buffer_ptr = vBufferPtr;
+        m_Uniforms[vShaderType][vBufferName] = uni;
     }
     void addUniformFloat(const GLenum vShaderType, const std::string& vUniformName, float* vUniformPtr, const GLuint vCountChannels,
                          const bool vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {

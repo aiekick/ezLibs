@@ -36,13 +36,13 @@ SOFTWARE.
 #include PROFILER_INCLUDE
 #endif  // PROFILER_SCOPED
 
-#ifdef PROFILER_SCOPED
+/*#ifdef PROFILER_SCOPED
 #define PROFILER_SCOPED
-#endif  // PROFILER_SCOPED
+#endif  // PROFILER_SCOPED*/
 
-#ifdef PROFILER_SCOPED_PTR
+/*#ifdef PROFILER_SCOPED_PTR
 #define PROFILER_SCOPED_PTR
-#endif  // PROFILER_SCOPED_PTR
+#endif  // PROFILER_SCOPED_PTR*/
 
 #ifdef MSVC
 #define __PRETTY_FUNCTION__ __FUNCSIG__
@@ -89,6 +89,7 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
 
 #include "texture.hpp"
 #include "fbo.hpp"
+#include "bufferBlock.hpp"
 #include "mesh.hpp"
 // #include "meshVfx.hpp"
 #include "quadMesh.hpp"

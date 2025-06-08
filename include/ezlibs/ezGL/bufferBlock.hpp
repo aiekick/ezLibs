@@ -31,27 +31,39 @@ SOFTWARE.
 
 #define PRINT_BLOCK_DATAS
 
-class Buffer {
+namespace ez {
+namespace gl {
+
+class BufferBlock {
 protected:
     GLuint m_buffer = 0;  // buffer id
     GLenum m_target = 0;  // ex : GL_UNIFORM_BUFFER;
     GLenum m_usage = 0;  // ex: GL_DYNAMIC_DRAW;
+    std::string m_name;
 
 public:
-    Buffer(GLenum target, GLenum usage) : m_target(target), m_usage(usage) {}
-    virtual ~Buffer() { destroy(); }
+    BufferBlock() = default;
+    explicit BufferBlock(const std::string& vName, GLenum target, GLenum usage) : m_name(vName), m_target(target), m_usage(usage) {}
+    virtual ~BufferBlock() { destroy(); }
     void create(size_t size, const void* data) {
         glGenBuffers(1, &m_buffer);
+        CheckGLErrors;
         glBindBuffer(m_target, m_buffer);
         glBufferData(m_target, size, data, m_usage);
         CheckGLErrors;
     }
     void upload(size_t size, const void* data) {
+#ifdef PROFILER_SCOPED_PTR
+        PROFILER_SCOPED_PTR(this, "upload BufferBlock ", "%s", m_name.c_str());
+#endif
         glBindBuffer(m_target, m_buffer);
         glBufferData(m_target, size, data, m_usage);
         CheckGLErrors;
     }
-    void bind(GLuint binding) { glBindBufferBase(m_target, binding, m_buffer); }
+    void bind(GLuint binding) {
+        glBindBufferBase(m_target, binding, m_buffer);
+        CheckGLErrors;
+    }
     void destroy() {
         if (m_buffer != 0) {
             glDeleteBuffers(1, &m_buffer);
@@ -62,11 +74,12 @@ public:
     GLuint id() const { return m_buffer; }
 };
 
-// UBO : layout std140
+// UBOAuto : layout std140
+// this ubo can be udpated dynamically by code and will manage automatically resources and layout std140
 
-class UBO {
+class UBOAuto {
 private:
-    Buffer m_buffer;
+    BufferBlock m_buffer;
     // key = uniform name, offset in buffer for have op on uniform data
     std::unordered_map<std::string, uint32_t> m_offsets;
     // uniforms datas buffer
@@ -76,8 +89,8 @@ private:
     bool m_isDirty = true;
 
 public:
-    UBO() : m_buffer(GL_UNIFORM_BUFFER, GL_DYNAMIC_DRAW) {}
-    ~UBO() { unit(); }
+    UBOAuto(const std::string& vName) : m_buffer(vName, GL_UNIFORM_BUFFER, GL_DYNAMIC_DRAW) {}
+    ~UBOAuto() { unit(); }
     bool init() { return true; }
     void unit() {
         m_buffer.destroy();
@@ -108,27 +121,22 @@ public:
         }
     }
     void bind(const uint32_t vBinding) { m_buffer.bind(vBinding); }
+    GLuint id() const { return m_buffer.id(); }
     // add size to uniform block, return startOffset
-    bool registerByteSize(const std::string& vKey, uint32_t vSizeInBytes, uint32_t* vStartOffset) {        
+    bool registerByteSize(const std::string& vKey, uint32_t vSizeInBytes, uint32_t* vStartOffset) {
         if (offsetExist(vKey)) {
             LogVarDebugWarning("Debug : key %s is already defined in buffer. %s fail.", vKey.c_str(), __FUNCTION__);
         } else if (vSizeInBytes > 0) {
             uint32_t newSize = vSizeInBytes;
             uint32_t lastOffset = (uint32_t)m_datas.size();
-            auto baseAlign = getGoodAlignement(newSize);
+            auto baseAlign = getStd140Alignment(newSize);
             // il faut trouver le prochain offset qui est multiple de baseAlign
             auto startOffset = baseAlign * (uint32_t)std::ceil((double)lastOffset / (double)baseAlign);
             auto newSizeToAllocate = startOffset - lastOffset + newSize;
 #ifdef PRINT_BLOCK_DATAS
             auto endOffset = startOffset + newSize;
             LogVarDebugInfo(
-                "key %s, size %u, align %u, Offsets : %u => %u, size to alloc %u\n",
-                vKey.c_str(),
-                newSize,
-                baseAlign,
-                startOffset,
-                endOffset,
-                newSizeToAllocate);
+                "key %s, size %u, align %u, Offsets : %u => %u, size to alloc %u\n", vKey.c_str(), newSize, baseAlign, startOffset, endOffset, newSizeToAllocate);
 #endif
             m_datas.resize(lastOffset + newSizeToAllocate);
             // on set de "lastOffset" a "lastOffset + newSizeToAllocate"
@@ -164,15 +172,15 @@ private:
     bool offsetExist(const std::string& vKey) { return m_offsets.find(vKey) != m_offsets.end(); }
 
 protected:
-    #if 1
+#if 1
     // tested
-    uint32_t getGoodAlignement(uint32_t vSize) {
+    uint32_t getStd140Alignment(uint32_t vSize) {
         uint32_t goodAlign = (uint32_t)std::pow(2, std::ceil(log(vSize) / log(2)));
         return std::min(goodAlign, 16u);
     }
-    #else
+#else
     // maybe closer to the std140, to test
-    uint32_t getGoodAlignement(uint32_t vSize) {
+    uint32_t getStd140Alignment(uint32_t vSize) {
         if (vSize <= 4) {
             return 4;
         }
@@ -181,7 +189,21 @@ protected:
         }
         return 16;
     }
-    #endif
+    // ou un mix des deux ?
+    uint32_t getStd140Alignment(uint32_t vSize) {
+        if (vSize <= 16) {
+            if (vSize <= 4)
+                return 4;  // float, int, uint
+            if (vSize <= 8)
+                return 8;  // vec2, ivec2
+            return 16;  // vec3 (12), vec4 (16), mat3 row (12)
+        }
+
+        // vSize > 16 → struct, array, mat*, etc.
+        uint32_t pow2 = 1 << (uint32_t)std::ceil(std::log2(vSize));
+        return std::min(pow2, 16u);  // clip max align à 16
+    }
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,7 +211,7 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-void UBO::registerVar(const std::string& vKey, T* vValue, uint32_t vSizeInBytes) {
+void UBOAuto::registerVar(const std::string& vKey, T* vValue, uint32_t vSizeInBytes) {
     uint32_t startOffset;
     if (registerByteSize(vKey, vSizeInBytes, &startOffset)) {
         // on copy de "startOffset" a "startOffset + vSizeInBytes"
@@ -198,12 +220,12 @@ void UBO::registerVar(const std::string& vKey, T* vValue, uint32_t vSizeInBytes)
 }
 
 template <typename T>
-void UBO::registerVar(const std::string& vKey, T vValue) {
+void UBOAuto::registerVar(const std::string& vKey, T vValue) {
     RegisterVar(vKey, &vValue, sizeof(vValue));
 }
 
 template <typename T>
-bool UBO::getVar(const std::string& vKey, T& vValue) {
+bool UBOAuto::getVar(const std::string& vKey, T& vValue) {
     if (offsetExist(vKey)) {
         uint32_t offset = offsets[vKey];
         uint32_t size = sizeof(vValue);
@@ -215,7 +237,7 @@ bool UBO::getVar(const std::string& vKey, T& vValue) {
 }
 
 template <typename T>
-bool UBO::setVar(const std::string& vKey, T* vValue, uint32_t vSizeInBytes) {
+bool UBOAuto::setVar(const std::string& vKey, T* vValue, uint32_t vSizeInBytes) {
     if (offsetExist(vKey) && vSizeInBytes > 0) {
         uint32_t newSize = vSizeInBytes;
         uint32_t offset = offsets[vKey];
@@ -228,17 +250,20 @@ bool UBO::setVar(const std::string& vKey, T* vValue, uint32_t vSizeInBytes) {
 }
 
 template <typename T>
-bool UBO::setVar(const std::string& vKey, T vValue) {
+bool UBOAuto::setVar(const std::string& vKey, T vValue) {
     return setVar(vKey, &vValue, sizeof(vValue));
 }
 
 template <typename T>
-bool UBO::setAddVar(const std::string& vKey, T vValue) {
+bool UBOAuto::setAddVar(const std::string& vKey, T vValue) {
     T v;
     if (getVar(vKey, v)) {
         v += vValue;
         return setVar(vKey, v);
     }
-    LogVarDebugInfo("Debug : key %s not exist in buffer. %s fail.", vKey.c_str(), __FUNCTION__ );
+    LogVarDebugInfo("Debug : key %s not exist in buffer. %s fail.", vKey.c_str(), __FUNCTION__);
     return false;
 }
+
+}  // namespace gl
+}  // namespace ez
