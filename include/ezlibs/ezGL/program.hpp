@@ -56,7 +56,23 @@ public:
         GLuint channels = 0U;
         bool used = false;
         bool showed = false;
-        UniformWidgetFunctor widgetFunctor = nullptr;
+        UniformWidgetFunctor widget_functor = nullptr;
+    };
+    struct UBO;
+    typedef std::function<void(UBO&)> UBOWidgetFunctor;
+    struct UBO {
+        GLuint ubo = 0;
+        GLenum usage = 0;
+        void* datas = nullptr; 
+        size_t datas_size = 0U;
+        bool showed = false;
+        UBOWidgetFunctor widget_functor = nullptr;
+    };
+    struct SSBO;
+    typedef std::function<void(SSBO&)> SSBOWidgetFunctor;
+    struct SSBO {
+        GLuint ssbo = 0;
+        SSBOWidgetFunctor widget_functor = nullptr;
     };
 
 private:
@@ -139,6 +155,15 @@ public:
     void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) {
         m_UniformPreUploadFunctor = vUniformPreUploadFunctor;
     }
+    void addUniformBufferObject(const GLenum vUsage, void* vDatasPtr, const size_t vDatasSize, const bool vShowWidget, const UBOWidgetFunctor& vWidgetFunctor) {
+        UBO ubo;
+        ubo.usage = vUsage;
+        ubo.datas = vDatasPtr;
+        ubo.datas_size = vDatasSize;
+        ubo.showed = vShowWidget;
+        ubo.widget_functor = vWidgetFunctor;
+    }
+
     void addUniformFloat(const GLenum vShaderType,
                          const std::string& vUniformName,
                          float* vUniformPtr,
@@ -154,7 +179,7 @@ public:
         uni.datas_f = vUniformPtr;
         uni.showed = vShowWidget;
         uni.channels = vCountChannels;
-        uni.widgetFunctor = vWidgetFunctor;
+        uni.widget_functor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void setUniformFloatDatas(const GLenum vShaderType, const std::string& vUniformName, float* vUniformPtr) {
@@ -179,7 +204,7 @@ public:
         uni.datas_f = vUniformPtr;
         uni.showed = vShowWidget;
         uni.matrix_size = vMatrixSize;
-        uni.widgetFunctor = vWidgetFunctor;
+        uni.widget_functor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void setUniformMatrixDatas(const GLenum vShaderType, const std::string& vUniformName, float* vUniformPtr) {
@@ -204,7 +229,7 @@ public:
         uni.datas_i = vUniformPtr;
         uni.showed = vShowWidget;
         uni.channels = vCountChannels;
-        uni.widgetFunctor = vWidgetFunctor;
+        uni.widget_functor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void setUniformIntDatas(const GLenum vShaderType, const std::string& vUniformName, int32_t* vUniformPtr) {
@@ -229,7 +254,7 @@ public:
         uni.datas_u = vUniformPtr;
         uni.showed = vShowWidget;
         uni.channels = vCountChannels;
-        uni.widgetFunctor = vWidgetFunctor;
+        uni.widget_functor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void setUniformUIntDatas(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vUniformPtr) {
@@ -254,7 +279,7 @@ public:
         uni.datas_b = vUniformPtr;
         uni.showed = vShowWidget;
         uni.channels = vCountChannels;
-        uni.widgetFunctor = vWidgetFunctor;
+        uni.widget_functor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void setUniformBoolDatas(const GLenum vShaderType, const std::string& vUniformName, bool* vUniformPtr) {
@@ -424,8 +449,8 @@ public:
                 ImGui::Indent();
                 for (auto& uni : shader_type.second) {
                     if (uni.second.showed && uni.second.used) {
-                        if (uni.second.widgetFunctor != nullptr) {
-                            uni.second.widgetFunctor(uni.second);
+                        if (uni.second.widget_functor != nullptr) {
+                            uni.second.widget_functor(uni.second);
                         } else {
                             if (uni.second.datas_f != nullptr) {
                                 switch (uni.second.channels) {

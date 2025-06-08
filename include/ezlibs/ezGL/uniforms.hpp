@@ -25,8 +25,8 @@ SOFTWARE.
 #pragma once
 
 /* 
-* this class will manage 
-* will aprse a code and filter uniforms code
+* this class will manage uniforms
+* will parse a code and filter uniforms code
 * uniform widgets
 * 
 */

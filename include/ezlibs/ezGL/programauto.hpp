@@ -58,7 +58,7 @@ public:
         GLuint channels = 1U;
         bool used = false;
         bool showed = false;
-        UniformWidgetFunctor widgetFunctor = nullptr;
+        UniformWidgetFunctor widget_functor = nullptr;
     };
 
 private:
@@ -150,7 +150,7 @@ public:
         uni.showed = vShowWidget;
         uni.datas_f = vUniformPtr;
         uni.channels = vCountChannels;
-        uni.widgetFunctor = vWidgetFunctor;
+        uni.widget_functor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void addUniformInt(const GLenum vShaderType, const std::string& vUniformName, int32_t* vUniformPtr, const GLuint vCountChannels,
@@ -164,7 +164,7 @@ public:
         uni.showed = vShowWidget;
         uni.datas_i = vUniformPtr;
         uni.channels = vCountChannels;
-        uni.widgetFunctor = vWidgetFunctor;
+        uni.widget_functor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D,
@@ -176,7 +176,7 @@ public:
         uni.name = vUniformName;
         uni.showed = vShowWidget;
         uni.data_s2d = vSampler2D;
-        uni.widgetFunctor = vWidgetFunctor;
+        uni.widget_functor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
@@ -234,8 +234,8 @@ public:
                 ImGui::Indent();
                 for (auto& uni : shader_type.second) {
                     if (uni.second.showed && uni.second.used) {
-                        if (uni.second.widgetFunctor != nullptr) {
-                            uni.second.widgetFunctor(uni.second);
+                        if (uni.second.widget_functor != nullptr) {
+                            uni.second.widget_functor(uni.second);
                         } else {
                             if (uni.second.datas_f != nullptr) {
                                 switch (uni.second.channels) {
