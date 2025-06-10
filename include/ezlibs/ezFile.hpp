@@ -423,7 +423,7 @@ inline std::vector<std::string> getDrives() {
     std::vector<std::string> res;
 #ifdef WIN32
     const DWORD mydrives = 2048;
-    char lpBuffer[2048];
+    char lpBuffer[2048 + 1];
     const DWORD countChars = GetLogicalDriveStrings(mydrives, lpBuffer);
     if (countChars > 0) {
         std::string var = std::string(lpBuffer, (size_t)countChars);
