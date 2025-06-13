@@ -26,6 +26,10 @@ SOFTWARE.
 
 #include "ezGL.hpp"
 
+#ifdef STB_IMAGE_INCLUDE
+#include STB_IMAGE_INCLUDE
+#endif  // STB_IMAGE_INCLUDE
+
 #include <cassert>
 #include <memory>
 #include <string>
@@ -64,15 +68,16 @@ public:
         return res;
     }
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
-    static TexturePtr createFromBuffer(const uint8_t* vBuffer,
-                                       const GLsizei vSx,
-                                       const GLsizei vSy,
-                                       const GLenum vInternalFormat,
-                                       const GLenum vFormat,
-                                       const GLenum vPixelFormat,
-                                       const std::string vWrap,
-                                       const std::string vFilter,
-                                       const bool vEnableMipMap) {
+    static TexturePtr createFromBuffer(
+        const uint8_t* vBuffer,
+        const GLsizei vSx,
+        const GLsizei vSy,
+        const GLenum vInternalFormat,
+        const GLenum vFormat,
+        const GLenum vPixelFormat,
+        const std::string vWrap,
+        const std::string vFilter,
+        const bool vEnableMipMap) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
         if (!res->initFromBuffer(vBuffer, vSx, vSy, vInternalFormat, vFormat, vPixelFormat, vWrap, vFilter, vEnableMipMap)) {
@@ -81,14 +86,15 @@ public:
         return res;
     }
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
-    static TexturePtr createFromBuffer(const uint8_t* vBuffer,
-                                       const GLsizei vSx,
-                                       const GLsizei vSy,
-                                       const GLint vChannelsCount,
-                                       const GLenum vPixelFormat,
-                                       const std::string vWrap,
-                                       const std::string vFilter, 
-                                       const bool vEnableMipMap) {
+    static TexturePtr createFromBuffer(
+        const uint8_t* vBuffer,
+        const GLsizei vSx,
+        const GLsizei vSy,
+        const GLint vChannelsCount,
+        const GLenum vPixelFormat,
+        const std::string vWrap,
+        const std::string vFilter,
+        const bool vEnableMipMap) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
         if (!res->initFromBuffer(vBuffer, vSx, vSy, vChannelsCount, vPixelFormat, vWrap, vFilter, vEnableMipMap)) {
@@ -96,13 +102,21 @@ public:
         }
         return res;
     }
+#ifdef STB_IMAGE_INCLUDE
+    // wrap (repeat|mirror|clamp), filter (linear|nearest)
+    static TexturePtr createFromFile(const std::string& vFilePathName, bool vInvertY, std::string vWrap, std::string vFilter, bool vEnableMipMap) {
+        auto res = std::make_shared<Texture>();
+        res->m_This = res;
+        if (!res->initFromFile(vFilePathName, vInvertY, vWrap, vFilter, vEnableMipMap)) {
+            res.reset();
+        }
+        return res;
+    }
+#endif // STB_IMAGE_INCLUDE
 
 public:
     Texture() = default;
-    ~Texture() {
-        unit();
-    }
-
+    ~Texture() { unit(); }
     bool initEmpty(const GLsizei vSx, const GLsizei vSy, const std::string vWrap, const std::string vFilter, const bool vEnableMipMap) {
         assert(vSx > 0);
         assert(vSy > 0);
@@ -120,22 +134,22 @@ public:
         CheckGLErrors;
         m_setParameters(vWrap, vFilter, vEnableMipMap);
         glFinish();
-        CheckGLErrors;        
+        CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D, 0);
         CheckGLErrors;
         return check();
     }
-
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
-    bool initFromBuffer(const uint8_t* vBuffer,
-                        const GLsizei vSx,
-                        const GLsizei vSy,
-                        const GLenum vInternalFormat,
-                        const GLenum vFormat,
-                        const GLenum vPixelFormat,
-                        const std::string vWrap,
-                        const std::string vFilter,
-                        const bool vEnableMipMap) {
+    bool initFromBuffer(
+        const uint8_t* vBuffer,
+        const GLsizei vSx,
+        const GLsizei vSy,
+        const GLenum vInternalFormat,
+        const GLenum vFormat,
+        const GLenum vPixelFormat,
+        const std::string vWrap,
+        const std::string vFilter,
+        const bool vEnableMipMap) {
         assert(vBuffer != nullptr);
         assert(vSx > 0);
         assert(vSy > 0);
@@ -159,16 +173,16 @@ public:
         CheckGLErrors;
         return check();
     }
-
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
-    bool initFromBuffer(const uint8_t* vBuffer,
-                        const GLsizei vSx,
-                        const GLsizei vSy,
-                        const GLint vChannelsCount,
-                        const GLenum vPixelFormat,
-                        const std::string vWrap,
-                        const std::string vFilter, 
-                        const bool vEnableMipMap) {
+    bool initFromBuffer(
+        const uint8_t* vBuffer,
+        const GLsizei vSx,
+        const GLsizei vSy,
+        const GLint vChannelsCount,
+        const GLenum vPixelFormat,
+        const std::string vWrap,
+        const std::string vFilter,
+        const bool vEnableMipMap) {
         assert(vBuffer != nullptr);
         assert(vSx > 0);
         assert(vSy > 0);
@@ -191,7 +205,56 @@ public:
         CheckGLErrors;
         return check();
     }
-
+#ifdef STB_IMAGE_INCLUDE
+    // wrap (repeat|mirror|clamp), filter (linear|nearest)
+    bool initFromFile(
+        const std::string& vFilePathName,
+        const bool vInvertY,
+        const std::string vWrap,
+        const std::string vFilter,
+        const bool vEnableMipMap) {
+        assert(!vFilePathName.empty());
+        stbi_set_flip_vertically_on_load(vInvertY);
+        auto w = 0;
+        auto h = 0;
+        auto chans = 0;
+        auto buffer = stbi_load(vFilePathName.c_str(), &w, &h, &chans, 0);
+        if (buffer) {
+            stbi_image_free(buffer);
+            if (chans == 4) {
+                buffer = stbi_load(vFilePathName.c_str(), &w, &h, &chans, STBI_rgb_alpha);
+            } else if (chans == 3) {
+                buffer = stbi_load(vFilePathName.c_str(), &w, &h, &chans, STBI_rgb);
+            } else if (chans == 2) {
+                buffer = stbi_load(vFilePathName.c_str(), &w, &h, &chans, STBI_grey_alpha);
+            } else if (chans == 1) {
+                buffer = stbi_load(vFilePathName.c_str(), &w, &h, &chans, STBI_grey);
+            }
+        }
+        if (buffer) {
+            m_Width = w;
+            m_Height = h;
+            glGenTextures(1, &m_TexId);
+            CheckGLErrors;
+            glBindTexture(GL_TEXTURE_2D, m_TexId);
+            CheckGLErrors;
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            CheckGLErrors;
+            m_setFormat(GL_UNSIGNED_BYTE, chans);
+            glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, buffer);
+            CheckGLErrors;
+            glFinish();
+            CheckGLErrors;
+            m_setParameters(vWrap, vFilter, vEnableMipMap);
+            glFinish();
+            CheckGLErrors;
+            glBindTexture(GL_TEXTURE_2D, 0);
+            CheckGLErrors;
+            stbi_image_free(buffer);
+        } 
+        return check();
+    }
+#endif // STB_IMAGE_INCLUDE
     void updateMipMaping() {
         if (m_EnableMipMap) {
 #ifdef PROFILER_SCOPED
@@ -203,7 +266,6 @@ public:
             CheckGLErrors;
         }
     }
-
     bool resize(const GLsizei& vSx, const GLsizei& vSy) {
         if (m_TexId > 0U) {
             glBindTexture(GL_TEXTURE_2D, m_TexId);
@@ -217,19 +279,12 @@ public:
         }
         return false;
     }
-    
     void unit() {
         glDeleteTextures(1, &m_TexId);
         CheckGLErrors;
     }
-
-    bool check() {
-        return (glIsTexture(m_TexId) == GL_TRUE);
-    }
-
-    GLuint getTexId() const {
-        return m_TexId;
-    }
+    bool check() { return (glIsTexture(m_TexId) == GL_TRUE); }
+    GLuint getTexId() const { return m_TexId; }
 
 private:
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
@@ -309,8 +364,9 @@ private:
         }
     }
     void m_setFormat(const GLenum vPixelFormat, const GLint& vChannelsCount) {
-        assert(vPixelFormat == GL_UNSIGNED_BYTE ||                   // format BYTE
-               vPixelFormat == GL_FLOAT);                            // format FLOAT
+        assert(
+            vPixelFormat == GL_UNSIGNED_BYTE ||  // format BYTE
+            vPixelFormat == GL_FLOAT);  // format FLOAT
         m_PixelFormat = vPixelFormat;
         m_ChannelsCount = vChannelsCount;
         // 1:r, 2:rg, 3:rgb, 4:rgba

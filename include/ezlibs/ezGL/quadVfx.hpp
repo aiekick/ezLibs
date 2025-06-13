@@ -241,7 +241,7 @@ public:
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->setUniformUIntDatas(vShaderType, vUniformName, vUniformPtr);
     }
-    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D, const bool vShowWidget) {
+    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D, const bool vShowWidget = true) {
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2D, vShowWidget);
     }
