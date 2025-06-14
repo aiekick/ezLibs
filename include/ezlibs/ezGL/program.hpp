@@ -142,7 +142,7 @@ public:
         assert(vShaderType > 0);
         assert(!vBufferName.empty());
         assert(vBinding > -1);
-        assert(vBufferPtr > 0);
+        assert(vBufferPtr != nullptr);
         Uniform uni;
         uni.name = vBufferName;
         uni.bufferBinding = vBinding;

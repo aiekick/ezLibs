@@ -177,8 +177,11 @@ protected:
 #if 1
     // tested
     uint32_t getStd140Alignment(uint32_t vSize) {
-        const auto goodAlign = static_cast<uint32_t>(std::pow(2, std::ceil(std::log(vSize) / std::log(2))));
-        return ez::mini(goodAlign, 16u);
+        auto goodAlign = static_cast<uint32_t>(std::pow(2, std::ceil(std::log(vSize) / std::log(2))));
+        if (goodAlign > 16U) {
+            return 16U;
+        }
+        return goodAlign;
     }
 #else
     // maybe closer to the std140, to test
