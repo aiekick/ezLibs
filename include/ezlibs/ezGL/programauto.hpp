@@ -127,7 +127,7 @@ public:
                 CheckGLErrors;
                 if (!linked) {
                     if (!printProgramAutoLogs(m_ProgramAutoName, "Link Errors")) {
-                        printf("ProgramAuto \"%s\" linking fail for unknown reason\n", m_ProgramAutoName.c_str());
+                        LogVarError("ProgramAuto \"%s\" linking fail for unknown reason\n", m_ProgramAutoName.c_str());
                     }
                     res = false;
                 } else {
@@ -287,7 +287,7 @@ public:
                 CheckGLErrors;
                 uni.second.used = (uni.second.loc > -1);
                 if (uni.second.loc == -1) {
-                    printf("ProgramAuto \'%s\' Stage \'%s\' is not using the uniform \'%s\'", m_ProgramAutoName.c_str(), stage_name, uni.second.name.c_str());
+                    LogVarInfo("ProgramAuto \'%s\' Stage \'%s\' is not using the uniform \'%s\'", m_ProgramAutoName.c_str(), stage_name, uni.second.name.c_str());
                 }
             }
         }
@@ -323,8 +323,8 @@ private:
                 char* infoLog = new char[infoLen];
                 glGetProgramInfoLog(m_ProgramAutoId, infoLen, nullptr, infoLog);
                 CheckGLErrors;
-                printf("#### PROGRAM %s ####", vProgramAutoName.c_str());
-                printf("%s : %s", vLogTypes.c_str(), infoLog);
+                LogVarLightInfo("#### PROGRAM %s ####", vProgramAutoName.c_str());
+                LogVarLightInfo("%s : %s", vLogTypes.c_str(), infoLog);
                 delete[] infoLog;
                 return true;
             }

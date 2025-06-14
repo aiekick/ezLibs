@@ -30,8 +30,6 @@ SOFTWARE.
 #include OPENGL_LOADER
 #endif  // OPENGL_LOADER
 
-#include <string>
-
 #ifdef PROFILER_INCLUDE
 #include PROFILER_INCLUDE
 #endif  // PROFILER_SCOPED
@@ -47,6 +45,11 @@ SOFTWARE.
 #ifdef MSVC
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
+
+#include <ezlibs/ezStr.hpp>
+#include <ezlibs/ezLog.hpp>
+
+#include <string>
 
 namespace ez {
 namespace gl {
@@ -65,7 +68,7 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
             case GL_STACK_UNDERFLOW: error = "GL_STACK_UNDERFLOW"; break;
             case GL_STACK_OVERFLOW: error = "GL_STACK_OVERFLOW"; break;
         }
-        printf("[%s][%s][%i] GL Errors : %s\n", vFile, vFunc, vLine, error.c_str());
+        LogVarLightError("[%s][%s][%i] GL Errors : %s\n", vFile, vFunc, vLine, error.c_str());
     }
 #else
     (void)vFile;

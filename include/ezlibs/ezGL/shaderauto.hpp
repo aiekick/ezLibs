@@ -145,8 +145,8 @@ private:
                 char* infoLog = new char[infoLen];
                 glGetShaderInfoLog(m_ShaderId, infoLen, nullptr, infoLog);
                 CheckGLErrors;
-                printf("#### SHADER %s ####\n", vShaderName.c_str());
-                printf("%s : %s", vLogTypes.c_str(), infoLog);
+                LogVarLightInfo("#### SHADER %s ####\n", vShaderName.c_str());
+                LogVarLightInfo("%s : %s", vLogTypes.c_str(), infoLog);
                 delete[] infoLog;
             }
         }

@@ -28,6 +28,7 @@ SOFTWARE.
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <cmath>
 
 #define PRINT_BLOCK_DATAS
 
@@ -175,7 +176,7 @@ protected:
 #if 1
     // tested
     uint32_t getStd140Alignment(uint32_t vSize) {
-        uint32_t goodAlign = (uint32_t)std::pow(2, std::ceil(log(vSize) / log(2)));
+        uint32_t goodAlign = (uint32_t)std::pow(2, std::ceil(std::log(vSize) / std::log(2)));
         return std::min(goodAlign, 16u);
     }
 #else

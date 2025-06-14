@@ -24,32 +24,11 @@ SOFTWARE.
 
 #pragma once
 
-#ifdef OPENGL_LOADER
-#include OPENGL_LOADER
-#endif  // OPENGL_LOADER
-
-#include <ezlibs/ezStr.hpp>
-#include <ezlibs/ezLog.hpp>
+#include "ezGL.hpp"
 
 #include <map>
 #include <string>
 #include <memory>
-
-#ifdef PROFILER_INCLUDE
-#include PROFILER_INCLUDE
-#endif  // PROFILER_SCOPED
-
-/*#ifdef PROFILER_SCOPED
-#define PROFILER_SCOPED
-#endif  // PROFILER_SCOPED*/
-
-/*#ifdef PROFILER_SCOPED_PTR
-#define PROFILER_SCOPED_PTR
-#endif  // PROFILER_SCOPED_PTR*/
-
-#ifdef MSVC
-#define __PRETTY_FUNCTION__ __FUNCSIG__
-#endif
 
 namespace ez {
 namespace gl {
