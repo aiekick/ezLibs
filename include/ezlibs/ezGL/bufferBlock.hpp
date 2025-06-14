@@ -28,6 +28,7 @@ SOFTWARE.
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <cstring> // memset, memcpy
 #include <cmath>
 
 #define PRINT_BLOCK_DATAS
@@ -132,7 +133,7 @@ public:
             uint32_t lastOffset = (uint32_t)m_datas.size();
             auto baseAlign = getStd140Alignment(newSize);
             // il faut trouver le prochain offset qui est multiple de baseAlign
-            auto startOffset = baseAlign * (uint32_t)std::ceil((double)lastOffset / (double)baseAlign);
+            auto startOffset = baseAlign * static_cast<uint32_t>(std::ceil(static_cast<double>(lastOffset) / static_cast<double>(baseAlign)));
             auto newSizeToAllocate = startOffset - lastOffset + newSize;
 #ifdef PRINT_BLOCK_DATAS
             auto endOffset = startOffset + newSize;
@@ -176,8 +177,8 @@ protected:
 #if 1
     // tested
     uint32_t getStd140Alignment(uint32_t vSize) {
-        uint32_t goodAlign = (uint32_t)std::pow(2, std::ceil(std::log(vSize) / std::log(2)));
-        return std::min(goodAlign, 16u);
+        const auto goodAlign = static_cast<uint32_t>(std::pow(2, std::ceil(std::log(vSize) / std::log(2))));
+        return ez::mini(goodAlign, 16u);
     }
 #else
     // maybe closer to the std140, to test
@@ -216,21 +217,21 @@ void UBOAuto::registerVar(const std::string& vKey, T* vValue, uint32_t vSizeInBy
     uint32_t startOffset;
     if (registerByteSize(vKey, vSizeInBytes, &startOffset)) {
         // on copy de "startOffset" a "startOffset + vSizeInBytes"
-        memcpy(m_datas.data() + startOffset, vValue, vSizeInBytes);
+        std::memcpy(m_datas.data() + startOffset, vValue, vSizeInBytes);
     }
 }
 
 template <typename T>
 void UBOAuto::registerVar(const std::string& vKey, T vValue) {
-    RegisterVar(vKey, &vValue, sizeof(vValue));
+    registerVar(vKey, &vValue, sizeof(vValue));
 }
 
 template <typename T>
 bool UBOAuto::getVar(const std::string& vKey, T& vValue) {
     if (offsetExist(vKey)) {
-        uint32_t offset = offsets[vKey];
+        uint32_t offset = m_offsets[vKey];
         uint32_t size = sizeof(vValue);
-        memcpy(&vValue, m_datas.data() + offset, size);
+        std::memcpy(&vValue, m_datas.data() + offset, size);
         return true;
     }
     LogVarDebugInfo("Debug : key %s not exist in buffer. %s fail.", vKey.c_str(), __FUNCTION__);
@@ -241,9 +242,9 @@ template <typename T>
 bool UBOAuto::setVar(const std::string& vKey, T* vValue, uint32_t vSizeInBytes) {
     if (offsetExist(vKey) && vSizeInBytes > 0) {
         uint32_t newSize = vSizeInBytes;
-        uint32_t offset = offsets[vKey];
-        memcpy(m_datas.data() + offset, vValue, newSize);
-        isDirty = true;
+        uint32_t offset = m_offsets[vKey];
+        std::memcpy(m_datas.data() + offset, vValue, newSize);
+        m_isDirty = true;
         return true;
     }
     LogVarDebugInfo("Debug : key %s not exist in buffer. %s fail.", vKey.c_str(), __FUNCTION__);
