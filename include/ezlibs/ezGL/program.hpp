@@ -514,7 +514,7 @@ public:
                 CheckGLErrors;
                 uni.second.used = (uni.second.loc > -1);
                 if (uni.second.loc == -1) {
-                    LogVarInfo("Program \'%s\' Stage \'%s\' is not using the uniform \'%s\'\n", m_ProgramName.c_str(), stage_name, uni.second.name.c_str());
+                    LogVarInfo("Program \'%s\' Stage \'%s\' is not using the uniform \'%s\'", m_ProgramName.c_str(), stage_name, uni.second.name.c_str());
                 }
             }
         }
