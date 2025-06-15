@@ -125,7 +125,7 @@ public:
                 CheckGLErrors;
                 if (!linked) {
                     if (!printProgramLogs(m_ProgramName, "Link Errors")) {
-                        LogVarError("Program \"%s\" linking fail for unknown reason\n", m_ProgramName.c_str());
+                        LogVarError("Program \"%s\" linking fail for unknown reason", m_ProgramName.c_str());
                     }
                     res = false;
                 } else {
@@ -548,8 +548,8 @@ private:
                 char* infoLog = new char[infoLen];
                 glGetProgramInfoLog(m_ProgramId, infoLen, nullptr, infoLog);
                 CheckGLErrors;
-                LogVarLightInfo("#### PROGRAM %s ####\n", vProgramName.c_str());
-                LogVarLightInfo("%s : %s\n", vLogTypes.c_str(), infoLog);
+                LogVarLightInfo("#### PROGRAM %s ####", vProgramName.c_str());
+                LogVarLightInfo("%s : %s", vLogTypes.c_str(), infoLog);
                 delete[] infoLog;
                 return true;
             }
