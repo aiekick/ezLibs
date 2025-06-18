@@ -321,7 +321,7 @@ namespace ez {
 
 #if __cplusplus >= 201703L  // c++17
         template <>
-        inline bool Node::getContent() const {
+        inline bool Node::getContent<bool>() const {
             return (m_content == "true");
         }
 #endif
