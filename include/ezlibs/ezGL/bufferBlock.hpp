@@ -138,7 +138,7 @@ public:
 #ifdef PRINT_BLOCK_DATAS
             auto endOffset = startOffset + newSize;
             LogVarDebugInfo(
-                "key %s, size %u, align %u, Offsets : %u => %u, size to alloc %u\n", vKey.c_str(), newSize, baseAlign, startOffset, endOffset, newSizeToAllocate);
+                "key %s, size %u, align %u, Offsets : %u => %u, size to alloc %u", vKey.c_str(), newSize, baseAlign, startOffset, endOffset, newSizeToAllocate);
 #endif
             m_datas.resize(lastOffset + newSizeToAllocate);
             // on set de "lastOffset" a "lastOffset + newSizeToAllocate"
