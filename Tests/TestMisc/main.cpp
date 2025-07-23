@@ -37,5 +37,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzStackString_HeapDisabled") ? 0 : 1;
+    return TestMisc("TestEzStackString_OperatorAt") ? 0 : 1;
 }

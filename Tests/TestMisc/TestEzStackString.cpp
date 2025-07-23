@@ -24,7 +24,6 @@ bool TestEzStackString_Constructor_CopyMove() {
     CTEST_ASSERT(strcmp(b.c_str(), "Hello") == 0);
     ez::StackString<char, 8> c(std::move(a));  // move
     CTEST_ASSERT(strcmp(c.c_str(), "Hello") == 0);
-
     return true;
 }
 
@@ -84,16 +83,17 @@ bool TestEzStackString_Substr() {
 }
 
 bool TestEzStackString_OperatorAt() {
-    ez::StackString<char, 16> s("hello");
+    ez::StackString<char, 6, 2> s("hello");
     CTEST_ASSERT(s[1] == 'e');
     CTEST_ASSERT(s.at(4) == 'o');
-    bool exceptionThrown = false;
-    try {
-        (void)s.at(99);
-    } catch (...) {
-        exceptionThrown = true;
-    }
-    CTEST_ASSERT(exceptionThrown == true);
+    CTEST_TRY_CATCH(s.at(10));  // index out àof range but in stack
+    s += " World"; // one growing
+    CTEST_ASSERT(s.usingHeap() == true);
+    CTEST_ASSERT(strcmp(s.c_str(), "hello World") == 0);
+    CTEST_ASSERT(s.at(9) == 'l');  // index in heap 
+    s += " ! Folks !";  // another growing but in already allocated heap
+    CTEST_ASSERT(strcmp(s.c_str(), "hello World ! Folks !") == 0);
+    CTEST_TRY_CATCH(s.at(99));  // index out àof range but in heap
     return true;
 }
 
@@ -102,13 +102,7 @@ bool TestEzStackString_HeapDisabled() {
     CTEST_ASSERT(s.usingHeap() == false);
     s += "def";  // total = 6 → still OK
     CTEST_ASSERT(strcmp(s.c_str(), "abcdef") == 0);
-    bool exceptionThrown = false;
-    try {
-        s += "ghi";  // exceed stack
-    } catch (...) {
-        exceptionThrown = true;
-    }
-    CTEST_ASSERT(exceptionThrown == true);
+    CTEST_TRY_CATCH(s += "ghi");  // exceed stack
     return true;
 }
 
