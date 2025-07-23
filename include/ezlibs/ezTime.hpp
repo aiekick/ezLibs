@@ -240,7 +240,7 @@ double measureOperationUs(TLAMBDA vLambda, size_t vCountOperations = 1) {
         total += clock::now() - t0;
     }
     if (vCountOperations > 1) {
-        total /= static_cast<double>(count);
+        total /= static_cast<double>(vCountOperations);
     }
     return total.count();
 }
