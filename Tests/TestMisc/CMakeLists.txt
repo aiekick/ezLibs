@@ -13,6 +13,7 @@ file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCmdProcessor.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezGraph.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStr.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStackString.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp
@@ -55,6 +56,21 @@ AddTest("TestEzGraph_Evaluation")
 AddTest("TestEzStrGetDigitsCountOfAIntegralNumber")
 AddTest("TestEzStrSearchForPatternWithWildcards")
 AddTest("TestEzStrExtractWildcardsFromPattern")
+
+##########################################################
+##### TESTS EzStackString ################################
+##########################################################
+
+AddTest("TestEzStackString_Constructor_CopyMove")
+AddTest("TestEzStackString_Append_CStr")
+AddTest("TestEzStackString_Append_Char")
+AddTest("TestEzStackString_OperatorPlusEqual")
+AddTest("TestEzStackString_HeapSwitch")
+AddTest("TestEzStackString_Clear")
+AddTest("TestEzStackString_Find")
+AddTest("TestEzStackString_Substr")
+AddTest("TestEzStackString_OperatorAt")
+AddTest("TestEzStackString_HeapDisabled")
 
 ##########################################################
 ##### TESTS EzCnt ########################################

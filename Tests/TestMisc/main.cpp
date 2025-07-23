@@ -2,6 +2,7 @@
 #include <TestEzGraph.h>
 #include <TestEzXml.h>
 #include <TestEzStr.h>
+#include <TestEzStackString.h>
 #include <TestEzCnt.h>
 #include <TestEzFigFont.h>
 #ifdef TESTING_WIP
@@ -17,6 +18,7 @@ bool TestMisc(const std::string& vTest) {
     else IfTestCollectionExist(TestEzGraph);
     else IfTestCollectionExist(TestEzXml);
     else IfTestCollectionExist(TestEzStr);
+    else IfTestCollectionExist(TestEzStackString);
     else IfTestCollectionExist(TestEzCnt);
     else IfTestCollectionExist(TestEzFigFont);
 #ifdef TESTING_WIP
@@ -35,5 +37,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzStrExtractWildcardsFromPattern") ? 0 : 1;
+    return TestMisc("TestEzStackString_HeapDisabled") ? 0 : 1;
 }
