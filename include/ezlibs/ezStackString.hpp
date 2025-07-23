@@ -25,7 +25,7 @@ public:
 
     StackString(const StackString& other) { append(other.c_str()); }
 
-    StackString(StackString&& other) : _heapSize(other._heapSize), _heapLength(other._heapLength), _heapData(other._heapData), _stackLength(other._stackLength) {
+    StackString(StackString&& other) noexcept : _heapSize(other._heapSize), _heapLength(other._heapLength), _heapData(other._heapData), _stackLength(other._stackLength) {
         std::memcpy(_stackData, other._stackData, sizeof(_stackData));
         other._heapData = nullptr;
         other._heapSize = 0;

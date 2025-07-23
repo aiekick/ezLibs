@@ -20,10 +20,8 @@
 bool TestEzStackString_Constructor_CopyMove() {
     ez::StackString<char, 8> a("Hello");
     CTEST_ASSERT(strcmp(a.c_str(), "Hello") == 0);
-
     ez::StackString<char, 8> b(a);  // copy
     CTEST_ASSERT(strcmp(b.c_str(), "Hello") == 0);
-
     ez::StackString<char, 8> c(std::move(a));  // move
     CTEST_ASSERT(strcmp(c.c_str(), "Hello") == 0);
 
@@ -89,7 +87,6 @@ bool TestEzStackString_OperatorAt() {
     ez::StackString<char, 16> s("hello");
     CTEST_ASSERT(s[1] == 'e');
     CTEST_ASSERT(s.at(4) == 'o');
-
     bool exceptionThrown = false;
     try {
         (void)s.at(99);
@@ -103,10 +100,8 @@ bool TestEzStackString_OperatorAt() {
 bool TestEzStackString_HeapDisabled() {
     ez::StackString<char, 8, 0> s("abc");
     CTEST_ASSERT(s.usingHeap() == false);
-
     s += "def";  // total = 6 → still OK
     CTEST_ASSERT(strcmp(s.c_str(), "abcdef") == 0);
-
     bool exceptionThrown = false;
     try {
         s += "ghi";  // exceed stack
