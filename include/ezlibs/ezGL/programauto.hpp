@@ -127,7 +127,7 @@ public:
                 CheckGLErrors;
                 if (!linked) {
                     if (!printProgramAutoLogs(m_ProgramAutoName, "Link Errors")) {
-                        LogVarError("ProgramAuto \"%s\" linking fail for unknown reason\n", m_ProgramAutoName.c_str());
+                        LogVarError("ProgramAuto \"%s\" linking fail for unknown reason", m_ProgramAutoName.c_str());
                     }
                     res = false;
                 } else {

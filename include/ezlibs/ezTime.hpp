@@ -227,5 +227,23 @@ public:
     }
 };
 
+// TODO: TO TEST
+//! Measure the time in microsecondes of a operation passed via lambda fucntion
+//! the operation will be executed many time according to vCountOperations and averaged
+template <typename TLAMBDA>
+double measureOperationUs(TLAMBDA vLambda, size_t vCountOperations = 1) {
+    using clock = std::chrono::high_resolution_clock;
+    std::chrono::duration<double, std::micro> total{0};
+    for (size_t i = 0; i < vCountOperations; ++i) {
+        auto t0 = clock::now();
+        vLambda();
+        total += clock::now() - t0;
+    }
+    if (vCountOperations > 1) {
+        total /= static_cast<double>(count);
+    }
+    return total.count();
+}
+
 }  // namespace time
 }  // namespace ez

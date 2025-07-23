@@ -68,7 +68,7 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
             case GL_STACK_UNDERFLOW: error = "GL_STACK_UNDERFLOW"; break;
             case GL_STACK_OVERFLOW: error = "GL_STACK_OVERFLOW"; break;
         }
-        LogVarLightError("[%s][%s][%i] GL Errors : %s\n", vFile, vFunc, vLine, error.c_str());
+        LogVarLightError("[%s][%s][%i] GL Errors : %s", vFile, vFunc, vLine, error.c_str());
     }
 #else
     (void)vFile;
