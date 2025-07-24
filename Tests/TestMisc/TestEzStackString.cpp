@@ -72,6 +72,7 @@ bool TestEzStackString_Find() {
     CTEST_ASSERT(s.find("lo") == 3);
     CTEST_ASSERT(s.find("w") == 6);
     CTEST_ASSERT(s.find("x") == s.npos);
+    CTEST_ASSERT(s.find("") == s.npos);
     return true;
 }
 
@@ -79,6 +80,7 @@ bool TestEzStackString_Substr() {
     ez::StackString<char, 16> s("hello world");
     auto sub = s.substr(6, 5);
     CTEST_ASSERT(strcmp(sub.c_str(), "world") == 0);
+    CTEST_TRY_CATCH(s.substr(66, 5));
     return true;
 }
 
@@ -86,14 +88,18 @@ bool TestEzStackString_OperatorAt() {
     ez::StackString<char, 6, 2> s("hello");
     CTEST_ASSERT(s[1] == 'e');
     CTEST_ASSERT(s.at(4) == 'o');
+    CTEST_ASSERT(s[4] == 'o');
     CTEST_TRY_CATCH(s.at(10));  // index out àof range but in stack
+    CTEST_TRY_CATCH(s[10]);  // index out àof range but in stack
     s += " World"; // one growing
     CTEST_ASSERT(s.usingHeap() == true);
     CTEST_ASSERT(strcmp(s.c_str(), "hello World") == 0);
     CTEST_ASSERT(s.at(9) == 'l');  // index in heap 
+    CTEST_ASSERT(s[9] == 'l');  // index in heap 
     s += " ! Folks !";  // another growing but in already allocated heap
     CTEST_ASSERT(strcmp(s.c_str(), "hello World ! Folks !") == 0);
     CTEST_TRY_CATCH(s.at(99));  // index out àof range but in heap
+    CTEST_TRY_CATCH(s[99]);  // index out àof range but in heap
     return true;
 }
 

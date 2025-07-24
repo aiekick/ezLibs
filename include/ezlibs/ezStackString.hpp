@@ -45,15 +45,12 @@ public:
     StackString& operator=(StackString&& other) {
         if (this != &other) {
             clear();
-            if (_heapData)
-                delete[] _heapData;
-
+            delete[] _heapData;
             _heapSize = other._heapSize;
             _heapLength = other._heapLength;
             _heapData = other._heapData;
             _stackLength = other._stackLength;
             std::memcpy(_stackData, other._stackData, sizeof(_stackData));
-
             other._heapData = nullptr;
             other._heapSize = 0;
             other._heapLength = 0;
@@ -63,20 +60,15 @@ public:
         return *this;
     }
 
-    ~StackString() {
-        if (_heapData)
-            delete[] _heapData;
-    }
+    ~StackString() { delete[] _heapData; }
 
     void clear() {
         _stackLength = 0;
         _stackData[0] = TChar(0);
-        if (_heapData) {
-            delete[] _heapData;
-            _heapData = nullptr;
-            _heapSize = 0;
-            _heapLength = 0;
-        }
+        delete[] _heapData;
+        _heapData = nullptr;
+        _heapSize = 0;
+        _heapLength = 0;
     }
 
     bool usingHeap() const { return _heapData != nullptr; }
@@ -85,15 +77,15 @@ public:
 
     void reserve(size_t newSize) {
         if (HeapChunkSize == 0) {
-            if (newSize > StackChunkSize)
+            if (newSize > StackChunkSize) {
                 throw std::runtime_error("Heap allocation disabled");
+            }
             return;
         }
-
         if (_heapData) {
-            if (newSize <= _heapSize)
+            if (newSize <= _heapSize) {
                 return;
-
+            }
             size_t newCap = ((newSize / HeapChunkSize) + 1) * HeapChunkSize;
             TChar* newData = new TChar[newCap + 1];
             std::memcpy(newData, _heapData, _heapLength * sizeof(TChar));
@@ -102,9 +94,9 @@ public:
             _heapData = newData;
             _heapSize = newCap;
         } else {
-            if (newSize <= StackChunkSize)
+            if (newSize <= StackChunkSize) {
                 return;
-
+            }
             size_t newCap = ((newSize / HeapChunkSize) + 1) * HeapChunkSize;
             _heapData = new TChar[newCap + 1];
             std::memcpy(_heapData, _stackData, _stackLength * sizeof(TChar));
@@ -118,9 +110,7 @@ public:
         const size_t len = std::char_traits<TChar>::length(str);
         const size_t currentLen = size();
         const size_t totalLen = currentLen + len;
-
         reserve(totalLen);
-
         if (_heapData) {
             std::memcpy(_heapData + _heapLength, str, len * sizeof(TChar));
             _heapLength += len;
@@ -148,14 +138,16 @@ public:
     }
 
     TChar& operator[](size_t index) {
-        if (index >= size())
+        if (index >= size()) {
             throw std::out_of_range("StackString index out of range");
+        }
         return _heapData ? _heapData[index] : _stackData[index];
     }
 
     const TChar& at(size_t index) const {
-        if (index >= size())
+        if (index >= size()) {
             throw std::out_of_range("StackString index out of range");
+        }
         return _heapData ? _heapData[index] : _stackData[index];
     }
 
@@ -163,21 +155,22 @@ public:
         const TChar* haystack = c_str();
         const size_t hayLen = size();
         const size_t needleLen = std::char_traits<TChar>::length(needle);
-        if (needleLen == 0 || pos > hayLen || needleLen > hayLen - pos)
+        if (needleLen == 0 || pos > hayLen || needleLen > hayLen - pos) {
             return npos;
-
+        }
         for (size_t i = pos; i <= hayLen - needleLen; ++i) {
-            if (std::char_traits<TChar>::compare(haystack + i, needle, needleLen) == 0)
+            if (std::char_traits<TChar>::compare(haystack + i, needle, needleLen) == 0) {
                 return i;
+            }
         }
         return npos;
     }
 
     StackString substr(size_t pos, size_t count = npos) const {
         const size_t len = size();
-        if (pos > len)
+        if (pos > len) {
             throw std::out_of_range("substr position out of range");
-
+        }
         size_t actualCount = (count == npos || pos + count > len) ? len - pos : count;
         const TChar* src = c_str() + pos;
         TChar* tmp = new TChar[actualCount + 1];
