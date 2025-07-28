@@ -16,6 +16,7 @@ file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStackString.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezSha.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/derived/ezQrCode.hpp)
 source_group(TREE ${EZ_LIBS_INCLUDE_DIR}/ezlibs PREFIX Libs FILES ${EZ_LIBS_SOURCE})
@@ -93,6 +94,12 @@ AddTest("TestEzXmlParsingNOK_1")
 ##########################################################
 
 AddTest("TestEzFigFontLoadAndPrint")
+
+##########################################################
+##### TESTS EzSha ########################################
+##########################################################
+
+AddTest("TestEzSha_0")
 
 ##########################################################
 ##### TESTS EzQrCode #####################################

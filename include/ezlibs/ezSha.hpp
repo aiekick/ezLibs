@@ -25,149 +25,150 @@ SOFTWARE.
 */
 
 // ezSha is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
-// and base on https://github.com/983/SHA1.git - Unlicense 
+// and base on https://github.com/983/SHA1.git - Unlicense
 
 #include <cstdint>
 #include <cstring>
 #include <array>
 
-#define SHA1_HEX_SIZE (40 + 1)
-#define SHA1_BASE64_SIZE (28 + 1)
-
 namespace ez {
-	
+
 class sha1 {
+public:
+    static size_t constexpr SHA1_HEX_SIZE{40 + 1};
+    static size_t constexpr SHA1_BASE64_SIZE{28 + 1};
+
 private:
-    std::array<uint32_t, 5> m_m_state{};
+    std::array<uint32_t, 5> m_state{};
     std::array<uint8_t, 64> m_buf;
     uint32_t m_index{};
     uint64_t m_countBits{};
 
 public:
-    sha1(const char *text = NULL): m_index(0), m_countBits(0){
+    sha1(const char *text = NULL) : m_index(0), m_countBits(0) {
         m_state[0] = 0x67452301;
         m_state[1] = 0xEFCDAB89;
         m_state[2] = 0x98BADCFE;
         m_state[3] = 0x10325476;
         m_state[4] = 0xC3D2E1F0;
         if (text) {
-			add(text);
-		}
-	}
-	
-    sha1& add(uint8_t x){
-        add_byte_dont_count_bits(x);
+            add(text);
+        }
+    }
+
+    sha1 &add(uint8_t x) {
+        m_addByteDontCountBits(x);
         m_countBits += 8;
         return *this;
     }
 
-    sha1& add(char c){
-        return add(*(uint8_t*)&c);
-    }
+    sha1 &add(char c) { return add(*(uint8_t *)&c); }
 
-    sha1& add(const void *data, uint32_t n){
-        if (!data) return *this;
+    sha1 &add(const void *data, uint32_t n) {
+        if (!data) {
+            return *this;
+        }
 
-        const uint8_t *ptr = (const uint8_t*)data;
+        const uint8_t *ptr = (const uint8_t *)data;
 
         // fill up block if not full
-        for (; n && m_index % sizeof(m_buf); n--) add(*ptr++);
+        for (; n && m_index % sizeof(m_buf); n--)
+            add(*ptr++);
 
         // process full blocks
-        for (; n >= sizeof(m_buf); n -= sizeof(m_buf)){
-            process_block(ptr);
+        for (; n >= sizeof(m_buf); n -= sizeof(m_buf)) {
+            m_processBlock(ptr);
             ptr += sizeof(m_buf);
             m_countBits += sizeof(m_buf) * 8;
         }
 
         // process remaining part of block
-        for (; n; n--) add(*ptr++);
+        for (; n; n--) {
+            add(*ptr++);
+        }
 
         return *this;
     }
 
-    sha1& add(const char *text){
-        if (!text) return *this;
-        return add(text, strlen(text));
+    sha1 &add(const char *text) {
+        if (!text) {
+            return *this;
+        }
+        return add(text, static_cast<uint32_t>(strlen(text)));
     }
 
-    sha1& finalize(){
+    sha1 &finalize() {
         // hashed text ends with 0x80, some padding 0x00 and the length in bits
-        add_byte_dont_count_bits(0x80);
-        while (m_index % 64 != 56) add_byte_dont_count_bits(0x00);
-        for (int j = 7; j >= 0; j--) add_byte_dont_count_bits(m_countBits >> j * 8);
+        m_addByteDontCountBits(0x80);
+        while (m_index % 64 != 56) {
+            m_addByteDontCountBits(0x00);
+        }
+        for (int32_t j = 7; j >= 0; j--) {
+            m_addByteDontCountBits(static_cast<uint8_t>(m_countBits >> j * 8));
+        }
 
         return *this;
     }
 
-    const sha1& print_hex(
-        char *hex,
-        bool zero_terminate = true,
-        const char *alphabet = "0123456789abcdef"
-    ) const {
+    const sha1 &printHex(char *hex, bool zero_terminate = true, const char *alphabet = "0123456789abcdef") const {
         // print hex
         int k = 0;
-        for (int m_index = 0; m_index < 5; m_index++){
-            for (int j = 7; j >= 0; j--){
+        for (int m_index = 0; m_index < 5; m_index++) {
+            for (int j = 7; j >= 0; j--) {
                 hex[k++] = alphabet[(m_state[m_index] >> j * 4) & 0xf];
             }
         }
-        if (zero_terminate) hex[k] = '\0';
+        if (zero_terminate) {
+            hex[k] = '\0';
+        }
         return *this;
     }
 
-    const sha1& print_base64(char *base64, bool zero_terminate = true) const {
-        static const uint8_t *table = (const uint8_t*)
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "abcdefghijklmnopqrstuvwxyz"
-            "0123456789"
-            "+/";
+    const sha1 &printBase64(char *base64, bool zero_terminate = true) const {
+        static const uint8_t *table = (const uint8_t *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                                       "abcdefghijklmnopqrstuvwxyz"
+                                                       "0123456789"
+                                                       "+/";
 
         uint32_t triples[7] = {
-            ((m_state[0] & 0xffffff00) >> 1*8),
-            ((m_state[0] & 0x000000ff) << 2*8) | ((m_state[1] & 0xffff0000) >> 2*8),
-            ((m_state[1] & 0x0000ffff) << 1*8) | ((m_state[2] & 0xff000000) >> 3*8),
-            ((m_state[2] & 0x00ffffff) << 0*8),
-            ((m_state[3] & 0xffffff00) >> 1*8),
-            ((m_state[3] & 0x000000ff) << 2*8) | ((m_state[4] & 0xffff0000) >> 2*8),
-            ((m_state[4] & 0x0000ffff) << 1*8),
+            ((m_state[0] & 0xffffff00) >> 1 * 8),
+            ((m_state[0] & 0x000000ff) << 2 * 8) | ((m_state[1] & 0xffff0000) >> 2 * 8),
+            ((m_state[1] & 0x0000ffff) << 1 * 8) | ((m_state[2] & 0xff000000) >> 3 * 8),
+            ((m_state[2] & 0x00ffffff) << 0 * 8),
+            ((m_state[3] & 0xffffff00) >> 1 * 8),
+            ((m_state[3] & 0x000000ff) << 2 * 8) | ((m_state[4] & 0xffff0000) >> 2 * 8),
+            ((m_state[4] & 0x0000ffff) << 1 * 8),
         };
 
-        for (int m_index = 0; m_index < 7; m_index++){
+        for (int m_index = 0; m_index < 7; m_index++) {
             uint32_t x = triples[m_index];
-            base64[m_index*4 + 0] = table[(x >> 3*6) % 64];
-            base64[m_index*4 + 1] = table[(x >> 2*6) % 64];
-            base64[m_index*4 + 2] = table[(x >> 1*6) % 64];
-            base64[m_index*4 + 3] = table[(x >> 0*6) % 64];
+            base64[m_index * 4 + 0] = table[(x >> 3 * 6) % 64];
+            base64[m_index * 4 + 1] = table[(x >> 2 * 6) % 64];
+            base64[m_index * 4 + 2] = table[(x >> 1 * 6) % 64];
+            base64[m_index * 4 + 3] = table[(x >> 0 * 6) % 64];
         }
 
         base64[SHA1_BASE64_SIZE - 2] = '=';
-        if (zero_terminate) base64[SHA1_BASE64_SIZE - 1] = '\0';
+        if (zero_terminate) {
+            base64[SHA1_BASE64_SIZE - 1] = '\0';
+        }
         return *this;
     }
-	
+
 private:
-    void add_byte_dont_count_bits(uint8_t x) {
+    void m_addByteDontCountBits(uint8_t x) {
         m_buf[m_index++] = x;
-        if (m_index >= sizeof(m_buf)){
+        if (m_index >= sizeof(m_buf)) {
             m_index = 0;
-            process_block(m_buf);
+            m_processBlock(m_buf.data());
         }
     }
 
-    static uint32_t rol32(uint32_t x, uint32_t n){
-        return (x << n) | (x >> (32 - n));
-    }
+    static uint32_t m_rol32(uint32_t x, uint32_t n) { return (x << n) | (x >> (32 - n)); }
 
-    static uint32_t make_word(const uint8_t *p){
-        return
-            ((uint32_t)p[0] << 3*8) |
-            ((uint32_t)p[1] << 2*8) |
-            ((uint32_t)p[2] << 1*8) |
-            ((uint32_t)p[3] << 0*8);
-    }
+    static uint32_t m_makeWord(const uint8_t *p) { return ((uint32_t)p[0] << 3 * 8) | ((uint32_t)p[1] << 2 * 8) | ((uint32_t)p[2] << 1 * 8) | ((uint32_t)p[3] << 0 * 8); }
 
-    void process_block(const uint8_t *ptr){
+    void m_processBlock(const uint8_t *ptr) {
         const uint32_t c0 = 0x5a827999;
         const uint32_t c1 = 0x6ed9eba1;
         const uint32_t c2 = 0x8f1bbcdc;
@@ -181,25 +182,37 @@ private:
 
         uint32_t w[16];
 
-        for (int m_index = 0; m_index < 16; m_index++) w[m_index] = make_word(ptr + m_index*4);
+        for (int m_index = 0; m_index < 16; m_index++) {
+            w[m_index] = m_makeWord(ptr + m_index * 4);
+        }
 
-#define SHA1_LOAD(m_index) w[m_index&15] = rol32(w[(m_index+13)&15] ^ w[(m_index+8)&15] ^ w[(m_index+2)&15] ^ w[m_index&15], 1);
-#define SHA1_ROUND_0(v,u,x,y,z,m_index)              z += ((u & (x ^ y)) ^ y) + w[m_index&15] + c0 + rol32(v, 5); u = rol32(u, 30);
-#define SHA1_ROUND_1(v,u,x,y,z,m_index) SHA1_LOAD(m_index) z += ((u & (x ^ y)) ^ y) + w[m_index&15] + c0 + rol32(v, 5); u = rol32(u, 30);
-#define SHA1_ROUND_2(v,u,x,y,z,m_index) SHA1_LOAD(m_index) z += (u ^ x ^ y) + w[m_index&15] + c1 + rol32(v, 5); u = rol32(u, 30);
-#define SHA1_ROUND_3(v,u,x,y,z,m_index) SHA1_LOAD(m_index) z += (((u | x) & y) | (u & x)) + w[m_index&15] + c2 + rol32(v, 5); u = rol32(u, 30);
-#define SHA1_ROUND_4(v,u,x,y,z,m_index) SHA1_LOAD(m_index) z += (u ^ x ^ y) + w[m_index&15] + c3 + rol32(v, 5); u = rol32(u, 30);
+#define SHA1_LOAD(m_index) w[m_index & 15] = m_rol32(w[(m_index + 13) & 15] ^ w[(m_index + 8) & 15] ^ w[(m_index + 2) & 15] ^ w[m_index & 15], 1);
+#define SHA1_ROUND_0(v, u, x, y, z, m_index)                         \
+    z += ((u & (x ^ y)) ^ y) + w[m_index & 15] + c0 + m_rol32(v, 5); \
+    u = m_rol32(u, 30);
+#define SHA1_ROUND_1(v, u, x, y, z, m_index)                                            \
+    SHA1_LOAD(m_index) z += ((u & (x ^ y)) ^ y) + w[m_index & 15] + c0 + m_rol32(v, 5); \
+    u = m_rol32(u, 30);
+#define SHA1_ROUND_2(v, u, x, y, z, m_index)                                    \
+    SHA1_LOAD(m_index) z += (u ^ x ^ y) + w[m_index & 15] + c1 + m_rol32(v, 5); \
+    u = m_rol32(u, 30);
+#define SHA1_ROUND_3(v, u, x, y, z, m_index)                                                  \
+    SHA1_LOAD(m_index) z += (((u | x) & y) | (u & x)) + w[m_index & 15] + c2 + m_rol32(v, 5); \
+    u = m_rol32(u, 30);
+#define SHA1_ROUND_4(v, u, x, y, z, m_index)                                    \
+    SHA1_LOAD(m_index) z += (u ^ x ^ y) + w[m_index & 15] + c3 + m_rol32(v, 5); \
+    u = m_rol32(u, 30);
 
-        SHA1_ROUND_0(a, b, c, d, e,  0);
-        SHA1_ROUND_0(e, a, b, c, d,  1);
-        SHA1_ROUND_0(d, e, a, b, c,  2);
-        SHA1_ROUND_0(c, d, e, a, b,  3);
-        SHA1_ROUND_0(b, c, d, e, a,  4);
-        SHA1_ROUND_0(a, b, c, d, e,  5);
-        SHA1_ROUND_0(e, a, b, c, d,  6);
-        SHA1_ROUND_0(d, e, a, b, c,  7);
-        SHA1_ROUND_0(c, d, e, a, b,  8);
-        SHA1_ROUND_0(b, c, d, e, a,  9);
+        SHA1_ROUND_0(a, b, c, d, e, 0);
+        SHA1_ROUND_0(e, a, b, c, d, 1);
+        SHA1_ROUND_0(d, e, a, b, c, 2);
+        SHA1_ROUND_0(c, d, e, a, b, 3);
+        SHA1_ROUND_0(b, c, d, e, a, 4);
+        SHA1_ROUND_0(a, b, c, d, e, 5);
+        SHA1_ROUND_0(e, a, b, c, d, 6);
+        SHA1_ROUND_0(d, e, a, b, c, 7);
+        SHA1_ROUND_0(c, d, e, a, b, 8);
+        SHA1_ROUND_0(b, c, d, e, a, 9);
         SHA1_ROUND_0(a, b, c, d, e, 10);
         SHA1_ROUND_0(e, a, b, c, d, 11);
         SHA1_ROUND_0(d, e, a, b, c, 12);
@@ -284,7 +297,6 @@ private:
         m_state[3] += d;
         m_state[4] += e;
     }
-
 };
 
-} // namespace ez
+}  // namespace ez
