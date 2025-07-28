@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <cstdint>
 #include <cstring>
+#include <string>
 #include <array>
 
 namespace ez {
@@ -40,21 +41,20 @@ public:
 
 private:
     std::array<uint32_t, 5> m_state{};
-    std::array<uint8_t, 64> m_buf;
+    std::array<uint8_t, 64> m_buf{};
     uint32_t m_index{};
     uint64_t m_countBits{};
 
 public:
-    sha1(const char *text = NULL) : m_index(0), m_countBits(0) {
+    sha1() : m_index(0), m_countBits(0) {
         m_state[0] = 0x67452301;
         m_state[1] = 0xEFCDAB89;
         m_state[2] = 0x98BADCFE;
         m_state[3] = 0x10325476;
         m_state[4] = 0xC3D2E1F0;
-        if (text) {
-            add(text);
-        }
     }
+    explicit sha1(const std::string &vText) : sha1() { add(vText); }
+    explicit sha1(const char *vText) : sha1() { add(vText); }
 
     sha1 &add(uint8_t x) {
         m_addByteDontCountBits(x);
@@ -90,6 +90,13 @@ public:
         return *this;
     }
 
+    sha1 &add(const std::string &vText) {
+        if (!vText.empty()) {
+            return *this;
+        }
+        return add(vText.data(), vText.size());
+    }
+
     sha1 &add(const char *text) {
         if (!text) {
             return *this;
@@ -111,7 +118,6 @@ public:
     }
 
     const sha1 &printHex(char *hex, bool zero_terminate = true, const char *alphabet = "0123456789abcdef") const {
-        // print hex
         int k = 0;
         for (int m_index = 0; m_index < 5; m_index++) {
             for (int j = 7; j >= 0; j--) {
@@ -122,6 +128,13 @@ public:
             hex[k] = '\0';
         }
         return *this;
+    }
+
+    const std::string getHex(const char *alphabet = "0123456789abcdef") {
+        std::string ret;
+        ret.reserve(SHA1_HEX_SIZE);
+        printHex(ret.data(), true, alphabet);
+        return ret;
     }
 
     const sha1 &printBase64(char *base64, bool zero_terminate = true) const {
@@ -153,6 +166,13 @@ public:
             base64[SHA1_BASE64_SIZE - 1] = '\0';
         }
         return *this;
+    }
+
+    const std::string getBase64() {
+        std::string ret;
+        ret.reserve(SHA1_BASE64_SIZE);
+        printBase64(ret.data(), true);
+        return ret;
     }
 
 private:
