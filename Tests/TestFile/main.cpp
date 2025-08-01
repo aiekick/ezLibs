@@ -5,6 +5,8 @@
 #include <TestEzSvg.h>
 #include <TestEzJson.h>
 #endif
+#include <TestEzFile.h>
+#include <TestEzBinBuf.h>
 #include <TestEzVdbWriter.h>
 #include <TestEzVoxWriter.h>
 #include <TestEzXmlConfig.h>
@@ -28,10 +30,12 @@ bool TestFile(const std::string& vTest) {
     else IfTestCollectionExist(TestEzSvg);
     else IfTestCollectionExist(TestEzJson);
 #endif
+    else IfTestCollectionExist(TestEzBinBuf);
     else IfTestCollectionExist(TestEzVdbWriter);
     else IfTestCollectionExist(TestEzVoxWriter);
     else IfTestCollectionExist(TestEzXmlConfig);
     else IfTestCollectionExist(TestEzFileWatcher);
+    else IfTestCollectionExist(TestEzFile);
     return false;
 }
 
@@ -45,5 +49,5 @@ int main(int argc, char** argv) {
         return TestFile(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestFile("TestEzJson_Read") ? 0 : 1;
+    return TestFile("TestEzFileWatcher_BasicTrigger") ? 0 : 1;
 }

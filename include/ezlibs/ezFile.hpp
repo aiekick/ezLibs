@@ -36,10 +36,11 @@ SOFTWARE.
 
 #include "ezStr.hpp"
 #include "ezLog.hpp"
+#include "ezOS.hpp"
 #include <sys/stat.h>
 
 #ifndef EZ_FILE_SLASH_TYPE
-#ifdef WIN32
+#ifdef WINDOWS_OS
 #define EZ_FILE_SLASH_TYPE "\\"
 #include <Windows.h>
 #include <shellapi.h> // ShellExecute
@@ -96,18 +97,21 @@ inline bool saveStringToFile(const std::string &vDatas, const std::string &vFile
 
 inline std::vector<uint8_t> loadFileToBin(const std::string &vFilePathName) {
     std::vector<uint8_t> ret;
-    std::ifstream docFile(vFilePathName, std::ios::in | std::ios::binary);
-    if (docFile.is_open()) {
-        // int32_t because the internal << used by 'istream_iterator' is not defined for uint8_t
-        ret = {std::istream_iterator<char>(docFile), std::istream_iterator<char>()};
-        docFile.close();
-    } else {
-#ifdef EZ_TOOLS_LOG
-        LogVarError("File \"%s\" Not Found !\n", vFilePathName.c_str());
-#endif
+    std::ifstream file(vFilePathName, std::ios::binary | std::ios::ate);
+    if (file.is_open()) {
+        std::streamsize size = file.tellg();  // taille du fichier
+        if (size <= 0) {
+            return ret;
+        }
+        ret.resize(static_cast<size_t>(size));
+        file.seekg(0, std::ios::beg);
+        if (!file.read(reinterpret_cast<char *>(&ret[0]), size)) {
+            ret.clear();
+        }
     }
     return ret;
 }
+
 
 inline bool saveBinToFile(const std::vector<uint8_t> &vDatas, const std::string &vFilePathName, bool vAddTimeStamp = false) {
     std::string fpn = vFilePathName;
@@ -121,13 +125,14 @@ inline bool saveBinToFile(const std::vector<uint8_t> &vDatas, const std::string 
                 fpn += ez::str::toStr("_%llu", epoch);
             }
         }
-        std::ofstream out(fpn, std::ios::out | std::ios::binary);
+        std::ofstream out(fpn, std::ios::binary | std::ios::trunc); 
         if (!out.bad()) {
             out.write(reinterpret_cast<const char *>(vDatas.data()), vDatas.size());
             out.close();
             return true;
         }
     }
+
     return false;
 }
 
@@ -238,30 +243,33 @@ inline PathInfos parsePathFileName(const std::string &vPathFileName) {
     }
     return res;
 }
-
 inline std::string simplifyFilePath(const std::string &vFilePath) {
-    std::string newPath = correctSlashTypeForFilePathName(vFilePath);
-    // the idea is to simplify a path where there is some ..
-    // by ex : script\\kifs\\../space3d.glsl => can be simplified in /script/space3d.glsl
-    size_t dpt = 0;
-    while ((dpt = newPath.find("..")) != std::string::npos) {
-        ez::str::replaceString(newPath, "\\", EZ_FILE_SLASH_TYPE);
-        ez::str::replaceString(newPath, "/", EZ_FILE_SLASH_TYPE);
-        size_t sl = newPath.rfind(EZ_FILE_SLASH_TYPE, dpt);
-        if (sl != std::string::npos) {
-            if (sl > 0) {
-                sl = newPath.rfind(EZ_FILE_SLASH_TYPE, sl - 1);
-                if (sl != std::string::npos) {
-                    std::string str = newPath.substr(sl, dpt + 2 - sl);
-                    ez::str::replaceString(newPath, str, "");
-                }
-            }
+    std::string path = correctSlashTypeForFilePathName(vFilePath);
+    std::vector<std::string> parts;
+    std::stringstream ss(path);
+    std::string item;
+
+    while (std::getline(ss, item, EZ_FILE_SLASH_TYPE[0])) {
+        if (item == "" || item == ".")
+            continue;
+        if (item == "..") {
+            if (!parts.empty())
+                parts.pop_back();
+            // sinon on est au-dessus de root => on ignore
         } else {
-            break;
+            parts.push_back(item);
         }
     }
-    return newPath;
+
+    std::string result;
+    for (size_t i = 0; i < parts.size(); ++i) {
+        result += parts[i];
+        if (i < parts.size() - 1)
+            result += EZ_FILE_SLASH_TYPE;
+    }
+    return result;
 }
+
 
 inline std::string composePath(const std::string &vPath, const std::string &vFileName, const std::string &vExt) {
     const auto path = correctSlashTypeForFilePathName(vPath);
@@ -295,7 +303,7 @@ inline bool isDirectoryExist(const std::string &name) {
     if (!name.empty()) {
         const std::string dir = correctSlashTypeForFilePathName(name);
         struct stat sb;
-        if (stat(dir.c_str(), &sb)) {
+        if (stat(dir.c_str(), &sb) == 0) {
             return (sb.st_mode & S_IFDIR);
         }
     }
@@ -321,7 +329,9 @@ inline bool createDirectoryIfNotExist(const std::string &name) {
         if (!isDirectoryExist(filePathName)) {
             res = true;
 #ifdef WIN32
-            CreateDirectory(filePathName.c_str(), nullptr);
+            if (CreateDirectory(filePathName.c_str(), nullptr) == 0) {
+                res = true;
+            }
 #elif defined(UNIX)
             auto cmd = ez::str::toStr("mkdir -p %s", filePathName.c_str());
             const int dir_err = std::system(cmd.c_str());

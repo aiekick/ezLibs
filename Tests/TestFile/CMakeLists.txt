@@ -15,6 +15,7 @@ file(GLOB SRC_RECURSE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezLog.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezBmp.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFile.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezBinBuf.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/ezGif.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/ezPng.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/ezSvg.hpp
@@ -47,10 +48,36 @@ target_include_directories(${PROJECT} PRIVATE
 AddTest("TestEzBmp_Writer")
 
 ##########################################################
+##### TESTS EzFile #######################################
+##########################################################
+
+AddTest("TestEzFile_saveStringToFile")
+AddTest("TestEzFile_saveBinToFile")
+AddTest("TestEzFile_parsePathFileName")
+AddTest("TestEzFile_simplifyFilePath")
+AddTest("TestEzFile_composePath")
+AddTest("TestEzFile_correctSlashTypeForFilePathName")
+AddTest("TestEzFile_createDirectoryIfNotExist")
+
+##########################################################
+##### TESTS EzBinBuf #####################################
+##########################################################
+
+AddTest("TestEzBinBuf_WriteReadValueLE")
+AddTest("TestEzBinBuf_WriteReadValueBE")
+AddTest("TestEzBinBuf_WriteReadArrayLE")
+AddTest("TestEzBinBuf_WriteReadArrayBE")
+AddTest("TestEzBinBuf_SetDatasGetDatas")
+AddTest("TestEzBinBuf_ClearSize")
+AddTest("TestEzBinBuf_Reserve")
+AddTest("TestEzBinBuf_OperatorAt")
+AddTest("TestEzBinBuf_OutOfRange")
+
+##########################################################
 ##### TESTS EzFileWatcher ################################
 ##########################################################
 
-AddTest("TestEzFileWatcher_0")
+AddTest("TestEzFileWatcher_BasicTrigger")
 
 ##########################################################
 ##### TESTS EzGif ########################################

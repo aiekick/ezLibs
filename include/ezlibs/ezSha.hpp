@@ -36,8 +36,8 @@ namespace ez {
 
 class sha1 {
 public:
-    static size_t constexpr SHA1_HEX_SIZE{40 + 1};
-    static size_t constexpr SHA1_BASE64_SIZE{28 + 1};
+    static size_t constexpr SHA1_HEX_SIZE{40};
+    static size_t constexpr SHA1_BASE64_SIZE{28};
 
 private:
     std::array<uint32_t, 5> m_state{};
@@ -94,7 +94,7 @@ public:
         if (!vText.empty()) {
             return *this;
         }
-        return add(vText.data(), vText.size());
+        return add(vText.data(), static_cast<uint32_t>(vText.size()));
     }
 
     sha1 &add(const char *text) {
@@ -117,61 +117,14 @@ public:
         return *this;
     }
 
-    const sha1 &printHex(char *hex, bool zero_terminate = true, const char *alphabet = "0123456789abcdef") const {
+    const std::string getHex(const char *alphabet = "0123456789abcdef") {
+        std::string ret(SHA1_HEX_SIZE, 0);
         int k = 0;
         for (int m_index = 0; m_index < 5; m_index++) {
             for (int j = 7; j >= 0; j--) {
-                hex[k++] = alphabet[(m_state[m_index] >> j * 4) & 0xf];
+                ret[k++] = alphabet[(m_state[m_index] >> j * 4) & 0xf];
             }
         }
-        if (zero_terminate) {
-            hex[k] = '\0';
-        }
-        return *this;
-    }
-
-    const std::string getHex(const char *alphabet = "0123456789abcdef") {
-        std::string ret;
-        ret.reserve(SHA1_HEX_SIZE);
-        printHex(ret.data(), true, alphabet);
-        return ret;
-    }
-
-    const sha1 &printBase64(char *base64, bool zero_terminate = true) const {
-        static const uint8_t *table = (const uint8_t *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                                       "abcdefghijklmnopqrstuvwxyz"
-                                                       "0123456789"
-                                                       "+/";
-
-        uint32_t triples[7] = {
-            ((m_state[0] & 0xffffff00) >> 1 * 8),
-            ((m_state[0] & 0x000000ff) << 2 * 8) | ((m_state[1] & 0xffff0000) >> 2 * 8),
-            ((m_state[1] & 0x0000ffff) << 1 * 8) | ((m_state[2] & 0xff000000) >> 3 * 8),
-            ((m_state[2] & 0x00ffffff) << 0 * 8),
-            ((m_state[3] & 0xffffff00) >> 1 * 8),
-            ((m_state[3] & 0x000000ff) << 2 * 8) | ((m_state[4] & 0xffff0000) >> 2 * 8),
-            ((m_state[4] & 0x0000ffff) << 1 * 8),
-        };
-
-        for (int m_index = 0; m_index < 7; m_index++) {
-            uint32_t x = triples[m_index];
-            base64[m_index * 4 + 0] = table[(x >> 3 * 6) % 64];
-            base64[m_index * 4 + 1] = table[(x >> 2 * 6) % 64];
-            base64[m_index * 4 + 2] = table[(x >> 1 * 6) % 64];
-            base64[m_index * 4 + 3] = table[(x >> 0 * 6) % 64];
-        }
-
-        base64[SHA1_BASE64_SIZE - 2] = '=';
-        if (zero_terminate) {
-            base64[SHA1_BASE64_SIZE - 1] = '\0';
-        }
-        return *this;
-    }
-
-    const std::string getBase64() {
-        std::string ret;
-        ret.reserve(SHA1_BASE64_SIZE);
-        printBase64(ret.data(), true);
         return ret;
     }
 
