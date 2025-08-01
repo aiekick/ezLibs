@@ -128,6 +128,7 @@ public:
         glBindTexture(GL_TEXTURE_2D, m_TexId);
         CheckGLErrors;
         m_setFormat(GL_FLOAT, 4);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
         glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, vSx, vSy, 0, m_Format, GL_FLOAT, nullptr);
         CheckGLErrors;
         glFinish();
@@ -162,6 +163,7 @@ public:
         m_InternalFormat = vInternalFormat;
         m_Format = vFormat;
         m_PixelFormat = vPixelFormat;
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
         glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, vBuffer);
         CheckGLErrors;
         glFinish();
@@ -194,6 +196,7 @@ public:
         glBindTexture(GL_TEXTURE_2D, m_TexId);
         CheckGLErrors;
         m_setFormat(vPixelFormat, vChannelsCount);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
         glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, vBuffer);
         CheckGLErrors;
         glFinish();
@@ -241,6 +244,7 @@ public:
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             CheckGLErrors;
             m_setFormat(GL_UNSIGNED_BYTE, chans);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
             glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, buffer);
             CheckGLErrors;
             glFinish();
@@ -374,7 +378,7 @@ private:
             case 1: {
                 m_Format = GL_RED;
                 if (vPixelFormat == GL_UNSIGNED_BYTE) {
-                    m_InternalFormat = GL_RED;
+                    m_InternalFormat = GL_R8;
                 } else if (vPixelFormat == GL_FLOAT) {
                     m_InternalFormat = GL_R32F;
                 }
@@ -382,7 +386,7 @@ private:
             case 2: {
                 m_Format = GL_RG;
                 if (vPixelFormat == GL_UNSIGNED_BYTE) {
-                    m_InternalFormat = GL_RG;
+                    m_InternalFormat = GL_RG8;
                 } else if (vPixelFormat == GL_FLOAT) {
                     m_InternalFormat = GL_RG32F;
                 }
@@ -390,7 +394,7 @@ private:
             case 3: {
                 m_Format = GL_RGB;
                 if (vPixelFormat == GL_UNSIGNED_BYTE) {
-                    m_InternalFormat = GL_RGB;
+                    m_InternalFormat = GL_RGB8;
                 } else if (vPixelFormat == GL_FLOAT) {
                     m_InternalFormat = GL_RGB32F;
                 }
@@ -398,7 +402,7 @@ private:
             case 4: {
                 m_Format = GL_RGBA;
                 if (vPixelFormat == GL_UNSIGNED_BYTE) {
-                    m_InternalFormat = GL_RGBA;
+                    m_InternalFormat = GL_RGBA8;
                 } else if (vPixelFormat == GL_FLOAT) {
                     m_InternalFormat = GL_RGBA32F;
                 }

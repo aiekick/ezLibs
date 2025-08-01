@@ -42,6 +42,10 @@ SOFTWARE.
 #define PROFILER_SCOPED_PTR
 #endif  // PROFILER_SCOPED_PTR*/
 
+#ifdef IMGUI_INCLUDE
+#include IMGUI_INCLUDE
+#endif  // IMGUI_INCLUDE
+
 #ifdef MSVC
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
