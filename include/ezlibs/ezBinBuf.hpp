@@ -3,7 +3,7 @@
 /*
 MIT License
 
-Copyright (c) 2014-2024 Stephane Cuillerdier (aka aiekick)
+Copyright (c) 2014-2025 Stephane Cuillerdier (aka aiekick)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,57 +24,87 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// ezBmp is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
+// ezBinBuf is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include <vector>
 #include <cstdint>
 #include <cstring>
-#include <type_traits>
 #include <stdexcept>
+#include <type_traits>
 
 namespace ez {
-	
+
 class BinBuf {
 public:
-    // Écrit en little-endian (par défaut)
-    template<typename T>
+    // little-endian
+    template <typename T>
     void writeLE(const T& value) {
         static_assert(std::is_arithmetic<T>::value, "Only arithmetic types supported");
         const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&value);
-        for (size_t i = 0; i < sizeof(T); ++i)
-            buffer.push_back(ptr[i]); // little-endian
+        for (size_t i = 0; i < sizeof(T); ++i) {
+            m_buffer.push_back(ptr[i]);
+        }
     }
 
-    // Écrit en big-endian
-    template<typename T>
+    // little-endian
+    template <typename T>
+    T readLE(size_t pos) const {
+        static_assert(std::is_arithmetic<T>::value, "Only arithmetic types supported");
+        if (pos + sizeof(T) > buffer.size()) {
+            throw std::out_of_range("Read position out of bounds");
+        }
+        T result = 0;
+        uint8_t* ptr = reinterpret_cast<uint8_t*>(&result);
+        for (size_t i = 0; i < sizeof(T); ++i) {
+            ptr[i] = buffer[pos + i];
+        }
+        return result;
+    }
+
+    // big-endian
+    template <typename T>
     void writeBE(const T& value) {
         static_assert(std::is_arithmetic<T>::value, "Only arithmetic types supported");
         const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&value);
-        for (size_t i = 0; i < sizeof(T); ++i)
-            buffer.push_back(ptr[sizeof(T) - 1 - i]); // big-endian
+        for (size_t i = 0; i < sizeof(T); ++i) {
+            m_buffer.push_back(ptr[sizeof(T) - 1 - i]);
+        }
     }
 
-    // Accès direct au buffer
-    const std::vector<uint8_t>& data() const { return buffer; }
+    // big-endian
+    template <typename T>
+    T readBE(size_t pos) const {
+        static_assert(std::is_arithmetic<T>::value, "Only arithmetic types supported");
+        if (pos + sizeof(T) > buffer.size()) {
+            throw std::out_of_range("Read position out of bounds");
+        }
+        T result = 0;
+        uint8_t* ptr = reinterpret_cast<uint8_t*>(&result);
+        for (size_t i = 0; i < sizeof(T); ++i) {
+            ptr[i] = buffer[pos + sizeof(T) - 1 - i];
+        }
+        return result;
+    }
 
-    // Efface le contenu
-    void clear() { buffer.clear(); }
+    void setDatas(const std::vector<uint8_t>& vDatas) { m_buffer = vDatas; }
 
-    // Taille actuelle
-    size_t size() const { return buffer.size(); }
+    const std::vector<uint8_t>& getDatas() const { return m_buffer; }
 
-    // Réserve de l’espace
-    void reserve(size_t capacity) { buffer.reserve(capacity); }
+    void clear() { m_buffer.clear(); }
 
-    // Accès à un octet spécifique
+    size_t size() const { return m_buffer.size(); }
+
+    void reserve(size_t capacity) { m_buffer.reserve(capacity); }
+
     uint8_t operator[](size_t index) const {
-        if (index >= buffer.size()) throw std::out_of_range("BinBuf index out of range");
-        return buffer[index];
+        if (index >= m_buffer.size()) {
+            throw std::out_of_range("BinBuf index out of range");
+        }
+        return m_buffer[index];
     }
 
 private:
-    std::vector<uint8_t> buffer;
+    std::vector<uint8_t> m_buffer;
 };
 
-} // namespace ez
-	
+}  // namespace ez
