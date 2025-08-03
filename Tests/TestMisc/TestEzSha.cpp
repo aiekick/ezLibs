@@ -18,22 +18,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 bool TestEzSha_0() {
-    const char* text = "quick brown fox jumps over the lazy dog";
-
-    // constructor can be empty or take a const char*
-    ez::sha1 sha("The ");
-    // can be chained
-    // can add single chars
-    sha.add(text[0])
-        // number of bytes
-        .add(&text[1], 4)
-        // 0-terminated const char*
-        .add(&text[5])
-        // finalize must be called, otherwise the hash is not valid
-        // after that, no more bytes should be added
-        .finalize();
-
-    CTEST_ASSERT(sha.getHex() == "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12");
+    //tested with http://www.sha1-online.com/
+    const auto sha1 = ez::sha1("TOTO").finalize().getHex();
+    CTEST_ASSERT(sha1 == "eefaf6bedac8f0f58af507ce3fde2a1b77b1cd89");
+    const auto sha2 = ez::sha1("TOTO").add("TATA").finalize().getHex();
+    CTEST_ASSERT(sha2 == "b222866188afb338a961b52151903118aef9d965");
+    const auto sha3 = ez::sha1("TOTO").add("TATA").addValue(15).finalize().getHex();
+    CTEST_ASSERT(sha3 == "89371dfb70c53526bc5be4b8f1f5ec112833d523");
+    const auto sha4 = ez::sha1("TOTO").add("TATA").add("TITI").addValue(15).finalize().getHex();
+    CTEST_ASSERT(sha4 == "1b98949f95c3dcb46daabff91db643152631be9a");
 
     return true;
 }

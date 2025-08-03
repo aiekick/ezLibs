@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <cstdint>
 #include <cstring>
+#include <sstream>
 #include <string>
 #include <array>
 
@@ -37,7 +38,6 @@ namespace ez {
 class sha1 {
 public:
     static size_t constexpr SHA1_HEX_SIZE{40};
-    static size_t constexpr SHA1_BASE64_SIZE{28};
 
 private:
     std::array<uint32_t, 5> m_state{};
@@ -56,13 +56,9 @@ public:
     explicit sha1(const std::string &vText) : sha1() { add(vText); }
     explicit sha1(const char *vText) : sha1() { add(vText); }
 
-    sha1 &add(uint8_t x) {
-        m_addByteDontCountBits(x);
-        m_countBits += 8;
-        return *this;
-    }
-
+    /*
     sha1 &add(char c) { return add(*(uint8_t *)&c); }
+    */
 
     sha1 &add(const void *data, uint32_t n) {
         if (!data) {
@@ -72,8 +68,9 @@ public:
         const uint8_t *ptr = (const uint8_t *)data;
 
         // fill up block if not full
-        for (; n && m_index % sizeof(m_buf); n--)
-            add(*ptr++);
+        for (; n && m_index % sizeof(m_buf); n--) {
+            m_add(*ptr++);
+        }
 
         // process full blocks
         for (; n >= sizeof(m_buf); n -= sizeof(m_buf)) {
@@ -84,17 +81,24 @@ public:
 
         // process remaining part of block
         for (; n; n--) {
-            add(*ptr++);
+            m_add(*ptr++);
         }
 
         return *this;
     }
 
     sha1 &add(const std::string &vText) {
-        if (!vText.empty()) {
+        if (vText.empty()) {
             return *this;
         }
         return add(vText.data(), static_cast<uint32_t>(vText.size()));
+    }
+
+    template <typename T>
+    sha1 &addValue(const T &vValue) {
+        std::stringstream ss;
+        ss << vValue;
+        return add(ss.str());
     }
 
     sha1 &add(const char *text) {
@@ -129,6 +133,11 @@ public:
     }
 
 private:
+    sha1 &m_add(uint8_t x) {
+        m_addByteDontCountBits(x);
+        m_countBits += 8;
+        return *this;
+    }
     void m_addByteDontCountBits(uint8_t x) {
         m_buf[m_index++] = x;
         if (m_index >= sizeof(m_buf)) {
