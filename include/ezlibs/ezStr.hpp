@@ -40,7 +40,7 @@ SOFTWARE.
 #include <sstream>
 #include <iomanip>
 #include <cstdint>
-#include <cstdarg>
+#include <cstdarg> // variadic
 #include <clocale>  // std::setlocale
 #include <locale>   // toupper, tolower (with locale)
 

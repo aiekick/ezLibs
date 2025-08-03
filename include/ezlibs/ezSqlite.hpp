@@ -30,7 +30,8 @@ SOFTWARE.
 #include <cstring>
 #include <string>
 #include <vector>
-#include <sstream>
+#include <sstream>//stringstream
+#include <cstdarg> // variadic
 #include "ezStr.hpp"
 
 namespace ez {
@@ -70,12 +71,25 @@ enum class QueryType { INSERT_IF_NOT_EXIST = 0 };
 
 class QueryBuilder {
 private:
-    std::string m_table;
-    struct Field {
-        std::string key;
-        std::string value;
-        explicit Field(const std::string& vKey, const std::string& vValue) : key(vKey), value(vValue) {}
+    class Field {
+    private:
+        std::string m_key;
+        std::string m_value;
+        bool m_subQuery = false;
+
+    public:
+        explicit Field(const std::string& vKey, const std::string& vValue, const bool vSubQuery) : m_key(vKey), m_value(vValue), m_subQuery(vSubQuery) {}
+        const std::string& getRawKey() const { return m_key; }
+        const std::string& getRawValue() const { return m_value; }
+        std::string getFinalValue() const {
+            if (m_subQuery) {
+                return "(" + m_value + ")";
+            }
+            return "\"" + m_value + "\"";
+        }
     };
+
+    std::string m_table;
     std::vector<Field> m_fields;
 
 public:
@@ -84,12 +98,43 @@ public:
         return *this;
     }
     QueryBuilder& addField(const std::string& vKey, const std::string& vValue) {
-        m_fields.emplace_back(vKey, vValue);
+        m_fields.emplace_back(vKey, vValue, false);
+        return *this;
+    }
+    QueryBuilder& addField(const std::string& vKey, const char* fmt, ...) {
+        va_list args;
+        va_start(args, fmt);
+        static char TempBuffer[1024 + 1];
+        const int w = vsnprintf(TempBuffer, 3072, fmt, args);
+        va_end(args);
+        if (w) {
+            m_fields.emplace_back(vKey, std::string(TempBuffer, (size_t)w), false);
+        }
         return *this;
     }
     template <typename T>
     QueryBuilder& addField(const std::string& vKey, const T& vValue) {
-        m_fields.emplace_back(vKey, ez::str::toStr(vValue));
+        m_fields.emplace_back(vKey, ez::str::toStr<T>(vValue), false);
+        return *this;
+    }
+    QueryBuilder& addFieldQuery(const std::string& vKey, const std::string& vValue) {
+        m_fields.emplace_back(vKey, vValue, true);
+        return *this;
+    }
+    QueryBuilder& addFieldQuery(const std::string& vKey, const char* fmt, ...) {
+        va_list args;
+        va_start(args, fmt);
+        static char TempBuffer[1024 + 1];
+        const int w = vsnprintf(TempBuffer, 3072, fmt, args);
+        va_end(args);
+        if (w) {
+            m_fields.emplace_back(vKey, std::string(TempBuffer, (size_t)w), true);
+        }
+        return *this;
+    }
+    template <typename T>
+    QueryBuilder& addFieldQuery(const std::string& vKey, const T& vValue) {
+        m_fields.emplace_back(vKey, ez::str::toStr<T>(vValue), true);
         return *this;
     }
     std::string build(const QueryType vType) {
@@ -101,26 +146,32 @@ public:
 
 private:
     std::string m_buildTypeInsertIfNotExist() {
-        auto query = "INSERT INTO " + m_table + " (";
+        std::string query = "INSERT INTO " + m_table + " (";
+        size_t idx = 0;
         for (const auto& field : m_fields) {
-            if (field.key != m_fields.at(0).key) {
+            if (idx!=0) {
                 query += ", ";
             }
-            query += field.key;
+            query += field.getRawKey();
+            ++idx;
         }
         query += ") SELECT ";
+        idx = 0;
         for (const auto& field : m_fields) {
-            if (field.value != m_fields.at(0).value) {
+            if (idx != 0) {
                 query += ", ";
             }
-            query += "'" + field.value + "'";
+            query += field.getFinalValue();
+            ++idx;
         }
         query += " WHERE NOT EXISTS (SELECT 1 FROM " + m_table + " WHERE ";
+        idx = 0;
         for (const auto& field : m_fields) {
-            if (field.value != m_fields.at(0).value) {
+            if (idx != 0) {
                 query += " and ";
             }
-            query += field.key + " = '" + field.value + "'";
+            query += field.getRawKey() + " = " + field.getFinalValue();
+            ++idx;
         }
         query += ");";
         return query;
