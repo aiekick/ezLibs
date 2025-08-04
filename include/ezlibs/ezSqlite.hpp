@@ -67,7 +67,7 @@ inline std::string readStringColumn(sqlite3_stmt* vStmt, int32_t vColumn) {
  */
 // ex : build("banks", {{"number", "30002"},{"name","LCL"}});
 
-enum class QueryType { INSERT_IF_NOT_EXIST = 0 };
+enum class QueryType { INSERT_IF_NOT_EXIST = 0, UPDATE, Count };
 
 class QueryBuilder {
 private:
@@ -78,7 +78,8 @@ private:
         bool m_subQuery = false;
 
     public:
-        explicit Field(const std::string& vKey, const std::string& vValue, const bool vSubQuery) : m_key(vKey), m_value(vValue), m_subQuery(vSubQuery) {}
+        explicit Field(const std::string& vKey, const std::string& vValue, const bool vSubQuery)
+            : m_key(vKey), m_value(vValue), m_subQuery(vSubQuery) {}
         const std::string& getRawKey() const { return m_key; }
         const std::string& getRawValue() const { return m_value; }
         std::string getFinalValue() const {
@@ -91,6 +92,7 @@ private:
 
     std::string m_table;
     std::vector<Field> m_fields;
+    std::vector<std::string> m_where;
 
 public:
     QueryBuilder& setTable(const std::string& vTable) {
@@ -133,13 +135,31 @@ public:
         return *this;
     }
     template <typename T>
-    QueryBuilder& addFieldQuery(const std::string& vKey, const T& vValue) {
-        m_fields.emplace_back(vKey, ez::str::toStr<T>(vValue), true);
+    QueryBuilder& addWhere(const T& vValue) {
+        m_where.emplace_back(ez::str::toStr<T>(vValue));
+        return *this;
+    }
+    QueryBuilder& addWhere(const std::string& vValue) {
+        m_where.emplace_back(vValue);
+        return *this;
+    }
+    QueryBuilder& addWhere(const char* fmt, ...) {
+        va_list args;
+        va_start(args, fmt);
+        static char TempBuffer[1024 + 1];
+        const int w = vsnprintf(TempBuffer, 3072, fmt, args);
+        va_end(args);
+        if (w) {
+            m_where.emplace_back(std::string(TempBuffer, (size_t)w));
+        }
         return *this;
     }
     std::string build(const QueryType vType) {
         switch (vType) {
             case QueryType::INSERT_IF_NOT_EXIST: return m_buildTypeInsertIfNotExist();
+            case QueryType::UPDATE: return m_buildTypeUpdate();
+            case QueryType::Count:
+            default: break;
         }
         return {};
     }
@@ -168,13 +188,36 @@ private:
         idx = 0;
         for (const auto& field : m_fields) {
             if (idx != 0) {
-                query += " and ";
+                query += " AND ";
             }
             query += field.getRawKey() + " = " + field.getFinalValue();
             ++idx;
         }
         query += ");";
         return query;
+    }
+    std::string m_buildTypeUpdate() {
+        std::string query = "UPDATE\n\t" + m_table + "\nSET\n\t";
+        size_t idx = 0;
+        for (const auto& field : m_fields) {
+            if (idx != 0) {
+                query += ",\n\t";
+            }
+            query += field.getRawKey() + " = " + field.getFinalValue();
+            ++idx;
+        }
+        query += "\nWHERE\n\t";
+        idx = 0;
+        for (const auto& where : m_where) {
+            if (idx != 0) {
+                query += "\tAND ";
+            }
+            query += "(" + where + ")\n";
+            ++idx;
+        }
+        query += ";";
+        return query;
+
     }
 };
 
