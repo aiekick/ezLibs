@@ -420,7 +420,7 @@ private:
     CubeY minCubeY = (CubeY)1e7;
     CubeZ minCubeZ = (CubeZ)1e7;
 
-    FILE* m_File = nullptr;
+    FILE* m_file = nullptr;
 
     Volume maxVolume = Volume(1e7, -1e7);
 
@@ -545,15 +545,15 @@ public:
         if (m_OpenFileForWriting(vFilePathName)) {
             int32_t zero = 0;
 
-            fwrite(&ID_VOX, sizeof(int32_t), 1, m_File);
-            fwrite(&MV_VERSION, sizeof(int32_t), 1, m_File);
+            fwrite(&ID_VOX, sizeof(int32_t), 1, m_file);
+            fwrite(&MV_VERSION, sizeof(int32_t), 1, m_file);
 
             // MAIN CHUNCK
-            fwrite(&ID_MAIN, sizeof(int32_t), 1, m_File);
-            fwrite(&zero, sizeof(int32_t), 1, m_File);
+            fwrite(&ID_MAIN, sizeof(int32_t), 1, m_file);
+            fwrite(&zero, sizeof(int32_t), 1, m_file);
 
             long numBytesMainChunkPos = m_GetFilePos();
-            fwrite(&zero, sizeof(int32_t), 1, m_File);
+            fwrite(&zero, sizeof(int32_t), 1, m_file);
 
             long headerSize = m_GetFilePos();
 
@@ -573,7 +573,7 @@ public:
             size_t cube_idx = 0U;
             int32_t model_id = 0U;
             for (auto& cube : cubes) {
-                cube.write(m_File);
+                cube.write(m_file);
 
                 // trans
                 nTRN trans(1);             // not a trans anim so ony one frame
@@ -602,13 +602,13 @@ public:
                 ++cube_idx;
             }
 
-            rootTransform.write(m_File);
-            rootGroup.write(m_File);
+            rootTransform.write(m_file);
+            rootGroup.write(m_file);
 
             // trn & shp
             for (int i = 0; i < count; i++) {
-                shapeTransforms[i].write(m_File);
-                shapes[i].write(m_File);
+                shapeTransforms[i].write(m_file);
+                shapes[i].write(m_file);
             }
 
             // no layr in my cases
@@ -619,7 +619,7 @@ public:
                 LAYR layr;
                 layr.nodeId = i;
                 layr.nodeAttribs.Add("_name", ez::str::toStr(i));
-                layr.write(m_File);
+                layr.write(m_file);
             }*/
 
             // RGBA Palette
@@ -633,13 +633,13 @@ public:
                     }
                 }
 
-                palette.write(m_File);
+                palette.write(m_file);
             }
 
             const long mainChildChunkSize = m_GetFilePos() - headerSize;
             m_SetFilePos(numBytesMainChunkPos);
             uint32_t size = (uint32_t)mainChildChunkSize;
-            fwrite(&size, sizeof(uint32_t), 1, m_File);
+            fwrite(&size, sizeof(uint32_t), 1, m_file);
 
             m_CloseFile();
         }
@@ -701,28 +701,28 @@ public:
 private:
     bool m_OpenFileForWriting(const std::string& vFilePathName) {
 #if _MSC_VER
-        lastError = fopen_s(&m_File, vFilePathName.c_str(), "wb");
+        lastError = fopen_s(&m_file, vFilePathName.c_str(), "wb");
 #else
-        m_File = fopen(vFilePathName.c_str(), "wb");
-        lastError = m_File ? 0 : errno;
+        m_file = fopen(vFilePathName.c_str(), "wb");
+        lastError = m_file ? 0 : errno;
 #endif
         if (lastError != 0) return false;
         return true;
     }
 
     void m_CloseFile() {
-        fclose(m_File);
+        fclose(m_file);
     }
 
     long m_GetFilePos() const {
-        return ftell(m_File);
+        return ftell(m_file);
     }
 
     void m_SetFilePos(const long& vPos) {
         //  SEEK_SET	Beginning of file
         //  SEEK_CUR	Current position of the file pointer
         //	SEEK_END	End of file
-        fseek(m_File, vPos, SEEK_SET);
+        fseek(m_file, vPos, SEEK_SET);
     }
 
     const size_t m_GetCubeId(const VoxelX& vX, const VoxelY& vY, const VoxelZ& vZ) {

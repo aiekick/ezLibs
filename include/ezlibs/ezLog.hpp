@@ -39,6 +39,11 @@ SOFTWARE.
 #include "ezStr.hpp"
 #include "ezTime.hpp"
 
+/* WARNING
+* FOR USING THE OLD BEAHVIOR SINGLETON
+* YOU MUST DO : #define LEGACY_SINGLETON
+*/
+
 #ifdef USE_GLFW3
 #include <GLFW/glfw3.h>
 #elif defined(USE_SDL2)
@@ -54,7 +59,7 @@ SOFTWARE.
 
 #include <cstdarg> /* va_list, va_start, va_arg, va_end */
 
-#include <iostream> // std::cout
+#include <iostream>  // std::cout
 
 #include <mutex>
 #include <string>
@@ -76,38 +81,36 @@ typedef long long int64;
 #include <android/log.h>
 #endif
 
-#define IsVerboseMode (ez::Log::Instance()->isVerboseMode() == true)
-
-// #define LogVar(s, ...) ez::Log::Instance()->logStringWithFunction(std::string(__FUNCTION__), (int)(__LINE__), s,
-// ##__VA_ARGS__)
+#ifdef LEGACY_SINGLETON
+#define IsVerboseMode (ez::Log::ref().isVerboseMode() == true)
 
 #define LogVarError(s, ...) \
-    ez::Log::Instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::ref().logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarWarning(s, ...) \
-    ez::Log::Instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::ref().logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarInfo(s, ...) \
-    ez::Log::Instance()->logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::ref().logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarDebugError(s, ...) \
-    ez::Log::Instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::ref().logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarDebugWarning(s, ...) \
-    ez::Log::Instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::ref().logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
 #define LogVarDebugInfo(s, ...) \
-    ez::Log::Instance()->logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+    ez::Log::ref().logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
-#define LogVarLightError(s, ...) ez::Log::Instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, s, ##__VA_ARGS__)
+#define LogVarLightError(s, ...) ez::Log::ref().logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, s, ##__VA_ARGS__)
 
-#define LogVarLightWarning(s, ...) ez::Log::Instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, s, ##__VA_ARGS__)
+#define LogVarLightWarning(s, ...) ez::Log::ref().logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, s, ##__VA_ARGS__)
 
-#define LogVarLightInfo(s, ...) ez::Log::Instance()->logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, s, ##__VA_ARGS__)
+#define LogVarLightInfo(s, ...) ez::Log::ref().logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, s, ##__VA_ARGS__)
 
-#define LogVarTag(t, s, ...) ez::Log::Instance()->logStringByTypeWithFunction(t, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+#define LogVarTag(t, s, ...) ez::Log::ref().logStringByTypeWithFunction(t, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
 
-#define LogVarLightTag(t, s, ...) ez::Log::Instance()->logSimpleStringByType(t, s, ##__VA_ARGS__)
+#define LogVarLightTag(t, s, ...) ez::Log::ref().logSimpleStringByType(t, s, ##__VA_ARGS__)
 
 #define LogAssert(a, b, ...)               \
     if (!(a)) {                            \
@@ -116,10 +119,48 @@ typedef long long int64;
     }
 
 #ifdef USE_OPENGL
-#define LogGlError() ez::Log::Instance()->logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, "")
-#define LogGlErrorVar(var) ez::Log::Instance()->logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, var)
+#define LogGlError() ez::Log::ref().logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, "")
+#define LogGlErrorVar(var) ez::Log::ref().logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, var)
 #endif
+#else  // LEGACY_SINGLETON#define IsVerboseMode (ez::Log::ref().isVerboseMode() == true)
 
+#define LogVarError(s, ...) ez::Log::ref().logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+
+#define LogVarWarning(s, ...) \
+    ez::Log::ref().logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+
+#define LogVarInfo(s, ...) ez::Log::ref().logStringByTypeWithFunction(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+
+#define LogVarDebugError(s, ...) \
+    ez::Log::ref().logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+
+#define LogVarDebugWarning(s, ...) \
+    ez::Log::ref().logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+
+#define LogVarDebugInfo(s, ...) \
+    ez::Log::ref().logStringByTypeWithFunction_Debug(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+
+#define LogVarLightError(s, ...) ez::Log::ref().logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_ERROR, s, ##__VA_ARGS__)
+
+#define LogVarLightWarning(s, ...) ez::Log::ref().logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_WARNING, s, ##__VA_ARGS__)
+
+#define LogVarLightInfo(s, ...) ez::Log::ref().logSimpleStringByType(ez::Log::LOGGING_MESSAGE_TYPE_INFOS, s, ##__VA_ARGS__)
+
+#define LogVarTag(t, s, ...) ez::Log::ref().logStringByTypeWithFunction(t, std::string(__FUNCTION__), (int)(__LINE__), s, ##__VA_ARGS__)
+
+#define LogVarLightTag(t, s, ...) ez::Log::ref().logSimpleStringByType(t, s, ##__VA_ARGS__)
+
+#define LogAssert(a, b, ...)               \
+    if (!(a)) {                            \
+        LogVarDebugInfo(b, ##__VA_ARGS__); \
+        assert(a);                         \
+    }
+
+#ifdef USE_OPENGL
+#define LogGlError() ez::Log::ref().logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, "")
+#define LogGlErrorVar(var) ez::Log::ref().logGLError("" /*__FILE__*/, __FUNCTION__, __LINE__, var)
+#endif
+#endif  // LEGACY_SINGLETON
 namespace ez {
 
 class Log {
@@ -245,8 +286,9 @@ public:
 #if defined(TRACY_ENABLE) && defined(LOG_TRACY_MESSAGES)
         ZoneScoped;
 #endif
-        if (!ez::Log::Instance()->ConsoleVerbose)
+        if (!ConsoleVerbose) {
             return false;
+        }
 
         const GLenum err(glGetError());
         if (err != GL_NO_ERROR) {
@@ -297,8 +339,9 @@ public:
                     }
                 }
 
-                if (!m_debugLogFile.bad())
+                if (!m_debugLogFile.bad()) {
                     m_debugLogFile << msg << std::endl;
+                }
 
                 return true;
             }
@@ -324,17 +367,19 @@ public:
 #ifdef _MSC_VER
         // Get the error message, if any.
         const DWORD errorMessageID = ::GetLastError();
-        if (errorMessageID == 0 || errorMessageID == 6)
+        if (errorMessageID == 0 || errorMessageID == 6) {
             return std::string();  // No error message has been recorded
+        }
 
         LPSTR messageBuffer = nullptr;
-        const size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                           nullptr,
-                                           errorMessageID,
-                                           MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                                           (LPSTR)&messageBuffer,
-                                           0,
-                                           nullptr);
+        const size_t size = FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            errorMessageID,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPSTR)&messageBuffer,
+            0,
+            nullptr);
 
         msg = std::string(messageBuffer, size);
 
@@ -376,10 +421,11 @@ private:
 
         static char TempBufferBis[sMAX_BUFFER_SIZE + 1];
         int w = 0;
-        if (vFunction && vLine)
+        if (vFunction && vLine) {
             w = snprintf(TempBufferBis, sMAX_BUFFER_SIZE, "[%010.3fs][%s:%i] %s", time, vFunction->c_str(), *vLine, vStr);
-        else
+        } else {
             w = snprintf(TempBufferBis, sMAX_BUFFER_SIZE, "[%010.3fs] %s", time, vStr);
+        }
         if (w) {
             const std::string msg = std::string(TempBufferBis, (size_t)w);
 
@@ -401,7 +447,6 @@ private:
             std::cout << msg << std::endl;
 #endif
 
-
             if (vStr && m_standardLogFunction) {
                 int type = 0;
 
@@ -419,8 +464,9 @@ private:
                 }
             }
 
-            if (!m_debugLogFile.bad())
+            if (!m_debugLogFile.bad()) {
                 m_debugLogFile << msg << std::endl;
+            }
         }
     }
     void m_LogString(const MessageType* vType, const std::string* vFunction, const int* vLine, const char* fmt, va_list vArgs) {
@@ -432,8 +478,10 @@ private:
     }
 
 public:
-    static ez::Log* Instance(ez::Log* vCopyPtr = nullptr, bool vForce = false) {
-        static auto instance_ptr = std::unique_ptr<ez::Log>(new ez::Log());  // std::make_unique is not available in cpp11
+// old behavior
+#ifdef LEGACY_SINGLETON
+    static Log* Instance(Log* vCopyPtr = nullptr, bool vForce = false) {
+        static auto instance_ptr = std::unique_ptr<Log>(new Log());  // std::make_unique is not available in cpp11
         static ez::Log* _instance_copy = nullptr;
         if (vCopyPtr || vForce) {
             _instance_copy = vCopyPtr;
@@ -445,6 +493,14 @@ public:
         }
         return instance_ptr.get();
     }
+#else  // LEGACY_SINGLETON
+    static std::unique_ptr<Log>& initSingleton() {
+        static auto mp_instance = std::unique_ptr<Log>(new Log());
+        return mp_instance;
+    }
+    static Log& ref() { return *initSingleton().get(); }
+    static void unitSingleton() { initSingleton().reset(); }
+#endif  // LEGACY_SINGLETON
 };
 
 }  // namespace ez

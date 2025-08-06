@@ -405,7 +405,7 @@ private:
     typedef std::unordered_map<LayerId, std::unique_ptr<ATree>> LayerContainer;
     std::unordered_map<KeyFrame, LayerContainer> m_Trees;
     KeyFrame m_CurrentKeyFrame = 0U;
-    FILE* m_File = nullptr;
+    FILE* m_file = nullptr;
     int32_t m_LastError = 0;
 
 public:
@@ -437,7 +437,7 @@ public:
                         str << base_file_path_name << ".vdb";
                     }
                     if (openFileForWriting(str.str())) {
-                        writeVdb(m_File, vdb.second);
+                        writeVdb(m_file, vdb.second);
                         closeFile();
                     } else {
                         std::cout << "Error, cant write to the file " << str.str() << std::endl;
@@ -486,24 +486,24 @@ private:
 
     bool openFileForWriting(const std::string& vFilePathName) {
 #if _MSC_VER
-        m_LastError = fopen_s(&m_File, vFilePathName.c_str(), "wb");
+        m_LastError = fopen_s(&m_file, vFilePathName.c_str(), "wb");
 #else
-        m_File = fopen(vFilePathName.c_str(), "wb");
-        m_LastError = m_File ? 0 : errno;
+        m_file = fopen(vFilePathName.c_str(), "wb");
+        m_LastError = m_file ? 0 : errno;
 #endif
         return (m_LastError == 0);
     }
 
     void closeFile() {
-        fclose(m_File);
+        fclose(m_file);
     }
 
     long getFilePos() const {
-        return ftell(m_File);
+        return ftell(m_file);
     }
 
     void setFilePos(const long& vPos) {
-        fseek(m_File, vPos, SEEK_SET);
+        fseek(m_file, vPos, SEEK_SET);
     }
 };
 
