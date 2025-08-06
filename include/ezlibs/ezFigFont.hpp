@@ -80,6 +80,9 @@ public:
 	
 private:
 	bool m_load(const std::string& vFilePathName) {
+        if (vFilePathName.empty()) {
+            return false;
+        }
         std::ifstream file(vFilePathName);
         if (!file.is_open()) {
 #ifdef EZ_TOOLS_LOG
