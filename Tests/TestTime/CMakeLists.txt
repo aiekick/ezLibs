@@ -52,3 +52,16 @@ AddTest("TestEzCron_TimeCheck_Type_Value")
 AddTest("TestEzCron_TimeCheck_Type_Interval")
 AddTest("TestEzCron_TimeCheck_Type_Range")
 AddTest("TestEzCron_TimeCheck_Type_Values")
+
+##########################################################
+##### EzDate #############################################
+##########################################################
+
+AddTest("TestEzDate_ParseYmd")
+AddTest("TestEzDate_IsLeap_MonthDays")
+AddTest("TestEzDate_AddDays_Generic")
+AddTest("TestEzDate_DiffDays")
+AddTest("TestEzDate_Start_End_Of_Month")
+AddTest("TestEzDate_YmKey")
+AddTest("TestEzDate_DayOfMonthToDate_PositiveNegative")
+AddTest("TestEzDate_DayOfMonthToDate_FebruaryLeap")

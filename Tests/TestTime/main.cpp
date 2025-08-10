@@ -1,4 +1,5 @@
 #include <TestEzCron.h>
+#include <TestEzDate.h>
 
 #define IfTestCollectionExist(v)             \
     if (vTest.find(#v) != std::string::npos) \
@@ -6,6 +7,7 @@
 
 bool TestTime(const std::string& vTest) {
     IfTestCollectionExist(TestEzCron);
+    else IfTestCollectionExist(TestEzDate);
     return false;
 }
 
