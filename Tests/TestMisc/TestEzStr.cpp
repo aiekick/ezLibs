@@ -30,6 +30,7 @@ bool TestEzStrGetDigitsCountOfAIntegralNumber() {
 bool TestEzStrSearchForPatternWithWildcards() {
     std::string buffer = "TOTO VA AU ZOO ET C'EST BEAU";
     std::pair<size_t, size_t> posRange;
+    CTEST_ASSERT(ez::str::searchForPatternWithWildcards(buffer, "PAPA*ZOO*BEAU").empty());
     CTEST_ASSERT(ez::str::searchForPatternWithWildcards(buffer, "TOTO*ZOO*BEAU") == buffer);
     CTEST_ASSERT(ez::str::searchForPatternWithWildcards(buffer, "TOTO*ZOO*BEAU", posRange) == buffer && posRange.first == 0 && posRange.second == buffer.size());
     return true;
