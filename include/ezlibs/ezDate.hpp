@@ -28,6 +28,7 @@ SOFTWARE.
 
 #include <string>
 #include <sstream>
+#include <cstdint>
 #include <iomanip>
 #include <cstdlib>
 
@@ -56,7 +57,7 @@ namespace date {
  * @param d [out] Parsed day in [1..31].
  * @return true if parsing succeeds and fields look valid; false otherwise.
  */
-inline bool parseYmd(const std::string& s, int& y, int& m, int& d) {
+inline bool parseYmd(const std::string& s, int32_t& y, int32_t& m, int32_t& d) {
     if (s.size() != 10 || s[4] != '-' || s[7] != '-')
         return false;
     y = std::atoi(s.substr(0, 4).c_str());
@@ -71,7 +72,7 @@ inline bool parseYmd(const std::string& s, int& y, int& m, int& d) {
  * @param y Year.
  * @return true if leap year; false otherwise.
  */
-inline bool isLeap(int y) {
+inline bool isLeap(int32_t y) {
     return (y % 4 == 0) && ((y % 100 != 0) || (y % 400 == 0));
 }
 
@@ -82,9 +83,9 @@ inline bool isLeap(int y) {
  * @param m Month in [1..12].
  * @return Number of days in that month (28, 29, 30, or 31).
  */
-inline int monthDays(int y, int m) {
-    static const int md[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    int d = md[m - 1];
+inline int32_t monthDays(int32_t y, int32_t m) {
+    static const int32_t md[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    int32_t d = md[m - 1];
     if (m == 2 && isLeap(y))
         d = 29;
     return d;
@@ -100,12 +101,12 @@ inline int monthDays(int y, int m) {
  * @param D Day in [1..31].
  * @return Days since 1970-01-01 (can be negative for dates before 1970-01-01).
  */
-inline int ymdToDays(int Y, int M, int D) {
-    int y = Y, m = M, d = D;
-    int n = 0;
-    for (int yy = 1970; yy < y; ++yy)
+inline int32_t ymdToDays(int32_t Y, int32_t M, int32_t D) {
+    int32_t y = Y, m = M, d = D;
+    int32_t n = 0;
+    for (int32_t yy = 1970; yy < y; ++yy)
         n += 365 + (isLeap(yy) ? 1 : 0);
-    for (int mm = 1; mm < m; ++mm)
+    for (int32_t mm = 1; mm < m; ++mm)
         n += monthDays(y, mm);
     n += d - 1;
     return n;
@@ -119,26 +120,26 @@ inline int ymdToDays(int Y, int M, int D) {
  * @param M [out] Month in [1..12].
  * @param D [out] Day in [1..31].
  */
-inline void daysToYmd(int days, int& Y, int& M, int& D) {
-    int y = 1970;
+inline void daysToYmd(int32_t days, int32_t& Y, int32_t& M, int32_t& D) {
+    int32_t y = 1970;
     while (true) {
-        int len = 365 + (isLeap(y) ? 1 : 0);
+        int32_t len = 365 + (isLeap(y) ? 1 : 0);
         if (days >= len) {
             days -= len;
             ++y;
         } else
             break;
     }
-    int m = 1;
+    int32_t m = 1;
     while (true) {
-        int len = monthDays(y, m);
+        int32_t len = monthDays(y, m);
         if (days >= len) {
             days -= len;
             ++m;
         } else
             break;
     }
-    int d = days + 1;
+    int32_t d = days + 1;
     Y = y;
     M = m;
     D = d;
@@ -151,13 +152,13 @@ inline void daysToYmd(int days, int& Y, int& M, int& D) {
  * @param off Day offset (positive or negative).
  * @return New date as "YYYY-MM-DD". If parsing fails, returns the input string.
  */
-inline std::string addDays(const std::string& s, int off) {
-    int y, m, d;
+inline std::string addDays(const std::string& s, int32_t off) {
+    int32_t y, m, d;
     if (!parseYmd(s, y, m, d))
         return s;
-    int base = ymdToDays(y, m, d);
-    int tgt = base + off;
-    int Y, M, D;
+    int32_t base = ymdToDays(y, m, d);
+    int32_t tgt = base + off;
+    int32_t Y, M, D;
     daysToYmd(tgt, Y, M, D);
     std::ostringstream oss;
     oss << std::setfill('0') << std::setw(4) << Y << "-" << std::setw(2) << M << "-" << std::setw(2) << D;
@@ -171,8 +172,8 @@ inline std::string addDays(const std::string& s, int off) {
  * @param b Date B, "YYYY-MM-DD".
  * @return a - b in days (positive if a > b, negative if a < b).
  */
-inline int diffDays(const std::string& a, const std::string& b) {
-    int ya, ma, da, yb, mb, db;
+inline int32_t diffDays(const std::string& a, const std::string& b) {
+    int32_t ya, ma, da, yb, mb, db;
     if (!parseYmd(a, ya, ma, da) || !parseYmd(b, yb, mb, db))
         return 0;
     return ymdToDays(ya, ma, da) - ymdToDays(yb, mb, db);
@@ -185,7 +186,7 @@ inline int diffDays(const std::string& a, const std::string& b) {
  * @return "YYYY-MM-01" (or the input if parsing fails).
  */
 inline std::string startOfMonth(const std::string& s) {
-    int y, m, d;
+    int32_t y, m, d;
     if (!parseYmd(s, y, m, d))
         return s;
     std::ostringstream oss;
@@ -202,10 +203,10 @@ inline std::string startOfMonth(const std::string& s) {
  * @return "YYYY-MM-DD" with the month's last day (or the input if parsing fails).
  */
 inline std::string endOfMonth(const std::string& s) {
-    int y, m, d;
+    int32_t y, m, d;
     if (!parseYmd(s, y, m, d))
         return s;
-    int md = monthDays(y, m);
+    int32_t md = monthDays(y, m);
     std::ostringstream oss;
     oss << std::setfill('0') << std::setw(4) << y << "-" << std::setw(2) << m << "-" << std::setw(2) << md;
     return oss.str();
@@ -241,7 +242,7 @@ inline std::string ymKey(const std::string& s) {
  * @param firstOfMonth The date representing the 1st of the target month ("YYYY-MM-DD").
  * @return Concrete "YYYY-MM-DD" date according to the rules above.
  */
-inline std::string dayOfMonthToDate(int day, const std::string& firstOfMonth) {
+inline std::string dayOfMonthToDate(int32_t day, const std::string& firstOfMonth) {
     if (day == 0) {
         // Invalid in a 1..31 day-of-month model; choose your policy here.
         // For safety, return the 1st as a neutral fallback.
@@ -266,6 +267,9 @@ public:
     explicit Date(const std::string& vDate) {
         m_valid = parseYmd(vDate, m_year, m_month, m_day);
     }    
+    int32_t getYear() const { return m_year; }
+    int32_t getMonth() const { return m_month; }
+    int32_t getDay() const { return m_day; }
 };
 
 }  // namespace date
