@@ -246,6 +246,19 @@ inline std::string toStr(const char* fmt, ...) {
     return std::string();
 }
 
+template< size_t MaxSize>
+inline std::string toStr(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char TempBuffer[MaxSize+1];
+    const int w = vsnprintf(TempBuffer, MaxSize, fmt, args);
+    va_end(args);
+    if (w) {
+        return std::string(TempBuffer, (size_t)w);
+    }
+    return std::string();
+}
+
 inline std::string toUpper(const std::string& vStr, const std::locale& vLocale = {}) {
     std::string str = vStr;
     for (size_t i = 0U; i < str.size(); ++i) {

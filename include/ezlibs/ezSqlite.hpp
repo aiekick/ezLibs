@@ -30,9 +30,9 @@ SOFTWARE.
 #include <cstring>
 #include <string>
 #include <vector>
-#include <sstream>//stringstream
-#include <cstdarg> // variadic
-#include "ezStr.hpp"
+#include <map>
+#include <sstream>  //stringstream
+#include <cstdarg>  // variadic
 
 namespace ez {
 namespace sqlite {
@@ -61,13 +61,13 @@ inline std::string readStringColumn(sqlite3_stmt* vStmt, int32_t vColumn) {
  * give :
  * QueryBuilder().
  *  setTable("banks").
- *  addField("number", 30002).
- *  addField("name", "LCL").
+ *  addOrSetField("number", 30002).
+ *  addOrSetField("name", "LCL").
  *  build(QueryType::INSERT_IF_NOT_EXIST);
  */
 // ex : build("banks", {{"number", "30002"},{"name","LCL"}});
 
-enum class QueryType { INSERT_IF_NOT_EXIST = 0, UPDATE, Count };
+enum class QueryType { INSERT = 0, UPDATE, INSERT_IF_NOT_EXIST, Count };
 
 class QueryBuilder {
 private:
@@ -78,8 +78,13 @@ private:
         bool m_subQuery = false;
 
     public:
-        explicit Field(const std::string& vKey, const std::string& vValue, const bool vSubQuery)
-            : m_key(vKey), m_value(vValue), m_subQuery(vSubQuery) {}
+        Field() = default;
+        explicit Field(const std::string& vKey, const std::string& vValue, const bool vSubQuery) : m_key(vKey), m_value(vValue), m_subQuery(vSubQuery) {
+            const auto zero_pos = m_value.find('\0');
+            if (zero_pos != std::string::npos) {
+                m_value.clear();
+            }
+        }
         const std::string& getRawKey() const { return m_key; }
         const std::string& getRawValue() const { return m_value; }
         std::string getFinalValue() const {
@@ -91,7 +96,8 @@ private:
     };
 
     std::string m_table;
-    std::vector<Field> m_fields;
+    std::map<std::string, Field> m_dicoFields;
+    std::vector<std::string> m_fields;
     std::vector<std::string> m_where;
 
 public:
@@ -99,38 +105,43 @@ public:
         m_table = vTable;
         return *this;
     }
-    QueryBuilder& addField(const std::string& vKey, const std::string& vValue) {
-        m_fields.emplace_back(vKey, vValue, false);
+    QueryBuilder& addOrSetField(const std::string& vKey, const std::string& vValue) {
+        m_addKeyIfNotExist(vKey);
+        m_dicoFields[vKey] = Field(vKey, vValue, false);
         return *this;
     }
-    QueryBuilder& addField(const std::string& vKey, const char* fmt, ...) {
+    QueryBuilder& addOrSetField(const std::string& vKey, const char* fmt, ...) {
         va_list args;
         va_start(args, fmt);
         static char TempBuffer[1024 + 1];
-        const int w = vsnprintf(TempBuffer, 3072, fmt, args);
+        const int w = vsnprintf(TempBuffer, 1024, fmt, args);
         va_end(args);
-        if (w) {
-            m_fields.emplace_back(vKey, std::string(TempBuffer, (size_t)w), false);
+        if (w > 0) {
+            m_addKeyIfNotExist(vKey);
+            m_dicoFields[vKey] = Field(vKey, std::string(TempBuffer), false);
         }
         return *this;
     }
     template <typename T>
-    QueryBuilder& addField(const std::string& vKey, const T& vValue) {
-        m_fields.emplace_back(vKey, ez::str::toStr<T>(vValue), false);
+    QueryBuilder& addOrSetField(const std::string& vKey, const T& vValue) {
+        m_addKeyIfNotExist(vKey);
+        m_dicoFields[vKey] = Field(vKey, ez::str::toStr<T>(vValue), false);
         return *this;
     }
-    QueryBuilder& addFieldQuery(const std::string& vKey, const std::string& vValue) {
-        m_fields.emplace_back(vKey, vValue, true);
+    QueryBuilder& addOrSetFieldQuery(const std::string& vKey, const std::string& vValue) {
+        m_addKeyIfNotExist(vKey);
+        m_dicoFields[vKey] = Field(vKey, vValue, true);
         return *this;
     }
-    QueryBuilder& addFieldQuery(const std::string& vKey, const char* fmt, ...) {
+    QueryBuilder& addOrSetFieldQuery(const std::string& vKey, const char* fmt, ...) {
         va_list args;
         va_start(args, fmt);
         static char TempBuffer[1024 + 1];
-        const int w = vsnprintf(TempBuffer, 3072, fmt, args);
+        const int w = vsnprintf(TempBuffer, 1024, fmt, args);
         va_end(args);
-        if (w) {
-            m_fields.emplace_back(vKey, std::string(TempBuffer, (size_t)w), true);
+        if (w > 0) {
+            m_addKeyIfNotExist(vKey);
+            m_dicoFields[vKey] = Field(vKey, std::string(TempBuffer), true);
         }
         return *this;
     }
@@ -147,17 +158,18 @@ public:
         va_list args;
         va_start(args, fmt);
         static char TempBuffer[1024 + 1];
-        const int w = vsnprintf(TempBuffer, 3072, fmt, args);
+        const int w = vsnprintf(TempBuffer, 1024, fmt, args);
         va_end(args);
         if (w) {
-            m_where.emplace_back(std::string(TempBuffer, (size_t)w));
+            m_where.emplace_back(std::string(TempBuffer));
         }
         return *this;
     }
     std::string build(const QueryType vType) {
         switch (vType) {
-            case QueryType::INSERT_IF_NOT_EXIST: return m_buildTypeInsertIfNotExist();
+            case QueryType::INSERT: return m_buildTypeInsert();
             case QueryType::UPDATE: return m_buildTypeUpdate();
+            case QueryType::INSERT_IF_NOT_EXIST: return m_buildTypeInsertIfNotExist();
             case QueryType::Count:
             default: break;
         }
@@ -165,45 +177,72 @@ public:
     }
 
 private:
-    std::string m_buildTypeInsertIfNotExist() {
-        std::string query = "INSERT INTO " + m_table + " (";
-        size_t idx = 0;
-        for (const auto& field : m_fields) {
-            if (idx!=0) {
-                query += ", ";
-            }
-            query += field.getRawKey();
-            ++idx;
+    void m_addKeyIfNotExist(const std::string& vKey) {
+        if (m_dicoFields.find(vKey) == m_dicoFields.end()) {
+            m_fields.emplace_back(vKey);
         }
-        query += ") SELECT ";
-        idx = 0;
-        for (const auto& field : m_fields) {
-            if (idx != 0) {
-                query += ", ";
-            }
-            query += field.getFinalValue();
-            ++idx;
-        }
-        query += " WHERE NOT EXISTS (SELECT 1 FROM " + m_table + " WHERE ";
-        idx = 0;
-        for (const auto& field : m_fields) {
-            if (idx != 0) {
-                query += " AND ";
-            }
-            query += field.getRawKey() + " = " + field.getFinalValue();
-            ++idx;
-        }
-        query += ");";
-        return query;
     }
-    std::string m_buildTypeUpdate() {
-        std::string query = "UPDATE\n\t" + m_table + "\nSET\n\t";
+    std::string m_buildTypeInsert() {
+        std::string query = "INSERT INTO " + m_table + " (\n\t";
         size_t idx = 0;
         for (const auto& field : m_fields) {
             if (idx != 0) {
                 query += ",\n\t";
             }
-            query += field.getRawKey() + " = " + field.getFinalValue();
+            query += m_dicoFields.at(field).getRawKey();
+            ++idx;
+        }
+        query += "\n) VALUES (\n\t";
+        idx = 0;
+        for (const auto& field : m_fields) {
+            if (idx != 0) {
+                query += ",\n\t";
+            }
+            query += m_dicoFields.at(field).getFinalValue();
+            ++idx;
+        }
+        query += "\n);";
+        return query;
+    }
+    std::string m_buildTypeInsertIfNotExist() {
+        std::string query = "INSERT INTO " + m_table + " (\n\t";
+        size_t idx = 0;
+        for (const auto& field : m_fields) {
+            if (idx != 0) {
+                query += ",\n\t";
+            }
+            query += m_dicoFields.at(field).getRawKey();
+            ++idx;
+        }
+        query += "\n) SELECT \n\t";
+        idx = 0;
+        for (const auto& field : m_fields) {
+            if (idx != 0) {
+                query += ",\n\t";
+            }
+            query += m_dicoFields.at(field).getFinalValue();
+            ++idx;
+        }
+        query += " WHERE NOT EXISTS (SELECT 1 FROM " + m_table + "\nWHERE\n\t";
+        idx = 0;
+        for (const auto& field : m_fields) {
+            if (idx != 0) {
+                query += "\n\tAND ";
+            }
+            query += m_dicoFields.at(field).getRawKey() + " = " + m_dicoFields.at(field).getFinalValue();
+            ++idx;
+        }
+        query += "\n);";
+        return query;
+    }
+    std::string m_buildTypeUpdate() {
+        std::string query = "UPDATE " + m_table + " SET\n\t";
+        size_t idx = 0;
+        for (const auto& field : m_fields) {
+            if (idx != 0) {
+                query += ",\n\t";
+            }
+            query += m_dicoFields.at(field).getRawKey() + " = " + m_dicoFields.at(field).getFinalValue();
             ++idx;
         }
         query += "\nWHERE\n\t";
@@ -217,7 +256,6 @@ private:
         }
         query += ";";
         return query;
-
     }
 };
 
