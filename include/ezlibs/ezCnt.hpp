@@ -52,6 +52,10 @@ public:
     TValue& at(const size_t& vIdx) { return m_array.at(vIdx); }
     const TValue& operator[](const size_t& vIdx) const { return m_array[vIdx]; }
     const TValue& at(const size_t& vIdx) const { return m_array.at(vIdx); }
+    std::unordered_map<TKey, size_t>& getDico() { return m_dico; }
+    const std::unordered_map<TKey, size_t>& getDico() const { return m_dico; }
+    std::vector<TValue>& getArray() { return m_array; }
+    const std::vector<TValue>& getArray() const { return m_array; }
     typename std::vector<TValue>::iterator begin() { return m_array.begin(); }
     typename std::vector<TValue>::const_iterator begin() const { return m_array.begin(); }
     typename std::vector<TValue>::iterator end() { return m_array.end(); }
