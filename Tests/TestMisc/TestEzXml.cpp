@@ -37,6 +37,7 @@ bool TestEzXmlParsingOK() {
             <bool>false</bool>
             <bool>true</bool>
         </Test>
+        <Test/>
     </Tests>
 </config>
 )";
@@ -63,7 +64,7 @@ bool TestEzXmlParsingOK() {
     if (configChildrens[2].getName() != "Tests")
         return false;
     const auto &testsChildrens = configChildrens[2].getChildren();
-    if (testsChildrens.size() != 5U)
+    if (testsChildrens.size() != 6U)
         return false;
     if (testsChildrens[0].getContent() != "<!-- Comment 2 -->")
         return false;
@@ -88,6 +89,8 @@ bool TestEzXmlParsingOK() {
     if (testsChildrens[4].getAttribute("name") != "test4")
         return false;
     if (testsChildrens[4].getAttribute("number") != "200")
+        return false;
+    if (testsChildrens[5].getName() != "Test")
         return false;
     const auto &test4Childrens = testsChildrens[4].getChildren();
     if (test4Childrens.size() != 4U)

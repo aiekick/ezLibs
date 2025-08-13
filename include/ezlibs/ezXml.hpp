@@ -468,7 +468,7 @@ namespace ez {
             while (vLine.at(startPos) == ' ' && vLine.size() > startPos) {
                 ++startPos;
             }
-            size_t endPos = vLine.find_first_of(" \t>", startPos);
+            size_t endPos = vLine.find_first_of(" \t/>", startPos);
             return vLine.substr(startPos, endPos - startPos);
         }
 
