@@ -299,30 +299,30 @@ public:
     // Lexèmes
     //---------------------------------------------
     // clang-format off
-enum class TokenKind : uint16_t {
-    Identifier, String, Number, Blob,
-    Parameter,                 // ?, ?123, :name, @name, $name
+    enum class TokenKind : uint16_t {
+        Identifier, String, Number, Blob,
+        Parameter,                 // ?, ?123, :name, @name, $name
 
-    // Mots-clés (sous-ensemble utile)
-    KwSelect, KwFrom, KwWhere, KwGroup, KwBy, KwHaving,
-    KwOrder, KwLimit, KwOffset, KwWith,
-    KwInsert, KwInto, KwValues, KwUpdate, KwSet, KwDelete,
-    KwCreate, KwTable, KwIf, KwNot, KwExists, KwPrimary, KwKey,
-    KwUnique, KwCheck, KwReferences, KwWithout, KwRowid, KwOn, KwConflict,
-    KwAs,
+        // Mots-clés (sous-ensemble utile)
+        KwSelect, KwFrom, KwWhere, KwGroup, KwBy, KwHaving,
+        KwOrder, KwLimit, KwOffset, KwWith,
+        KwInsert, KwInto, KwValues, KwUpdate, KwSet, KwDelete,
+        KwCreate, KwTable, KwIf, KwNot, KwExists, KwPrimary, KwKey,
+        KwUnique, KwCheck, KwReferences, KwWithout, KwRowid, KwOn, KwConflict,
+        KwAs,
 
-    // Opérateurs / délimiteurs
-    Plus, Minus, Star, Slash, Percent, PipePipe, Amp, Pipe, Tilde,
-    Shl, Shr, Eq, EqEq, Ne, Ne2, Lt, Le, Gt, Ge, Assign,
-    Comma, Dot, LParen, RParen, Semicolon,
+        // Opérateurs / délimiteurs
+        Plus, Minus, Star, Slash, Percent, PipePipe, Amp, Pipe, Tilde,
+        Shl, Shr, Eq, EqEq, Ne, Ne2, Lt, Le, Gt, Ge, Assign,
+        Comma, Dot, LParen, RParen, Semicolon,
 
-    EndOfFile,
-    Unknown
-};
+        EndOfFile,
+        Unknown
+    };
     // clang-format on
 
     struct Token {
-    TokenKind kind{TokenKind::Unknown};
+        TokenKind kind{TokenKind::Unknown};
         SourcePos start;
         SourcePos end;  // end.offset = 1 + dernier octet inclus (pour affichage)
         StringRef lex;  // vue sur vSql (pas de copie)
@@ -346,27 +346,18 @@ enum class TokenKind : uint16_t {
     //---------------------------------------------
     // Options & rapport
     //---------------------------------------------
-    struct ParserOptions {
+    struct Options {
         bool allowNestedBlockComments = false;  // /* ... /* ... */ ... */ (si true)
-        bool trackAllTokens = true;  // remplir ParseReport.tokens
-        bool caseInsensitiveKeywords=true;  // LIKE SQLite
+        bool trackAllTokens = true;  // remplir Report.tokens
+        bool caseInsensitiveKeywords = true;  // LIKE SQLite
     };
 
-    struct ParseReport {
+    struct Report {
         bool ok{true};
         std::vector<Error> errors;
         std::vector<Statement> statements;
         std::vector<Token> tokens;  // rempli si trackAllTokens = true
     };
-
-public:
-    // --------- public (static)
-    static std::shared_ptr<Parser> create(const ParserOptions& vOptions) {
-        std::shared_ptr<Parser> p(new Parser());
-        if (!p->init(vOptions))
-            return std::shared_ptr<Parser>();
-        return p;
-    }
 
 private:
     // --------- private (static utils)
@@ -393,28 +384,17 @@ private:
 
 private:
     // --------- private (vars)
-    ParserOptions m_options;
-    uint32_t m_sourceSize;
+    Options m_options;
+    uint32_t m_sourceSize{};
     std::vector<uint32_t> m_lineStarts;  // offset du début de chaque ligne
 
 public:
     // --------- public (methods)
-    Parser() : m_sourceSize(0u) {}
-
-    bool init(const ParserOptions& vOptions) {
-        m_options = vOptions;
-        m_sourceSize = 0u;
-        m_lineStarts.clear();
-        return true;
-    }
-
-    void unit() {
-        m_sourceSize = 0u;
-        m_lineStarts.clear();
-    }
+    Parser() = default;
+    Parser(const Options& vOptions) : m_options(vOptions) {}
 
     // API principale
-    bool parse(const std::string& vSql, ParseReport& vOut) {
+    bool parse(const std::string& vSql, Report& vOut) {
         m_sourceSize = static_cast<uint32_t>(vSql.size());
         m_buildLineStarts(vSql);
 
@@ -889,7 +869,7 @@ private:
     }
 
     // --- vérifs générales
-    void m_checkParens(const std::vector<Token>& vToks, const StatementRange& vRng, ParseReport& vOut) const {
+    void m_checkParens(const std::vector<Token>& vToks, const StatementRange& vRng, Report& vOut) const {
         int32_t depth = 0;
         for (size_t i = 0; i < vToks.size(); ++i) {
             const Token& t = vToks[i];
@@ -913,7 +893,7 @@ private:
     }
 
     // --- vérifs par kind
-    void m_checkCreateTable(const std::vector<Token>& vToks, const StatementRange& vRng, const std::string& /*vSql*/, ParseReport& vOut) const {
+    void m_checkCreateTable(const std::vector<Token>& vToks, const StatementRange& vRng, const std::string& /*vSql*/, Report& vOut) const {
         bool sawCreate = false, sawTable = false;
         const Token* nameTok = NULL;
         const Token* afterName = NULL;
@@ -988,7 +968,7 @@ private:
         }
     }
 
-    void m_checkInsert(const std::vector<Token>& vToks, const StatementRange& vRng, ParseReport& vOut) const {
+    void m_checkInsert(const std::vector<Token>& vToks, const StatementRange& vRng, Report& vOut) const {
         bool sawInsert = false, sawInto = false, sawValues = false, sawSelect = false;
         const Token* afterValues = NULL;
 
@@ -1065,7 +1045,7 @@ private:
         }
     }
 
-    void m_checkUpdate(const std::vector<Token>& vToks, const StatementRange& vRng, ParseReport& vOut) const {
+    void m_checkUpdate(const std::vector<Token>& vToks, const StatementRange& vRng, Report& vOut) const {
         bool sawUpdate = false, sawSet = false;
         for (size_t i = 0; i < vToks.size(); ++i) {
             const Token& t = vToks[i];
@@ -1095,7 +1075,7 @@ private:
         }
     }
 
-    void m_checkDelete(const std::vector<Token>& vToks, const StatementRange& vRng, ParseReport& vOut) const {
+    void m_checkDelete(const std::vector<Token>& vToks, const StatementRange& vRng, Report& vOut) const {
         bool sawDelete = false, sawFrom = false;
         for (size_t i = 0; i < vToks.size(); ++i) {
             const Token& t = vToks[i];
@@ -1125,10 +1105,93 @@ private:
         }
     }
 
-    void m_checkSelect(const std::vector<Token>& vToks, const StatementRange& vRng, ParseReport& vOut) const {
-        bool sawSelect = false;
+    void m_checkSelect(const std::vector<Token>& vToks, const StatementRange& vRng, Report& vOut) const {
+        // 1) Trouver SELECT
+        size_t selIdx = static_cast<size_t>(-1);
+        for (size_t i = 0u; i < vToks.size(); ++i) {
+            const Token& t = vToks[i];
+            if (t.start.offset < vRng.beginOffset) {
+                continue;
+            }
+            if (t.start.offset >= vRng.endOffset) {
+                break;
+            }
+            if (t.kind == TokenKind::KwSelect) {
+                selIdx = i;
+                break;
+            }
+        }
+        if (selIdx == static_cast<size_t>(-1)) {
+            return;  // pas un SELECT (sécurité)
+        }
 
-        for (size_t idx = 0u; idx < vToks.size(); ++idx) {
+        // 2) Scanner la projection: SELECT <expr> [, <expr> ...] [FROM ... | ...]
+        bool seenAny = false;
+        bool expectingExpr = true;  // vrai au début / après chaque virgule
+        size_t i = selIdx + 1u;
+
+        for (; i < vToks.size(); ++i) {
+            const Token& t = vToks[i];
+            if (t.start.offset >= vRng.endOffset) {
+                break;
+            }
+
+            const TokenKind k = t.kind;
+
+            // Fin de projection : mots-clés majeurs ou fin
+            const bool endOfProjection = (k == TokenKind::KwFrom) || (k == TokenKind::KwWhere) || (k == TokenKind::KwGroup) || (k == TokenKind::KwOrder) ||
+                (k == TokenKind::KwLimit) || (k == TokenKind::KwOffset) || (k == TokenKind::Semicolon) || (k == TokenKind::EndOfFile);
+
+            if (endOfProjection) {
+                if (!seenAny) {
+                    // Rien après SELECT
+                    m_addError(vOut.errors, vToks[selIdx].start.offset, "projection SELECT manquante", "*, identifiant, expression");
+                } else if (expectingExpr) {
+                    // Virgule traînante: ex. "SELECT id, FROM ..."
+                    m_addError(vOut.errors, t.start.offset, "expression de projection manquante avant ce token", "expression après ','");
+                }
+                break;
+            }
+
+            if (k == TokenKind::Comma) {
+                if (expectingExpr) {
+                    // Cas ",," ou ", FROM" (doublement signalé ici)
+                    m_addError(vOut.errors, t.start.offset, "expression de projection manquante après ','", "expression");
+                }
+                expectingExpr = true;
+                continue;
+            }
+
+            // Têtes possibles d'expression (simplifiées)
+            const bool isExprHead = (k == TokenKind::Star) || (k == TokenKind::Identifier) || (k == TokenKind::Number) || (k == TokenKind::String) ||
+                (k == TokenKind::Parameter) || (k == TokenKind::LParen);
+
+            if (isExprHead) {
+                seenAny = true;
+                expectingExpr = false;
+                continue;
+            }
+
+            // Token inattendu en position d'expression
+            if (expectingExpr && !seenAny) {
+                m_addError(vOut.errors, t.start.offset, "token inattendu dans la projection SELECT", "*, identifiant, expression");
+                // On continue pour tenter de repérer FROM/ORDER/LIMIT
+                expectingExpr = false;  // évite cascade sur ce jeton
+                continue;
+            }
+        }
+
+        // Si on a fini la boucle sans rencontrer fin de projection
+        if (i >= vToks.size() || vToks[i].start.offset >= vRng.endOffset) {
+            if (!seenAny) {
+                m_addError(vOut.errors, vToks[selIdx].start.offset, "projection SELECT manquante", "*, identifiant, expression");
+            } else if (expectingExpr) {
+                m_addError(vOut.errors, vRng.endOffset, "expression de projection manquante en fin de SELECT", "expression après ','");
+            }
+        }
+
+        // 3) Vérifier FROM (facultatif en SQLite, donc on ne l'exige pas, on valide seulement sa forme)
+        for (size_t idx = selIdx + 1u; idx < vToks.size(); ++idx) {
             const Token& t = vToks[idx];
             if (t.start.offset < vRng.beginOffset) {
                 continue;
@@ -1137,61 +1200,30 @@ private:
                 break;
             }
 
-            if (!sawSelect) {
-                if (t.kind == TokenKind::KwSelect) {
-                    sawSelect = true;
-
-                    // ---- Vérifier la projection immédiatement après SELECT
-                    // On s'attend à: Star, Identifier, Number, String, Parameter ou LParen
-                    bool hasProjection = false;
-                    size_t j = idx + 1u;
-
-                    // (Option: on pourrait gérer DISTINCT/ALL ici si besoin)
-                    while (j < vToks.size() && vToks[j].start.offset < vRng.endOffset) {
-                        TokenKind k = vToks[j].kind;
-                        if (k == TokenKind::Semicolon || k == TokenKind::EndOfFile || k == TokenKind::KwFrom) {
-                            break;
-                        }
-                        if (k == TokenKind::Star || k == TokenKind::Identifier || k == TokenKind::Number || k == TokenKind::String || k == TokenKind::Parameter ||
-                            k == TokenKind::LParen) {
-                            hasProjection = true;
-                            break;
-                        }
-                        if (k == TokenKind::Comma) {
-                            // Virgule juste après SELECT -> projection manquante
-                            m_addError(vOut.errors, vToks[j].start.offset, "expression de projection manquante après SELECT", "*, identifiant, expression");
-                            hasProjection = false;
-                            break;
-                        }
-                        // Sinon, token inconnu en tête de projection -> on signale projection manquante
-                        break;
-                    }
-
-                    if (!hasProjection) {
-                        m_addError(vOut.errors, t.start.offset, "projection SELECT manquante", "*, identifiant, expression");
-                    }
-                } else {
-                    // Pas un SELECT; on sort (ce checker n'est appelé que pour SELECT)
-                    return;
-                }
-                continue;
-            }
-
-            // ---- Vérifier ce qui suit FROM : au moins une table / sous-requête
             if (t.kind == TokenKind::KwFrom) {
                 size_t j = idx + 1u;
                 if (j >= vToks.size() || vToks[j].start.offset >= vRng.endOffset) {
                     m_addError(vOut.errors, t.start.offset, "table attendue après FROM", "identifiant ou sous-requête");
                 } else {
-                    TokenKind k = vToks[j].kind;
-                    if (!(k == TokenKind::Identifier || k == TokenKind::LParen)) {
-                        // Cas communs d'erreur: FROM ;  FROM WHERE  FROM ORDER ...
+                    const TokenKind nk = vToks[j].kind;
+                    if (!(nk == TokenKind::Identifier || nk == TokenKind::LParen)) {
                         m_addError(vOut.errors, vToks[j].start.offset, "élément invalide après FROM", "identifiant ou sous-requête");
                     }
                 }
+                break;  // un seul FROM principal ici (checker léger)
+            }
+        }
+
+        // 4) ORDER BY et LIMIT/OFFSET (inchangé)
+        for (size_t idx = selIdx + 1u; idx < vToks.size(); ++idx) {
+            const Token& t = vToks[idx];
+            if (t.start.offset < vRng.beginOffset) {
+                continue;
+            }
+            if (t.start.offset >= vRng.endOffset) {
+                break;
             }
 
-            // ---- Rappels existants : ORDER BY et LIMIT/OFFSET
             if (t.kind == TokenKind::KwOrder) {
                 size_t j = idx + 1u;
                 bool hasBy = false;
@@ -1218,13 +1250,13 @@ private:
             if (t.kind == TokenKind::KwLimit || t.kind == TokenKind::KwOffset) {
                 size_t j = idx + 1u;
                 while (j < vToks.size() && vToks[j].start.offset < vRng.endOffset) {
-                    TokenKind k = vToks[j].kind;
-                    if (k == TokenKind::Number || k == TokenKind::Parameter) {
+                    const TokenKind k2 = vToks[j].kind;
+                    if (k2 == TokenKind::Number || k2 == TokenKind::Parameter) {
                         break;
                     }
-                    if (k == TokenKind::Comma) {
+                    if (k2 == TokenKind::Comma) {
                         ++j;
-                        continue;  // LIMIT x, y forme acceptée
+                        continue;  // LIMIT x, y accepté
                     }
                     m_addError(vOut.errors, vToks[j].start.offset, "valeur invalide pour LIMIT/OFFSET", "nombre ou paramètre");
                     break;

@@ -108,8 +108,18 @@ AddTest("TestEzSha_0")
 
 AddTest("TestEzSqlite_EmptySQL")
 AddTest("TestEzSqlite_SimpleSelect")
-AddTest("TestEzSqlite_SyntaxError")
-AddTest("TestEzSqlite_MultiLineError")
+AddTest("TestEzSqlite_SyntaxError_SelectFrom")
+AddTest("TestEzSqlite_SyntaxError_CreateTableMissingParenOrAs")
+AddTest("TestEzSqlite_SyntaxError_InsertMissingInto")
+AddTest("TestEzSqlite_SyntaxError_InsertValuesNoParens")
+AddTest("TestEzSqlite_SyntaxError_UpdateNoSet")
+AddTest("TestEzSqlite_SyntaxError_DeleteNoFrom")
+AddTest("TestEzSqlite_SyntaxError_OrderWithoutBy")
+AddTest("TestEzSqlite_SyntaxError_LimitNoValue")
+AddTest("TestEzSqlite_SyntaxError_ParensUnbalancedOpen")
+AddTest("TestEzSqlite_SyntaxError_ParensUnbalancedClose")
+AddTest("TestEzSqlite_SyntaxError_SelectTrailingCommaBeforeFrom")
+AddTest("TestEzSqlite_SyntaxError_MultiLine_ShowLocation")
 
 ##########################################################
 ##### TESTS EzQrCode #####################################
