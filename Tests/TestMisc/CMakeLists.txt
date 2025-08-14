@@ -13,6 +13,7 @@ file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCmdProcessor.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezGraph.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStr.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezSqlite.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStackString.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
@@ -100,6 +101,15 @@ AddTest("TestEzFigFontLoadAndPrint")
 ##########################################################
 
 AddTest("TestEzSha_0")
+
+##########################################################
+##### TESTS EzSqlite #####################################
+##########################################################
+
+AddTest("TestEzSqlite_EmptySQL")
+AddTest("TestEzSqlite_SimpleSelect")
+AddTest("TestEzSqlite_SyntaxError")
+AddTest("TestEzSqlite_MultiLineError")
 
 ##########################################################
 ##### TESTS EzQrCode #####################################
