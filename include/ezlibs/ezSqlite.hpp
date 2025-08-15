@@ -290,8 +290,8 @@ public:
 
     struct Error {
         SourcePos pos;
-        std::string message;  // ex: "token inattendu"
-        std::string expectedHint;  // ex: "attendu: FROM | VALUES"
+        std::string message;  // ex: "token inexpected"
+        std::string expectedHint;  // ex: "expected: FROM | VALUES"
         Error() {}
     };
 
@@ -564,7 +564,7 @@ private:
                         ++i;
                     }
                     if (depth > 0u) {
-                        m_addError(vOutErrs, i ? (i - 1u) : 0u, "commentaire /* ... */ non fermé", "");
+                        m_addError(vOutErrs, i ? (i - 1u) : 0u, "comment /* ... */ not closed", "");
                     }
                     continue;
                 }
@@ -587,7 +587,7 @@ private:
                     ++i;
                 }
                 if (!closed) {
-                    m_addError(vOutErrs, s, "chaîne non fermée", "attendu: '");
+                    m_addError(vOutErrs, s, "string not close", "expected: '");
                     emit.emit(TokenKind::String, s, n);
                 } else {
                     emit.emit(TokenKind::String, s, i);
@@ -618,11 +618,11 @@ private:
                     }
                     emit.emit(TokenKind::Blob, s, i);
                     if (!closed) {
-                        m_addError(vOutErrs, s, "blob non fermé", "attendu: '");
+                        m_addError(vOutErrs, s, "blob not closed", "expected: '");
                     } else if ((hexCount % 2u) != 0u) {
-                        m_addError(vOutErrs, s, "blob hexa de longueur impaire", "");
+                        m_addError(vOutErrs, s, "blob hexa of odd length", "");
                     } else if (badHex) {
-                        m_addError(vOutErrs, s, "caractère non-hexa dans blob", "");
+                        m_addError(vOutErrs, s, "char not-hexa in blob", "");
                     }
                     continue;
                 }
@@ -669,7 +669,7 @@ private:
                 continue;
             }
 
-            // identifiants quotés "..."
+            // identifiers quotés "..."
             if (c == '"') {
                 const uint32_t s = i++;
                 bool closed = false;
@@ -686,12 +686,12 @@ private:
                     ++i;
                 }
                 if (!closed) {
-                    m_addError(vOutErrs, s, "identifiant \"...\" non fermé", "attendu: \"");
+                    m_addError(vOutErrs, s, "identifier \"...\" not closed", "expected: \"");
                 }
                 emit.emit(TokenKind::Identifier, s, i);
                 continue;
             }
-            // identifiants `...` ou [ ... ]
+            // identifiers `...` or [ ... ]
             if (c == '`' || c == '[') {
                 const char closing = (c == '`') ? '`' : ']';
                 const uint32_t s = i++;
@@ -705,7 +705,7 @@ private:
                     ++i;
                 }
                 if (!closed) {
-                    std::string msg("identifiant non fermé (attendu: ");
+                    std::string msg("identifier not closed (expected: ");
                     msg.push_back(closing);
                     msg.push_back(')');
                     m_addError(vOutErrs, s, msg, "");
@@ -715,7 +715,7 @@ private:
             }
 
             // clang-format off
-            // identifiants / mots-clés non quotés
+            // identifiers / mots-clés non quotés
             if (m_isAlpha(c)) {
                 const uint32_t s = i++;
                 while (i<n && (m_isAlnum(vSql[i]) || vSql[i]=='$')) ++i;
@@ -793,7 +793,7 @@ private:
             // clang-format on
 
             // inconnu
-            m_addError(vOutErrs, i, "caractère inconnu", "");
+            m_addError(vOutErrs, i, "char unknown", "");
             emit.emit(TokenKind::Unknown, i, i + 1u);
             ++i;
         }
@@ -839,7 +839,7 @@ private:
                 if (hasContent) {
                     StatementRange r;
                     r.beginOffset = curStart;
-                    r.endOffset = t.start.offset;  // avant le ';'
+                    r.endOffset = t.start.offset;  // before le ';'
                     if (r.endOffset < r.beginOffset)
                         r.endOffset = r.beginOffset;
                     vOut.push_back(r);
@@ -861,7 +861,7 @@ private:
                 case TokenKind::KwInsert: return StatementKind::Insert;
                 case TokenKind::KwUpdate: return StatementKind::Update;
                 case TokenKind::KwDelete: return StatementKind::Delete;
-                case TokenKind::KwCreate: return StatementKind::CreateTable;  // affiné dans check
+                case TokenKind::KwCreate: return StatementKind::CreateTable;  // affiné in check
                 default: return StatementKind::Other;
             }
         }
@@ -882,13 +882,13 @@ private:
             } else if (t.kind == TokenKind::RParen) {
                 --depth;
                 if (depth < 0) {
-                    m_addError(vOut.errors, t.start.offset, "parenthèse fermante sans ouvrante", "supprimer ')'");
+                    m_addError(vOut.errors, t.start.offset, "closing parenthesis without opening parenthesis", "delete ')'");
                     depth = 0;
                 }
             }
         }
         if (depth > 0) {
-            m_addError(vOut.errors, vRng.endOffset, "parenthèse fermante manquante", "attendu: ')'");
+            m_addError(vOut.errors, vRng.endOffset, "missing closing parenthesis", "expected: ')'");
         }
     }
 
@@ -930,7 +930,7 @@ private:
                     continue;
                 if (t.kind == TokenKind::KwExists)
                     continue;
-                m_addError(vOut.errors, t.start.offset, "nom de table attendu après CREATE TABLE", "identifiant");
+                m_addError(vOut.errors, t.start.offset, "table name expected after CREATE TABLE", "identifier");
                 return;
             } else {
                 afterName = &t;
@@ -939,11 +939,11 @@ private:
         }
 
         if (!nameTok) {
-            m_addError(vOut.errors, vRng.beginOffset, "nom de table manquant", "identifiant");
+            m_addError(vOut.errors, vRng.beginOffset, "table name missing", "identifier");
             return;
         }
         if (!afterName) {
-            m_addError(vOut.errors, nameTok->end.offset, "attendu '(' ou AS après le nom de table", "(' | AS");
+            m_addError(vOut.errors, nameTok->end.offset, "expected '(' or AS after table name", "(' | AS");
             return;
         }
 
@@ -964,7 +964,7 @@ private:
             }
         }
         if (!hasParen && !hasAs) {
-            m_addError(vOut.errors, afterName->start.offset, "attendu '(' ou AS après le nom de table", "(' | AS");
+            m_addError(vOut.errors, afterName->start.offset, "expected '(' or AS after table name", "(' | AS");
         }
     }
 
@@ -1014,11 +1014,11 @@ private:
         if (!sawInsert)
             return;
         if (!sawInto) {
-            m_addError(vOut.errors, vRng.beginOffset, "mot-clé INTO manquant dans INSERT", "INTO");
+            m_addError(vOut.errors, vRng.beginOffset, "keyword INTO missing in INSERT", "INTO");
             return;
         }
         if (!sawValues && !sawSelect) {
-            m_addError(vOut.errors, vRng.beginOffset, "INSERT incomplet", "VALUES | SELECT");
+            m_addError(vOut.errors, vRng.beginOffset, "INSERT incomplete", "VALUES | SELECT");
             return;
         }
         if (sawValues && afterValues) {
@@ -1040,7 +1040,7 @@ private:
                 }
             }
             if (!hasPar) {
-                m_addError(vOut.errors, afterValues->start.offset, "VALUES sans liste parenthésée", "('...')");
+                m_addError(vOut.errors, afterValues->start.offset, "VALUES without parentheses list", "('...')");
             }
         }
     }
@@ -1071,7 +1071,7 @@ private:
         if (!sawUpdate)
             return;
         if (!sawSet) {
-            m_addError(vOut.errors, vRng.beginOffset, "UPDATE sans SET", "SET");
+            m_addError(vOut.errors, vRng.beginOffset, "UPDATE without SET", "SET");
         }
     }
 
@@ -1101,7 +1101,7 @@ private:
         if (!sawDelete)
             return;
         if (!sawFrom) {
-            m_addError(vOut.errors, vRng.beginOffset, "DELETE sans FROM", "FROM");
+            m_addError(vOut.errors, vRng.beginOffset, "DELETE without FROM", "FROM");
         }
     }
 
@@ -1127,7 +1127,7 @@ private:
 
         // 2) Scanner la projection: SELECT <expr> [, <expr> ...] [FROM ... | ...]
         bool seenAny = false;
-        bool expectingExpr = true;  // vrai au début / après chaque virgule
+        bool expectingExpr = true;  // vrai au début / after chaque virgule
         size_t i = selIdx + 1u;
 
         for (; i < vToks.size(); ++i) {
@@ -1138,25 +1138,25 @@ private:
 
             const TokenKind k = t.kind;
 
-            // Fin de projection : mots-clés majeurs ou fin
+            // Fin de projection : mots-clés majeurs or fin
             const bool endOfProjection = (k == TokenKind::KwFrom) || (k == TokenKind::KwWhere) || (k == TokenKind::KwGroup) || (k == TokenKind::KwOrder) ||
                 (k == TokenKind::KwLimit) || (k == TokenKind::KwOffset) || (k == TokenKind::Semicolon) || (k == TokenKind::EndOfFile);
 
             if (endOfProjection) {
                 if (!seenAny) {
-                    // Rien après SELECT
-                    m_addError(vOut.errors, vToks[selIdx].start.offset, "projection SELECT manquante", "*, identifiant, expression");
+                    // Rien after SELECT
+                    m_addError(vOut.errors, vToks[selIdx].start.offset, "projected SELECT missing", "*, identifier, expression");
                 } else if (expectingExpr) {
                     // Virgule traînante: ex. "SELECT id, FROM ..."
-                    m_addError(vOut.errors, t.start.offset, "expression de projection manquante avant ce token", "expression après ','");
+                    m_addError(vOut.errors, t.start.offset, "expression of projection missing before thistoken", "expression after ','");
                 }
                 break;
             }
 
             if (k == TokenKind::Comma) {
                 if (expectingExpr) {
-                    // Cas ",," ou ", FROM" (doublement signalé ici)
-                    m_addError(vOut.errors, t.start.offset, "expression de projection manquante après ','", "expression");
+                    // Cas ",," or ", FROM" (doublement signalé ici)
+                    m_addError(vOut.errors, t.start.offset, "expression of projection missing after ','", "expression");
                 }
                 expectingExpr = true;
                 continue;
@@ -1172,21 +1172,21 @@ private:
                 continue;
             }
 
-            // Token inattendu en position d'expression
+            // Token inexpected en position d'expression
             if (expectingExpr && !seenAny) {
-                m_addError(vOut.errors, t.start.offset, "token inattendu dans la projection SELECT", "*, identifiant, expression");
+                m_addError(vOut.errors, t.start.offset, "token inexpected in projection SELECT", "*, identifier, expression");
                 // On continue pour tenter de repérer FROM/ORDER/LIMIT
                 expectingExpr = false;  // évite cascade sur ce jeton
                 continue;
             }
         }
 
-        // Si on a fini la boucle sans rencontrer fin de projection
+        // Si on a fini la boucle without rencontrer fin de projection
         if (i >= vToks.size() || vToks[i].start.offset >= vRng.endOffset) {
             if (!seenAny) {
-                m_addError(vOut.errors, vToks[selIdx].start.offset, "projection SELECT manquante", "*, identifiant, expression");
+                m_addError(vOut.errors, vToks[selIdx].start.offset, "projection SELECT missing", "*, identifier, expression");
             } else if (expectingExpr) {
-                m_addError(vOut.errors, vRng.endOffset, "expression de projection manquante en fin de SELECT", "expression après ','");
+                m_addError(vOut.errors, vRng.endOffset, "expression of projection missing at end of SELECT", "expression after ','");
             }
         }
 
@@ -1203,11 +1203,11 @@ private:
             if (t.kind == TokenKind::KwFrom) {
                 size_t j = idx + 1u;
                 if (j >= vToks.size() || vToks[j].start.offset >= vRng.endOffset) {
-                    m_addError(vOut.errors, t.start.offset, "table attendue après FROM", "identifiant ou sous-requête");
+                    m_addError(vOut.errors, t.start.offset, "table expectede after FROM", "identifier or sub-query");
                 } else {
                     const TokenKind nk = vToks[j].kind;
                     if (!(nk == TokenKind::Identifier || nk == TokenKind::LParen)) {
-                        m_addError(vOut.errors, vToks[j].start.offset, "élément invalide après FROM", "identifiant ou sous-requête");
+                        m_addError(vOut.errors, vToks[j].start.offset, "element invalid after FROM", "identifier or sub-query");
                     }
                 }
                 break;  // un seul FROM principal ici (checker léger)
@@ -1239,10 +1239,10 @@ private:
                     ++j;
                 }
                 if (!hasBy) {
-                    m_addError(vOut.errors, t.start.offset, "ORDER sans BY", "BY");
+                    m_addError(vOut.errors, t.start.offset, "ORDER without BY", "BY");
                 } else {
                     if (j >= vToks.size() || vToks[j].start.offset >= vRng.endOffset) {
-                        m_addError(vOut.errors, t.start.offset, "ORDER BY incomplet", "");
+                        m_addError(vOut.errors, t.start.offset, "ORDER BY incomplete", "");
                     }
                 }
             }
@@ -1258,11 +1258,11 @@ private:
                         ++j;
                         continue;  // LIMIT x, y accepté
                     }
-                    m_addError(vOut.errors, vToks[j].start.offset, "valeur invalide pour LIMIT/OFFSET", "nombre ou paramètre");
+                    m_addError(vOut.errors, vToks[j].start.offset, "invalid value for LIMIT/OFFSET", "number of parameters");
                     break;
                 }
                 if (j >= vToks.size() || vToks[j].start.offset >= vRng.endOffset) {
-                    m_addError(vOut.errors, t.start.offset, "LIMIT/OFFSET sans valeur", "nombre ou paramètre");
+                    m_addError(vOut.errors, t.start.offset, "LIMIT/OFFSET without value", "number of parameters");
                 }
             }
         }
