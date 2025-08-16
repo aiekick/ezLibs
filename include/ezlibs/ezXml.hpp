@@ -208,14 +208,14 @@ namespace ez {
             }
 
             Node &setContent(const std::string &vContent) {
-                m_content = vContent;
+                m_content = escapeXml(vContent);
                 return *this;
             }
 
             // specific case for std::string
             template <typename T = std::string>
             typename std::enable_if<std::is_same<T, std::string>::value, T>::type getContent() const {
-                return m_content;
+                return unEscapeXml(m_content);
             }
 
             // specific case for bool

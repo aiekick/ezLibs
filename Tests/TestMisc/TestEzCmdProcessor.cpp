@@ -1,5 +1,5 @@
 #include "TestEzCmdProcessor.h"
-#include <ezlibs/ezCmdProcessor.hpp>
+#include <ezlibs/ezCmdProc.hpp>
 #include <ezlibs/ezCTest.hpp>
 #include <string>
 #include <utility>

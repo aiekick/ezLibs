@@ -6,6 +6,12 @@
 
 namespace ez {
 
+/*
+this class is a string who have a pre defined size and content saved in stack
+faster if all operations are made idnide the pre defiend stack buffer
+when the size grow out of the pre defined size its moving to heap
+*/
+
 template <typename TChar, size_t StackChunkSize = 256, size_t HeapChunkSize = StackChunkSize>
 class StackString {
     static_assert(std::is_trivial<TChar>::value, "TChar must be a trivial type");

@@ -266,9 +266,6 @@ private:
 //---------------------------------------------
 class Parser {
 public:
-    //---------------------------------------------
-    // StringRef (remplace string_view pour C++11)
-    //---------------------------------------------
     struct StringRef {
         const char* data;
         size_t size;
@@ -278,9 +275,6 @@ public:
         std::string toString() const { return size ? std::string(data, size) : std::string(); }
     };
 
-    //---------------------------------------------
-    // Positions & erreurs
-    //---------------------------------------------
     struct SourcePos {
         uint32_t offset;  // octets depuis le début
         uint32_t line;  // 1-based
@@ -295,9 +289,6 @@ public:
         Error() {}
     };
 
-    //---------------------------------------------
-    // Lexèmes
-    //---------------------------------------------
     // clang-format off
     enum class TokenKind : uint16_t {
         Identifier, String, Number, Blob,
@@ -328,9 +319,6 @@ public:
         StringRef lex;  // vue sur vSql (pas de copie)
     };
 
-    //---------------------------------------------
-    // Statements
-    //---------------------------------------------
     struct StatementRange {
         uint32_t beginOffset{};  // inclus
         uint32_t endOffset{};  // exclus
@@ -343,9 +331,6 @@ public:
         StatementRange range;
     };
 
-    //---------------------------------------------
-    // Options & rapport
-    //---------------------------------------------
     struct Options {
         bool allowNestedBlockComments = false;  // /* ... /* ... */ ... */ (si true)
         bool trackAllTokens = true;  // remplir Report.tokens

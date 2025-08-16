@@ -69,7 +69,6 @@ SOFTWARE.
 #include <fstream>
 #include <stdexcept>
 #include <functional>
-using namespace std;
 
 typedef long long int64;
 
@@ -174,7 +173,7 @@ protected:
 
 private:
     static size_t constexpr sMAX_BUFFER_SIZE = 1024U * 3U;
-    ofstream m_debugLogFile;
+    std::ofstream m_debugLogFile;
     int64 m_lastTick = 0;
     bool m_reseted = false;
     LogMessageFunctor m_standardLogFunction;
@@ -407,7 +406,7 @@ private:
 #endif
         std::unique_lock<std::mutex> lck(ez::Log::m_logger_Mutex, std::defer_lock);
         lck.lock();
-        m_debugLogFile.open("debug.log", ios::out);
+        m_debugLogFile.open("debug.log", std::ios::out);
         m_lastTick = time::getTicks();
         m_consoleVerbose = false;
         m_reseted = true;
