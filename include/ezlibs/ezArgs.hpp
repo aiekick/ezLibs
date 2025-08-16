@@ -332,18 +332,17 @@ public:
 
         // check if required fields are not not seen during parsing
         for (const auto &pos : m_Positionals) {
-            if (!pos.m_is_present) {  // not seen during parsing
-                printHelp();
-                break;  // not need to continue
+            // not seen during parsing
+            if (!pos.m_is_present) {
+                // its normally impossible than m_base_args can be empty
+                m_addError("Positional <" + pos.m_base_args.at(0) + "> not present");
             }
         }
         for (const auto &opt : m_Optionals) {
-            if (opt.m_required && !opt.m_is_present) {  // requried but not seen during parsing
-                if (!opt.m_base_args.empty()) { // its normally impossible than m_base_args can be empty
-                    m_addError("Optional <" + opt.m_base_args.at(0) + "> not present");  // m_base_args cant be empty
-                }                   
-                printHelp();
-                break;  // not need to continue
+            // required but not seen during parsing
+            if (opt.m_required && !opt.m_is_present) {
+                // its normally impossible than m_base_args can be empty
+                m_addError("Optional <" + opt.m_base_args.at(0) + "> not present");
             }
         }
 

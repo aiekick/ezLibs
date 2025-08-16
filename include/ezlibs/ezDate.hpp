@@ -270,6 +270,57 @@ public:
     int32_t getYear() const { return m_year; }
     int32_t getMonth() const { return m_month; }
     int32_t getDay() const { return m_day; }
+    Date& setYear(const int32_t vYear) {
+        m_year = vYear;
+        return *this;
+    }
+    Date& setMonth(const int32_t vMonth) {
+        if (vMonth < 1) {
+            m_month = 1;
+        } else if (vMonth > 12) {
+            m_month = 12;
+        } else {
+            m_month = vMonth;
+        }
+        return *this;
+    }
+    Date& setDay(const int32_t vDay) {
+        const int32_t md = monthDays(m_year, m_month);  // 28/29/30/31 according to (Y,M)
+        if (vDay < 1) {
+            m_day = 1;
+        } else if (vDay > md) {
+            m_day = md;
+        } else {
+            m_day = vDay;
+        }
+        return *this;
+    }
+    Date& offsetYear(const int32_t vOffset) {
+        m_year += vOffset;
+        return *this;
+    }
+    Date& offsetMonth(const int32_t vOffset) {
+        // 1) Mois absolu 0-based (janvier=0, ..., décembre=11)
+        const int64_t totalMonths = int64_t(m_year) * 12 + (m_month - 1) + int64_t(vOffset);
+        // 2) Division "plancher" (floor) pour gérer les valeurs négatives correctement
+        const int64_t newYear = (totalMonths >= 0) ? (totalMonths / 12) : ((totalMonths - 11) / 12);
+        // 3) Reste 0..11 puis retour en 1..12
+        const int32_t newMonth = int32_t(totalMonths - newYear * 12) + 1;
+        m_year = int32_t(newYear);
+        m_month = newMonth;
+        return *this;
+    }
+    Date& offsetDay(const int32_t vOffset) {
+        int32_t base = ymdToDays(m_year, m_month, m_day);
+        int32_t tgt = base + vOffset;
+        daysToYmd(tgt, m_year, m_month, m_day);
+        return *this;
+    }
+    std::string getDate() const {
+        std::ostringstream oss;
+        oss << std::setfill('0') << std::setw(4) << m_year << "-" << std::setw(2) << m_month << "-" << std::setw(2) << m_day;
+        return oss.str();
+    }
 };
 
 }  // namespace date
