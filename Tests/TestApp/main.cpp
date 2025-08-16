@@ -27,5 +27,5 @@ int main(int argc, char** argv) {
         return TestApp(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestApp("TestEzArgs_positional_optional_0") ? 0 : 1;
+    return TestApp("TestEzArgs_optional_required") ? 0 : 1;
 }

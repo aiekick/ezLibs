@@ -38,8 +38,9 @@ AddTest("TestEzArgs_parsing")
 AddTest("TestEzArgs_optional_delimiters")
 AddTest("TestEzArgs_optional_delimiters_empties")
 AddTest("TestEzArgs_optional_groupeds")
-AddTest("TestEzArgs_positional_0")
-AddTest("TestEzArgs_positional_optional_0")
+AddTest("TestEzArgs_optional_required")
+AddTest("TestEzArgs_positional")
+AddTest("TestEzArgs_positional_optional")
 
 ##########################################################
 ##### EzBuildInc #########################################

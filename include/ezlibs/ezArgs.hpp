@@ -46,15 +46,13 @@ class Args {
 private:
     class Argument {
         friend class Args;
-
-    private:
+    protected:
         std::vector<std::string> m_base_args;  // base args
         std::set<std::string> m_full_args;  // full args
         char one_char_arg = 0;
         std::string m_help_text;
         std::string m_help_var_name;
         std::string m_type;
-        bool m_required = false;
         char m_delimiter = 0;  // delimiter used for arguments : toto a, toto=a, toto:a, etc...
         bool m_is_present = false;  // found during parsing
         bool m_has_value = false;  // found during parsing
@@ -63,30 +61,29 @@ private:
     public:
         Argument() = default;
 
-        Argument &help(const std::string &vHelp, const std::string &vVarName = {}) {
+        template <typename TRETURN_TYPE>
+        TRETURN_TYPE &help(const std::string &vHelp, const std::string &vVarName) {
             m_help_text = vHelp;
             m_help_var_name = vVarName;
-            return *this;
+            return *static_cast<TRETURN_TYPE *>(this);
         }
 
-        Argument &def(const std::string &vDefValue) {
+        template <typename TRETURN_TYPE>
+        TRETURN_TYPE &def(const std::string &vDefValue) {
             m_value = vDefValue;
-            return *this;
+            return *static_cast<TRETURN_TYPE *>(this);
         }
 
-        Argument &type(const std::string &vType) {
+        template <typename TRETURN_TYPE>
+        TRETURN_TYPE &type(const std::string &vType) {
             m_type = vType;
-            return *this;
+            return *static_cast<TRETURN_TYPE *>(this);
         }
 
-        Argument &delimiter(char vDelimiter) {
+        template <typename TRETURN_TYPE>
+        TRETURN_TYPE &delimiter(char vDelimiter) {
             m_delimiter = vDelimiter;
-            return *this;
-        }
-
-        Argument &required(bool vValue) {
-            m_required = vValue;
-            return *this;
+            return *static_cast<TRETURN_TYPE *>(this);
         }
 
     private:
@@ -122,14 +119,39 @@ private:
         }
     };
 
+    class PositionalArgument final : public Argument {
+        friend class Args;
+    public:
+        PositionalArgument &help(const std::string &vHelp, const std::string &vVarName = {}) { return Argument::help<PositionalArgument>(vHelp, vVarName); }
+        PositionalArgument &def(const std::string &vDefValue) { return Argument::def<PositionalArgument>(vDefValue); }
+        PositionalArgument &type(const std::string &vType) { return Argument::type<PositionalArgument>(vType); }
+        PositionalArgument &delimiter(char vDelimiter) { return Argument::delimiter<PositionalArgument>(vDelimiter); }  
+    };
+
+    class OptionalArgument final : public Argument {
+        friend class Args;
+    private:
+        bool m_required = false;
+    public:
+        OptionalArgument &help(const std::string &vHelp, const std::string &vVarName = {}) { return Argument::help<OptionalArgument>(vHelp, vVarName); }
+        OptionalArgument &def(const std::string &vDefValue) { return Argument::def<OptionalArgument>(vDefValue); }
+        OptionalArgument &type(const std::string &vType) { return Argument::type<OptionalArgument>(vType); }
+        OptionalArgument &delimiter(char vDelimiter) { return Argument::delimiter<OptionalArgument>(vDelimiter); }
+        OptionalArgument &required(bool vValue) {
+            m_required = vValue;
+            return *this;
+        }
+    };
+
 private:
     std::string m_AppName;
     std::string m_HelpHeader;
     std::string m_HelpFooter;
     std::string m_HelpDescription;
-    Argument m_HelpArgument;
-    std::vector<Argument> m_Positionals;
-    std::vector<Argument> m_Optionals;
+    OptionalArgument m_HelpArgument;
+    std::vector<PositionalArgument> m_Positionals;
+    std::vector<OptionalArgument> m_Optionals;
+    std::vector<std::string> m_errors;
 
 public:
     Args() = default;
@@ -156,12 +178,11 @@ public:
         return *this;
     }
 
-    Argument &addArgument(const std::string &vKey) {
+    PositionalArgument &addPositional(const std::string &vKey) {
         if (vKey.empty()) {
             throw std::runtime_error("argument cant be empty");
         }
-        Argument res;
-        res.m_required = true;
+        PositionalArgument res;
         res.m_base_args = ez::str::splitStringToVector(vKey, '/');
         for (const auto &a : res.m_base_args) {
             res.m_full_args.emplace(a);
@@ -170,11 +191,11 @@ public:
         return m_Positionals.back();
     }
 
-    Argument &addOptional(const std::string &vKey) {
+    OptionalArgument &addOptional(const std::string &vKey) {
         if (vKey.empty()) {
-            throw std::runtime_error("optinnal cant be empty");
+            throw std::runtime_error("optional cant be empty");
         }
-        Argument res;
+        OptionalArgument res;
         m_addOptional(res, vKey);
         m_Optionals.push_back(res);
         return m_Optionals.back();
@@ -237,10 +258,10 @@ public:
             // print help
             if (m_HelpArgument.m_full_args.find(arg) != m_HelpArgument.m_full_args.end()) {
                 printHelp();
-                return true;
+                return m_errors.empty();
             }
 
-            // get args values
+            // check optionals
             std::string token = arg;
             std::string value;
             bool is_optional = false;
@@ -256,9 +277,9 @@ public:
                                 value = arr.at(1);
                             } else {
                                 if (arr.size() < 2) {
-                                    throw std::runtime_error("bad parsing of key \"" + token + "\". no value");
+                                    m_addError("bad parsing of key \"" + token + "\". no value");
                                 } else if (arr.size() > 2) {
-                                    throw std::runtime_error("bad parsing of key \"" + token + "\". more than one value");
+                                    m_addError("bad parsing of key \"" + token + "\". more than one value");
                                 }
                             }
                         }
@@ -297,10 +318,11 @@ public:
                 }
             }
 
-            // positionals
+            // check positionals
             if (!is_optional) {
                 if (positional_idx < m_Positionals.size()) {
                     auto &positional = m_Positionals.at(positional_idx);
+                    positional.m_is_present = true;
                     positional.m_value = arg;
                     positional.m_has_value = true;
                     ++positional_idx;
@@ -308,13 +330,27 @@ public:
             }
         }
 
-        if (vArgc == 1 &&  // only the app path default argument
-            !m_Positionals.empty()) {  // some positionnal are wanted
-            printHelp();
+        // check if required fields are not not seen during parsing
+        for (const auto &pos : m_Positionals) {
+            if (!pos.m_is_present) {  // not seen during parsing
+                printHelp();
+                break;  // not need to continue
+            }
+        }
+        for (const auto &opt : m_Optionals) {
+            if (opt.m_required && !opt.m_is_present) {  // requried but not seen during parsing
+                if (!opt.m_base_args.empty()) { // its normally impossible than m_base_args can be empty
+                    m_addError("Optional <" + opt.m_base_args.at(0) + "> not present");  // m_base_args cant be empty
+                }                   
+                printHelp();
+                break;  // not need to continue
+            }
         }
 
-        return true;
+        return m_errors.empty();
     }
+
+    const std::vector<std::string> &getErrors() { return m_errors; }
 
 private:
     const Argument *m_getArgumentPtr(const std::string &vKey, bool vNoExcept = false) const {
@@ -337,9 +373,9 @@ private:
         return ret;
     }
 
-    Argument &m_addOptional(Argument &vInOutArgument, const std::string &vKey) {
+    OptionalArgument &m_addOptional(OptionalArgument &vInOutArgument, const std::string &vKey) {
         if (vKey.empty()) {
-            throw std::runtime_error("optinnal cant be empty");
+            throw std::runtime_error("optional cant be empty");
         }
         vInOutArgument.m_base_args = ez::str::splitStringToVector(vKey, '/');
         for (const auto &a : vInOutArgument.m_base_args) {
@@ -354,32 +390,42 @@ private:
         return vInOutArgument;
     }
 
+    void m_getCmdLineOptional(const OptionalArgument &vOptionalArgument, std::stringstream &vStream) const {
+        vStream << " [";
+        size_t idx = 0;
+        for (const auto &o : vOptionalArgument.m_base_args) {
+            if (idx++ > 0) {
+                vStream << ':';
+            }
+            vStream << o;
+        }
+        if (!vOptionalArgument.m_help_var_name.empty()) {
+            vStream << " " << vOptionalArgument.m_help_var_name;
+        }
+        vStream << "]";
+    }
+    void m_getCmdLinePositional(const PositionalArgument &vPositionalArgument, std::stringstream &vStream) const {
+        std::string token = vPositionalArgument.m_help_var_name;
+        if (token.empty()) {
+            token = *(vPositionalArgument.m_base_args.begin());
+        }
+        vStream << " " << token;
+    }
     std::string m_getCmdLineHelp() const {
         std::stringstream ss;
         ss << " Usage : " << m_AppName;
+        m_getCmdLineOptional(m_HelpArgument, ss);        
         for (const auto &arg : m_Optionals) {
-            ss << " [";
-            size_t idx = 0;
-            for (const auto &o : arg.m_base_args) {
-                if (idx++ > 0) {
-                    ss << ':';
-                }
-                ss << o;
-            }
-            if (!arg.m_help_var_name.empty()) {
-                ss << " " << arg.m_help_var_name;
-            }
-            ss << "]";
+            m_getCmdLineOptional(arg, ss);
         }
         for (const auto &arg : m_Positionals) {
-            std::string token = arg.m_help_var_name;
-            if (token.empty()) {
-                token = *(arg.m_base_args.begin());
-            }
-            ss << " " << token;
+            m_getCmdLinePositional(arg, ss);
         }
         return ss.str();
     }
+
+    void m_clearErrors() { m_errors.clear(); }
+    void m_addError(const std::string &vError) { m_errors.push_back("Error : " + vError); }
 
     std::string m_getHelpDetails(  //
         const std::string &vPositionalHeader,
