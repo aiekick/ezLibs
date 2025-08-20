@@ -54,8 +54,14 @@ public:
         WorkerIO(const WorkerIO&) = delete;
         WorkerIO& operator=(const WorkerIO&) = delete;
 
-        void setProgress(float v) { m_progress.store(v, std::memory_order_relaxed); }
-        void addProgress(float dv) { m_atomicAdd(m_progress, dv); }
+        void setProgress(float v) {
+            fixTime();
+            m_progress.store(v, std::memory_order_relaxed);
+        }
+        void addProgress(float dv) {
+            fixTime();
+            m_atomicAdd(m_progress, dv);
+        }
 
         void run() { m_working.store(true, std::memory_order_relaxed); }
         void stop() { m_working.store(false, std::memory_order_relaxed); }
@@ -79,10 +85,12 @@ public:
         }
 
         void setCurrentStep(const std::string& vHeader, const std::string& vMessage) {  //
+            fixTime();
             m_self.m_setCurrentStep(vHeader, vMessage);
         }
 
         void setCurrentPhase(const std::string& vPhase) { //
+            fixTime();
             m_self.m_setCurrentPhase(vPhase);
         }
 

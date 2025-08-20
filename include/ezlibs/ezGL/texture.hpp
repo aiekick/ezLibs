@@ -26,9 +26,13 @@ SOFTWARE.
 
 #include "ezGL.hpp"
 
-#ifdef STB_IMAGE_INCLUDE
-#include STB_IMAGE_INCLUDE
-#endif  // STB_IMAGE_INCLUDE
+#ifdef STB_IMAGE_READER_INCLUDE
+#include STB_IMAGE_READER_INCLUDE
+#endif  // STB_IMAGE_READER_INCLUDE
+
+#ifdef STB_IMAGE_WRITER_INCLUDE
+#include STB_IMAGE_WRITER_INCLUDE
+#endif // STB_IMAGE_WRITER_INCLUDE
 
 #include <cassert>
 #include <memory>
@@ -102,7 +106,7 @@ public:
         }
         return res;
     }
-#ifdef STB_IMAGE_INCLUDE
+#ifdef STB_IMAGE_READER_INCLUDE
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
     static TexturePtr createFromFile(const std::string& vFilePathName, bool vInvertY, std::string vWrap, std::string vFilter, bool vEnableMipMap) {
         auto res = std::make_shared<Texture>();
@@ -112,7 +116,7 @@ public:
         }
         return res;
     }
-#endif // STB_IMAGE_INCLUDE
+#endif // STB_IMAGE_READER_INCLUDE
 
 public:
     Texture() = default;
@@ -208,7 +212,7 @@ public:
         CheckGLErrors;
         return check();
     }
-#ifdef STB_IMAGE_INCLUDE
+#ifdef STB_IMAGE_READER_INCLUDE
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
     bool initFromFile(
         const std::string& vFilePathName,
@@ -258,7 +262,7 @@ public:
         } 
         return check();
     }
-#endif // STB_IMAGE_INCLUDE
+#endif // STB_IMAGE_READER_INCLUDE
     void updateMipMaping() {
         if (m_EnableMipMap) {
 #ifdef PROFILER_SCOPED
@@ -289,6 +293,49 @@ public:
     }
     bool check() { return (glIsTexture(m_TexId) == GL_TRUE); }
     GLuint getTexId() const { return m_TexId; }
+
+#ifdef STB_IMAGE_WRITER_INCLUDE
+    bool saveToPng(const std::string& vFilePathName) const {
+        if (vFilePathName.empty() || m_TexId == 0)
+            return false;
+
+        // 1) Dimensions
+        glBindTexture(GL_TEXTURE_2D, m_TexId);
+        GLint w = 0, h = 0;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
+        if (w <= 0 || h <= 0)
+            return false;
+
+        // 2) Sauvegarde état pack + configuration propre
+        GLint prevAlign = 0, prevRowLen = 0, prevSkipRows = 0, prevSkipPix = 0;
+        glGetIntegerv(GL_PACK_ALIGNMENT, &prevAlign);
+        glGetIntegerv(GL_PACK_ROW_LENGTH, &prevRowLen);
+        glGetIntegerv(GL_PACK_SKIP_ROWS, &prevSkipRows);
+        glGetIntegerv(GL_PACK_SKIP_PIXELS, &prevSkipPix);
+
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+
+        // 3) Lecture RGBA8
+        std::vector<unsigned char> pixels(static_cast<size_t>(w) * static_cast<size_t>(h) * 4u);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+        // 4) Écriture PNG (top-left) : flip vertical pour correspondre aux viewers
+        stbi_flip_vertically_on_write(1);
+        const int ok = stbi_write_png(vFilePathName.c_str(), w, h, 4, pixels.data(), w * 4);
+
+        // 5) Restauration état pack
+        glPixelStorei(GL_PACK_ALIGNMENT, prevAlign);
+        glPixelStorei(GL_PACK_ROW_LENGTH, prevRowLen);
+        glPixelStorei(GL_PACK_SKIP_ROWS, prevSkipRows);
+        glPixelStorei(GL_PACK_SKIP_PIXELS, prevSkipPix);
+
+        return ok != 0;
+    }
+#endif//STB_IMAGE_WRITER_INCLUDE
 
 private:
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
