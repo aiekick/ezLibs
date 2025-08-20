@@ -1,0 +1,96 @@
+#pragma once
+
+/*
+MIT License
+
+Copyright (c) 2014-2024 Stephane Cuillerdier (aka aiekick)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+// ezGeo is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
+
+#include <cmath>
+#include <utility>  // std::pair
+
+#include "ezVec2.hpp"
+
+namespace ez {
+namespace geo {
+
+constexpr double EARTH_RADIUS = 6378137.0;  // rayon sphérique WGS84 en mètres
+
+// Coordonnées Mercator (x,y en mètres) -> (lon, lat) en degrés
+inline ez::dvec2 fromMercatorMetersToDegrees(const ez::dvec2& vPointMeters) {
+    ez::dvec2 ret;
+    double lonRad = vPointMeters.x / EARTH_RADIUS;
+    double latRad = 2.0 * std::atan(std::exp(vPointMeters.y / EARTH_RADIUS)) - M_PI / 2.0;
+    ret.x = lonRad * 180.0 / M_PI;
+    ret.y = latRad * 180.0 / M_PI;
+    return ret;
+}
+
+// lon, lat en degrés -> coord. Mercator (x, y) en mètres
+inline ez::dvec2 fromDegressToMercatorMeters(const ez::dvec2& vPointDegree) {
+    ez::dvec2 ret{vPointDegree};
+    // clamp latitude pour éviter les infinis aux pôles
+    const double maxLat = 89.9999;
+    if (ret.y > maxLat) {
+        ret.y = maxLat;
+    }
+    if (ret.y < -maxLat) {
+        ret.y = -maxLat;
+    }
+    double lonRad = ret.x * M_PI / 180.0;
+    double latRad = ret.y * M_PI / 180.0;
+    ret.x = EARTH_RADIUS * lonRad;
+    ret.y = EARTH_RADIUS * std::log(std::tan(M_PI / 4.0 + latRad / 2.0));
+    return ret;
+}
+
+// Mercator Y (m) -> déroulé Y (m)
+inline double mercatorYToUnrolledY(double yMerc) {
+    // 1) Mercator Y (m) -> latitude φ (rad)
+    double phi = 2.0 * std::atan(std::exp(yMerc / EARTH_RADIUS)) - M_PI / 2.0;
+    // 2) Déroulage : Y linéaire en mètres
+    return EARTH_RADIUS * phi;
+}
+
+inline double unscaleWGS84Yaxis(double vLatDeg, double vRefDeg = 45.0) {
+    const double phi0 = vRefDeg * M_PI / 180.0;
+    const double k = 111132.0 / (111320.0 * std::cos(phi0));  // ~0.9983 / cos(phi0)
+    return vLatDeg * k;
+    //return vLatDeg * std::cos(phi0);
+}
+
+/*
+NW | NE
+---|---
+SW | SE
+*/
+inline int32_t parseCoord(const std::string& str) {
+    int value = std::stoi(str.substr(1));
+    if (str[0] == 'S' || str[0] == 'W') {
+        return -value;
+    }
+    return value;
+}
+
+}  // namespace geo
+}  // namespace ez
