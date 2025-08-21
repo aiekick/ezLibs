@@ -41,5 +41,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzSqlite_SyntaxError_MultiLine_ShowLocation") ? 0 : 1;
+    return TestMisc("TestEzGraph_Evaluation") ? 0 : 1;
 }

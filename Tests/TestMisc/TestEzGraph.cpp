@@ -193,8 +193,15 @@ bool TestEzGraph_Evaluation() {
     CTEST_ASSERT(graphPtr->getDatas<TestGraphDatas>().mode == "modeA");
     CTEST_ASSERT(graphPtr->getDatas<ez::GraphDatas>().name == "graph");
     CTEST_ASSERT(graphPtr->getDatas<ez::GraphDatas>().type == "Graph");
+
     graphPtr->getDatasRef<TestGraphDatas>().mode = "modeABis";
     CTEST_ASSERT(graphPtr->getDatas<TestGraphDatas>().mode == "modeABis");
+
+    ez::GraphPtr gPtr = graphPtr;
+    CTEST_ASSERT(gPtr != nullptr);
+    CTEST_ASSERT(gPtr->getDatas<TestGraphDatas>().mode == "modeABis");
+    CTEST_ASSERT(gPtr->getDatas<ez::GraphDatas>().name == "graph");
+    CTEST_ASSERT(gPtr->getDatas<ez::GraphDatas>().type == "Graph");
 
     auto nodaNumA = graphPtr->createChildNode<NodeNumber>(TestNodeDatas("nodaNumA", "NodaNumber", "modeA"));
     CTEST_ASSERT(nodaNumA.expired() == false);
