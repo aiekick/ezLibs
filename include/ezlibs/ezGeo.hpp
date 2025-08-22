@@ -80,16 +80,63 @@ inline double unscaleWGS84Yaxis(double vLatDeg, double vRefDeg = 45.0) {
 }
 
 /*
-NW | NE
----|---
-SW | SE
+* will parse coord one by one like S01 N10 E001 W112
+* and for each return the number after the char in signed offset
++1,-1       +1,+1
+     NW | NE
+     ---|---
+     SW | SE
+-1,-1       -1,+1
 */
-inline int32_t parseCoord(const std::string& str) {
-    int value = std::stoi(str.substr(1));
+inline int32_t parseDemCoordinate(const std::string& str) {
+    const int value = std::stoi(str.substr(1));
     if (str[0] == 'S' || str[0] == 'W') {
         return -value;
     }
     return value;
+}
+
+/*
+will check DEM file name.
+ensure the format is N00E000 N|S, number on 2 char, E|W, number on 3 char
+return : 
+  - true if valid
+  - vOutCx : who is the longitude (number of E|W)
+  - vOutCy : who is the latitiude  (number of S|N)
+*/
+inline bool checkDemFileName(const std::string& vFileName, std::string& vOutCx, std::string& vOutCy) {
+    if (vFileName.size() != 7U) {
+        return false;
+    }
+    try {
+        bool ret = true;
+        const auto& cy = vFileName.substr(0, 3);
+        if (cy.at(0) == 'S' || cy.at(0) == 'N') {
+            const auto& cy_num = cy.substr(1);
+            if (!ez::isInteger(cy_num)) {
+                ret = false;
+            }
+        } else {
+            ret = false;
+        }
+        const auto& cx = vFileName.substr(3);
+        if (cx.at(0) == 'E' || cx.at(0) == 'W') {
+            const auto& cx_num = cx.substr(1);
+            if (!ez::isInteger(cx_num)) {
+                ret = false;
+            }
+        } else {
+            ret = false;
+        }
+        if (ret) {
+            vOutCx = cx;
+            vOutCy = cy;
+        }
+        return ret;
+    } catch (std::exception& ex) {
+        LogVarError("Error : %s", ex.what());
+    }
+    return false;
 }
 
 }  // namespace geo
