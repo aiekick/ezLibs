@@ -83,15 +83,20 @@ public:
         const T& get() const {
             return m_self.m_get<T>();
         }
-
-        void setCurrentStep(const std::string& vHeader, const std::string& vMessage) {  //
-            fixTime();
-            m_self.m_setCurrentStep(vHeader, vMessage);
-        }
-
-        void setCurrentPhase(const std::string& vPhase) { //
+        
+        void setCurrentPhase(const std::string& vPhase) {  //
             fixTime();
             m_self.m_setCurrentPhase(vPhase);
+        }
+        
+        void setCurrentStepHeader(const std::string& vHeader) {  //
+            fixTime();
+            m_self.m_setCurrentStepHeader(vHeader);
+        }
+
+        void setCurrentStepMessage(const std::string& vMessage) {  //
+            fixTime();
+            m_self.m_setCurrentStepMessage(vMessage);
         }
 
         std::mutex& getMutexRef() { return m_self.m_mutex; }
@@ -299,12 +304,14 @@ private:
         return *static_cast<const T*>(m_payload.get());
     }
 #ifdef IMGUI_API
-    void m_setCurrentStep(const std::string& vHeader, const std::string& vMessage) {
+    void m_setCurrentStepHeader(const std::string& vHeader) {
         std::lock_guard<std::mutex> _{m_mutex};
         m_currentStepHeader = vHeader;
+    }
+    void m_setCurrentStepMessage(const std::string& vMessage) {
+        std::lock_guard<std::mutex> _{m_mutex};
         m_currentStepMessage = vMessage;
     }
-
     void m_setCurrentPhase(const std::string& vPhase) {
         std::lock_guard<std::mutex> _{m_mutex};
         m_currentPhase = vPhase;

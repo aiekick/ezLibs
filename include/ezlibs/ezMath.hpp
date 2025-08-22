@@ -307,6 +307,13 @@ inline T mix(T a, T b, T t) {
     return lerp(a, b, t);
 }
 
+// Say if the string is an integer
+inline bool isInteger(const std::string& vStr, const int vBase = 10) {
+    char* end;
+    std::strtol(vStr.c_str(), &end, vBase);
+    return *end == '\0';  // end is on the end if all is number
+}
+
 }  // namespace ez
 
 #include "ezStr.hpp"

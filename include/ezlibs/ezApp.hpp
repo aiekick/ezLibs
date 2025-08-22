@@ -100,6 +100,7 @@ private:
     std::string m_AppPath;
 
 public:
+    App() = default;
     App(int32_t /*vArgc*/, char** vArgv) {
         setAppPath(vArgv[0]);
         setCurDirectory(getAppPath());
@@ -113,8 +114,6 @@ public:
             }
         }
     }
-
-    std::string getAppPath() const { return m_AppPath; }
 
     template <typename T>
     inline T mini(T a, T b) {
@@ -145,6 +144,8 @@ public:
         }
         return m_AppPath;
     }
+
+    std::string getAppPath() const { return m_AppPath; }
 
     static std::string getCurDirectory() {
         char cCurrentPath[FILENAME_MAX];
