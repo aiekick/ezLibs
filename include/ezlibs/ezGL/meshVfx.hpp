@@ -158,28 +158,30 @@ public:
         const std::string& vUniformName,  //
         float* vUniformPtr,               //
         const GLuint vCountChannels,     //
+        const GLuint vCountElements = 1U,
         const bool vShowWidget,          //
         const Program::UniformWidgetFunctor& vWidgetFunctor) {
         assert(m_ProgramPtr != nullptr);
-        m_ProgramPtr->addUniformFloat(vShaderType, vUniformName, vUniformPtr, vCountChannels, vShowWidget, vWidgetFunctor);
+        m_ProgramPtr->addUniformFloat(vShaderType, vUniformName, vUniformPtr, vCountChannels, vCountElements, vShowWidget, vWidgetFunctor);
     }
     void addUniformInt(                   //
         const GLenum vShaderType,        //
         const std::string& vUniformName,  //
         int32_t* vUniformPtr,             //
         const GLuint vCountChannels,     //
+        const GLuint vCountElements = 1U,
         const bool vShowWidget,          //
         const Program::UniformWidgetFunctor& vWidgetFunctor) {
         assert(m_ProgramPtr != nullptr);
-        m_ProgramPtr->addUniformInt(vShaderType, vUniformName, vUniformPtr, vCountChannels, vShowWidget, vWidgetFunctor);
+        m_ProgramPtr->addUniformInt(vShaderType, vUniformName, vUniformPtr, vCountChannels, vCountElements, vShowWidget, vWidgetFunctor);
     }
     void addUniformSampler2D(             //
         const GLenum vShaderType,        //
         const std::string& vUniformName,  //
-        int32_t vSampler2D,               //
+        uint32_t* vSampler2D,               //
         const bool vShowWidget) {
         assert(m_ProgramPtr != nullptr);
-        m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2D);
+        m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2D, vShowWidget);
     }
     void finalizeBeforeRendering() {
         assert(m_ProgramPtr != nullptr);

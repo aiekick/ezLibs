@@ -82,6 +82,7 @@ inline double unscaleWGS84Yaxis(double vLatDeg, double vRefDeg = 45.0) {
 /*
 * will parse coord one by one like S01 N10 E001 W112
 * and for each return the number after the char in signed offset
+* we consider than str is a valid coordinate
 +1,-1       +1,+1
      NW | NE
      ---|---
@@ -90,9 +91,18 @@ inline double unscaleWGS84Yaxis(double vLatDeg, double vRefDeg = 45.0) {
 */
 inline int32_t parseDemCoordinate(const std::string& str) {
     const int value = std::stoi(str.substr(1));
-    if (str[0] == 'S' || str[0] == 'W') {
+    char c = str.at(0);
+    if (c == 'S' || c == 's' || c == 'W' || c == 'w') {
         return -value;
     }
+    /* 
+    if (c > 'a') {
+        c -= ('a' - 'A'); // convert in UPPER CASE
+    }
+    if (c > 'n') { // if > 'n' so its like S or W
+        return -value;
+    }    
+    */
     return value;
 }
 
@@ -111,7 +121,8 @@ inline bool checkDemFileName(const std::string& vFileName, std::string& vOutCx, 
     try {
         bool ret = true;
         const auto& cy = vFileName.substr(0, 3);
-        if (cy.at(0) == 'S' || cy.at(0) == 'N') {
+        const char ccy = cy.at(0);
+        if (ccy == 'S' || ccy == 's' || ccy == 'N' || ccy == 'n') {
             const auto& cy_num = cy.substr(1);
             if (!ez::isInteger(cy_num)) {
                 ret = false;
@@ -120,7 +131,8 @@ inline bool checkDemFileName(const std::string& vFileName, std::string& vOutCx, 
             ret = false;
         }
         const auto& cx = vFileName.substr(3);
-        if (cx.at(0) == 'E' || cx.at(0) == 'W') {
+        const char ccx = cx.at(0);
+        if (ccx == 'E' || ccx == 'e' || ccx == 'W' || ccx == 'w') {
             const auto& cx_num = cx.substr(1);
             if (!ez::isInteger(cx_num)) {
                 ret = false;

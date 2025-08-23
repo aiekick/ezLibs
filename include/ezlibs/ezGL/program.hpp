@@ -50,7 +50,7 @@ public:
         int32_t* datas_i = nullptr;  // int
         uint32_t* datas_u = nullptr;  // uint
         bool* datas_b = nullptr;  // bool
-        int32_t data_s2d = -1;  // sampler2D
+        uint32_t* data_s2d = nullptr;  // sampler2D
         int32_t matrix_size = 0;  // matrixSize 2,3,4
         GLint loc = -1;
         GLuint channels = 0U;
@@ -294,25 +294,25 @@ public:
         assert(itUniformName != itShaderType->second.end());
         itUniformName->second.datas_b = vUniformPtr;
     }
-    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D, const bool vShowWidget) {
+    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vSampler2DPtr, const bool vShowWidget) {
         assert(vShaderType > 0);
         assert(!vUniformName.empty());
         // assert(vSampler2D != -1);, if the sampler must point on a buffer after, its normal to have it at -1
         Uniform uni;
         uni.name = vUniformName;
-        uni.data_s2d = vSampler2D;
+        uni.data_s2d = vSampler2DPtr;
         uni.channels = 0;
         uni.showed = vShowWidget;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
-    void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
+    void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr = nullptr) {
 #ifdef PROFILER_SCOPED
         PROFILER_SCOPED(m_ProgramName, "uploadUniforms");
 #endif
         int32_t textureSlotId = 0;
         for (auto& shader_type : m_Uniforms) {
             for (auto& uni : shader_type.second) {
-                if (m_UniformPreUploadFunctor != nullptr) {
+                if (m_UniformPreUploadFunctor != nullptr && vFBOPipeLinePtr != nullptr) {
                     m_UniformPreUploadFunctor(vFBOPipeLinePtr, uni.second);
                 }
                 if (uni.second.used) {
@@ -423,13 +423,13 @@ public:
                             } break;
                         }
                         CheckGLErrors;
-                    } else if (uni.second.data_s2d > -1) {
+                    } else if (uni.second.data_s2d != nullptr) {
 #ifdef PROFILER_SCOPED_PTR
                         PROFILER_SCOPED_PTR(&uni, "upload sampler2D", "%s", name_c_str);
 #endif
                         glActiveTexture(GL_TEXTURE0 + textureSlotId);
                         CheckGLErrors;
-                        glBindTexture(GL_TEXTURE_2D, uni.second.data_s2d);
+                        glBindTexture(GL_TEXTURE_2D, *uni.second.data_s2d);
                         CheckGLErrors;
                         glUniform1i(uni.second.loc, textureSlotId);
                         CheckGLErrors;

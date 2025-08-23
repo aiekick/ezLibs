@@ -58,7 +58,7 @@ private:
     FBOPipeLinePtr m_FBOPipeLinePtr = nullptr;
     ShaderPtr m_FragShaderPtr = nullptr;
     ProgramPtr m_ProgramPtr = nullptr;
-    std::array<GLuint, 2U> m_Size;
+    std::array<GLuint, 2U> m_Size{};
     bool m_UseMipMapping = false;
     bool m_MultiPass = false;
     GLuint m_RenderIterations = 1U;
@@ -241,9 +241,9 @@ public:
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->setUniformUIntDatas(vShaderType, vUniformName, vUniformPtr);
     }
-    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D, const bool vShowWidget = true) {
+    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vSampler2DPtr, const bool vShowWidget = true) {
         assert(m_ProgramPtr != nullptr);
-        m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2D, vShowWidget);
+        m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2DPtr, vShowWidget);
     }
     void finalizeBeforeRendering() {
         assert(m_ProgramPtr != nullptr);
@@ -262,7 +262,7 @@ public:
         assert(m_FBOPipeLinePtr != nullptr);
         m_FBOPipeLinePtr->clearBuffer(vColor);
     }
-    void render() {
+    void render(const ez::fvec2& vPos = {}) {
         if (m_RenderingPause) {
             return;
         }
@@ -286,7 +286,7 @@ public:
 #ifdef PROFILER_SCOPED
                         PROFILER_SCOPED("Opengl", "glViewport");
 #endif
-                        glViewport(0, 0, m_Size[0], m_Size[1]);
+                        glViewport(vPos.x, vPos.y, m_Size[0], m_Size[1]);
                     }
                     quad_ptr->render(GL_TRIANGLES);
                     m_ProgramPtr->unuse();
