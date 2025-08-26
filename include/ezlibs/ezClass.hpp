@@ -43,3 +43,61 @@ this macro disable destructors of class
 #define DISABLE_DESTRUCTORS(TTYPE) \
 public:                            \
     virtual ~TTYPE() = default;
+
+/*
+DATAS_GETTER(LocalDatas, Datas, m_datas)
+will give :
+    LocalDatas& getDatasRef() {
+        return m_datas;
+    }
+    const LocalDatas& getDatas() const{
+        return m_datas;
+    }
+*/
+#define DATAS_STRUCT_GETTER(TTYPE, TNAME, TDATAS) \
+public:                                           \
+    TTYPE& get##TNAME##Ref() {                    \
+        return TDATAS;                            \
+    }                                             \
+    const TTYPE& get##TNAME() const {             \
+        return TDATAS;                            \
+    }
+
+/*
+DATAS_ISER(Datas, m_datas)
+will give :
+    bool isDatas() const {
+        return m_datas;
+    }
+*/
+#define DATAS_ISER(TNAME, TDATAS) \
+public:                           \
+    bool is##TNAME() const {      \
+        return TDATAS;            \
+    }
+
+/*
+DATAS_ISER_REF(Datas, m_datas)
+will give :
+    bool& isDatasRef() {
+        return m_datas;
+    }
+*/
+#define DATAS_ISER_REF(TNAME, TDATAS) \
+public:                               \
+    bool& is##TNAME##Ref() {          \
+        return TDATAS;                \
+    }
+
+/*
+DATAS_SETTER(LocalDatas, Datas, m_datas)
+will give :
+    void setDatas(const LocalDatas& vDatas) {
+        TDATAS = vDatas;
+    }
+*/
+#define DATAS_SETTER(TTYPE, TNAME, TDATAS)   \
+public:                                      \
+    void set##TNAME(const TTYPE& v##TNAME) { \
+        TDATAS = v##TNAME;                   \
+    }

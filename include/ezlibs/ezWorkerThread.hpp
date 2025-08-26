@@ -154,7 +154,7 @@ protected:
     AtomicFloat aGenerationTime;  // secondes
 
 private:
-    std::mutex m_mutex;
+    mutable std::mutex m_mutex; // we can have the mutex in const methods
     std::thread m_workerThread;
     BaseFunctor m_finishFunc;
     BaseFunctor m_cancelFunc;
@@ -236,7 +236,7 @@ public:
         return res;
     }
 
-    bool isRunning() { return m_workerThread.joinable(); }
+    bool isRunning() const { return m_workerThread.joinable(); }
 
     void destroy() {
         if (m_workerThread.joinable()) {
@@ -316,7 +316,7 @@ private:
         std::lock_guard<std::mutex> _{m_mutex};
         m_currentPhase = vPhase;
     }
-    void m_drawPhase(const float vItemWidth, const float vItemAlign) {
+    void m_drawPhase(const float vItemWidth, const float vItemAlign) const {
         std::lock_guard<std::mutex> _{m_mutex};
         if (!m_currentPhase.empty()) {
         ImGui::DisplayAlignedWidget(vItemWidth, "Phase", vItemAlign, [this]() {  //
@@ -330,7 +330,8 @@ private:
         }
     }
 
-    void m_drawProgressBar(const float vItemWidth, const float vItemAlign) {
+    // no mutex needed, sicne use atomic vars
+    void m_drawProgressBar(const float vItemWidth, const float vItemAlign) const {
         ImGui::DisplayAlignedWidget(vItemWidth, "Progres", vItemAlign, [this]() {  //
             float progress = aProgress;                                            // attendu entre 0.0 et 1.0
             float elapsed_time = aGenerationTime;

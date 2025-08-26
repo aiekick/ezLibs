@@ -95,6 +95,13 @@ public:
         }
         return false;
     }
+    void unit() {
+        if (m_ProgramId > 0U) {
+            glDeleteProgram(m_ProgramId);
+            CheckGLErrors;
+            m_ProgramId = 0U;
+        }
+    }
     bool addShader(ShaderWeak vShader) {
         if (!vShader.expired()) {
             m_Shaders[(uintptr_t)vShader.lock().get()] = vShader;
@@ -517,13 +524,6 @@ public:
                     LogVarInfo("Program \'%s\' Stage \'%s\' is not using the uniform \'%s\'", m_ProgramName.c_str(), stage_name, uni.second.name.c_str());
                 }
             }
-        }
-    }
-    void unit() {
-        if (m_ProgramId > 0U) {
-            glDeleteProgram(m_ProgramId);
-            CheckGLErrors;
-            m_ProgramId = 0U;
         }
     }
     bool use() {

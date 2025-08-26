@@ -41,8 +41,14 @@ private:
     GLuint m_VaoId = 0U;
 
     std::vector<T> m_Vertices;
+    std::vector<uint32_t> m_VerticesFormat;
+
     std::vector<uint32_t> m_Indices;
-    std::vector<uint32_t> m_Format;
+
+    // MultiDrawwArrays
+    std::vector<GLint> m_IndicesOffsets;
+    std::vector<GLsizei> m_IndicesCounts;
+    GLsizei m_ArraysCount{};
 
     bool m_needNewMeshUpload = false;
 
@@ -50,18 +56,29 @@ private:
     const GLsizei m_IndiceSize = sizeof(uint32_t);
 
 public:
-    static std::shared_ptr<Mesh<T>> createStaticDraw(std::vector<T> vVertices, std::vector<uint32_t> vIndices) {
+    static std::shared_ptr<Mesh<T>> createStaticDraw(
+        std::vector<T> vVertices,
+        std::vector<uint32_t> vVerticesFormat,
+        std::vector<uint32_t> vIndices = {},
+        std::vector<GLint> vIndicesOffsets = {},
+        std::vector<GLsizei> vIndicesCounts = {},
+        GLsizei vArraysCount=0) {
         auto res = std::make_shared<Mesh<T>>();
         res->m_This = res;
-        if (!res->init(vVertices, vIndices, true)) {
+        if (!res->init(vVertices, vVerticesFormat, vIndices, vIndicesOffsets, vIndicesCounts, vArraysCount, true)) {
             res.reset();
         }
         return res;
     }
-    static std::shared_ptr<Mesh<T>> createDynamicDraw(std::vector<T> vVertices, std::vector<uint32_t> vIndices) {
-        auto res = std::make_shared<Mesh<T>>();
+    static std::shared_ptr<Mesh<T>> createDynamicDraw(
+        std::vector<T> vVertices,
+        std::vector<uint32_t> vVerticesFormat,
+        std::vector<uint32_t> vIndices = {},
+        std::vector<GLint> vIndicesOffsets = {},
+        std::vector<GLsizei> vIndicesCounts = {},
+        GLsizei vArraysCount = 0) {
         res->m_This = res;
-        if (!res->init(vVertices, vIndices, false)) {
+        if (!res->init(vVertices, vVerticesFormat, vIndices, vIndicesOffsets, vIndicesCounts, vArraysCount, false)) {
             res.reset();
         }
         return res;
@@ -73,19 +90,30 @@ public:
     uint32_t GetVaoID() { return m_VboId; }
     uint32_t GetVboID() { return m_IboId; }
     uint32_t GetIboID() { return m_VaoId; }
-    bool init(std::vector<T> vVertices, std::vector<uint32_t> vIndices, std::vector<uint32_t> vFormat, bool vIsStaticDraw) {
+    bool init(
+        std::vector<T> vVertices,
+        std::vector<uint32_t> vVerticesFormat,
+        std::vector<uint32_t> vIndices,
+        std::vector<GLint> vIndicesOffsets,
+        std::vector<GLsizei> vIndicesCounts,
+        GLsizei vArraysCount,
+        bool vIsStaticDraw) {
         assert(!vVertices.empty());
-        assert(!vIndices.empty());
-        assert(!vFormat.empty());
+        assert(!vVerticesFormat.empty());
         m_Vertices = vVertices;
+        m_VerticesFormat = vVerticesFormat;
         m_Indices = vIndices;
-        m_Format = vFormat;
+        m_IndicesOffsets = vIndicesOffsets;
+        m_IndicesCounts = vIndicesCounts;
+        m_ArraysCount = vArraysCount;
         glGenVertexArrays(1, &m_VaoId);
         CheckGLErrors;
         glGenBuffers(1, &m_VboId);
         CheckGLErrors;
-        glGenBuffers(1, &m_IboId);
-        CheckGLErrors;
+        if (!m_Indices.empty()) {
+            glGenBuffers(1, &m_IboId);
+            CheckGLErrors;
+        }
 
         // bind
         glBindVertexArray(m_VaoId);
@@ -96,10 +124,9 @@ public:
         CheckGLErrors;
 
         // vertices
-
         GLuint idx = 0U;
         GLuint offset = 0U;
-        for (const auto& format : m_Format) {
+        for (const auto& format : m_VerticesFormat) {
             assert(format > 0U);
             glEnableVertexAttribArray(idx);
             CheckGLErrors;
@@ -116,10 +143,12 @@ public:
         }
 
         // indices
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IboId);
-        CheckGLErrors;
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_IndiceSize * m_Indices.size(), m_Indices.data(), GL_STATIC_DRAW);
-        CheckGLErrors;
+        if (!m_Indices.empty()) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IboId);
+            CheckGLErrors;
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_IndiceSize * m_Indices.size(), m_Indices.data(), GL_STATIC_DRAW);
+            CheckGLErrors;
+        }
 
         // unbind
         glBindVertexArray(0);
@@ -127,18 +156,23 @@ public:
         // if i not unbind the VBOs and IBOs after the unbind of the VAO, it seem the VAO is corrupted..
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         CheckGLErrors;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        CheckGLErrors;
+        if (!m_Indices.empty()) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            CheckGLErrors;
+        }
 
         return (glIsVertexArray(m_VaoId) == GL_TRUE);
     }
 
     bool bind() {
+#ifdef PROFILER_SCOPED
+        PROFILER_SCOPED("Mesh", "bin");
+#endif
         if (glIsVertexArray(m_VaoId) == GL_TRUE) {
             CheckGLErrors;
             glBindVertexArray(m_VaoId);
             CheckGLErrors;
-            for (size_t idx = 0U; idx < m_Format.size(); ++idx) {
+            for (size_t idx = 0U; idx < m_VerticesFormat.size(); ++idx) {
                 glEnableVertexAttribArray((GLuint)idx);
                 CheckGLErrors;
             }
@@ -148,7 +182,10 @@ public:
     }
 
     void unbind() {
-        for (size_t idx = 0U; idx < m_Format.size(); ++idx) {
+#ifdef PROFILER_SCOPED
+        PROFILER_SCOPED("Mesh", "bin");
+#endif
+        for (size_t idx = 0U; idx < m_VerticesFormat.size(); ++idx) {
             glDisableVertexAttribArray((GLuint)idx);
             CheckGLErrors;
         }
@@ -196,13 +233,25 @@ public:
 
 private:
     void m_render(GLenum vRenderMode, const GLsizei vIndicesIdx = 0) {
+        if (!m_Indices.empty()) {
 #ifdef PROFILER_SCOPED
-        PROFILER_SCOPED("Opengl", "glDrawElements");
+            PROFILER_SCOPED("Opengl", "glDrawElements");
 #endif
-        if (vIndicesIdx == 0) {
-            glDrawElements(vRenderMode, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, nullptr);
+            if (vIndicesIdx == 0) {
+                glDrawElements(vRenderMode, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, nullptr);
+            } else {
+                glDrawElements(vRenderMode, vIndicesIdx, GL_UNSIGNED_INT, nullptr);
+            }
+        } else if ((!m_IndicesOffsets.empty()) && (!m_IndicesCounts.empty()) && (m_ArraysCount > 0)) {
+#ifdef PROFILER_SCOPED
+            PROFILER_SCOPED("Opengl", "glMultiDrawArrays");
+#endif
+            glMultiDrawArrays(vRenderMode, m_IndicesOffsets.data(), m_IndicesCounts.data(), m_ArraysCount);
         } else {
-            glDrawElements(vRenderMode, vIndicesIdx, GL_UNSIGNED_INT, nullptr);
+#ifdef PROFILER_SCOPED
+            PROFILER_SCOPED("Opengl", "glDrawArrays");
+#endif
+            glDrawArrays(vRenderMode, 0, GLsizei(m_Vertices.size()));
         }
         CheckGLErrors;
     }
@@ -221,17 +270,21 @@ private:
             CheckGLErrors;
 
             // indices
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IboId);
-            CheckGLErrors;
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_IndiceSize * vIndicesIdx, m_Indices.data());
-            CheckGLErrors;
+            if (!m_Indices.empty()) {
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IboId);
+                CheckGLErrors;
+                glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_IndiceSize * vIndicesIdx, m_Indices.data());
+                CheckGLErrors;
+            }
 
             // unbind
             glBindVertexArray(0);
             CheckGLErrors;
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-            CheckGLErrors;
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            if (!m_Indices.empty()) {
+                CheckGLErrors;
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            }
         }
     }
 };

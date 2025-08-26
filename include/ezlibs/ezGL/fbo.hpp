@@ -107,8 +107,13 @@ public:
         PROFILER_SCOPED("FBO", "clearBuffer");
 #endif
         if (bind()) {
-            glClearColor(vColor[0], vColor[1], vColor[2], vColor[3]);
-            glClear(GL_COLOR_BUFFER_BIT);
+            {
+#ifdef PROFILER_SCOPED
+                PROFILER_SCOPED("FBO", "clearColor");
+#endif
+                glClearColor(vColor[0], vColor[1], vColor[2], vColor[3]);
+                glClear(GL_COLOR_BUFFER_BIT);
+            }
             unbind();
         }
     }
@@ -318,6 +323,9 @@ public:
         FBOPtr tmp = m_BackFBOPtr;
         m_BackFBOPtr = m_FrontFBOPtr;
         m_FrontFBOPtr = tmp;
+    }
+    const fvec2& getSize() const {
+
     }
 };
 

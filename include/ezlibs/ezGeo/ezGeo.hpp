@@ -29,7 +29,7 @@ SOFTWARE.
 #include <cmath>
 #include <utility>  // std::pair
 
-#include "ezVec2.hpp"
+#include "../ezVec2.hpp"
 
 namespace ez {
 namespace geo {

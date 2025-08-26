@@ -84,7 +84,6 @@ public:
         }
         return false;
     }
-    bool tryAdd(const TKey& vKeyValue) { return tryAdd(vKeyValue, vKeyValue); }
     bool tryAdd(const TKey& vKey, const TValue& vValue) {
         if (!exist(vKey)) {
             m_dico[vKey] = m_array.size();
@@ -93,7 +92,8 @@ public:
         }
         return false;
     }
-    bool trySetExisting(const TKey& vKeyValue) { return trySetExisting(vKeyValue, vKeyValue); }
+    template <typename = std::enable_if_t<std::is_same<TKey, TValue>::value>>
+    bool tryAdd(const TKey& vKeyValue) { return tryAdd(vKeyValue, vKeyValue); }
     bool trySetExisting(const TKey& vKey, const TValue& vValue) {
         if (exist(vKey)) {
             auto row = m_dico.at(vKey);
@@ -102,6 +102,8 @@ public:
         }
         return false;
     }
+    template <typename = std::enable_if_t<std::is_same<TKey, TValue>::value>>
+    bool trySetExisting(const TKey& vKeyValue) { return trySetExisting(vKeyValue, vKeyValue); }
     // the merge can be partialy done, if already key was existing
     bool tryMerge(const DicoVector<TKey, TValue>& vDico) {
         bool ret = false;

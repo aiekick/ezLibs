@@ -56,7 +56,7 @@ public:
 
         std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
 
-        if (!res->init(vertices, indices, {2, 2}, true)) {
+        if (!res->init(vertices, {2, 2}, indices, {}, {}, 0, true)) {
             res.reset();
         }
         return res;

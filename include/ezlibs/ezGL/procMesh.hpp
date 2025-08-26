@@ -93,7 +93,7 @@ public:
             }
         }
 
-        if (!res->init(vertices, indices, {3, 2}, true)) {
+        if (!res->init(vertices, {3, 2}, indices, {}, {}, 0, true)) {
             res.reset();
         }
         return res;
