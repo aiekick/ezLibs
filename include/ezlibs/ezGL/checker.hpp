@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 MIT License
 
@@ -22,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
+// ezGL is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 #include "ezGL.hpp"
 

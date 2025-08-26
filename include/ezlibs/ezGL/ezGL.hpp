@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 MIT License
 
@@ -24,7 +26,6 @@ SOFTWARE.
 
 // ezGL is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
-#pragma once
 
 #ifdef OPENGL_LOADER
 #include OPENGL_LOADER
@@ -56,6 +57,7 @@ SOFTWARE.
 
 #include <ezlibs/ezStr.hpp>
 #include <ezlibs/ezLog.hpp>
+#include <ezlibs/ezMath.hpp>
 
 #include <string>
 
@@ -112,3 +114,4 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
 #include "programauto.hpp"
 #include "quadVfx.hpp"
 #include "quadVfxauto.hpp"
+#include "canvas.hpp"

@@ -27,6 +27,7 @@ SOFTWARE.
 // ezScreen is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
 namespace ez {
+namespace screen {
 
 template <typename T>
 inline vec4<T> getScreenRectWithSize(vec2<T> vItemSize, vec2<T> vMaxSize, bool vLogError = true) {
@@ -136,8 +137,8 @@ inline void centeredZoom(
     const fvec2& mousePx,
     const fvec2& viewportSize,
     bool yDown,
-    float sFitPx,           // pixels/unit, issu de ton fit
-    float& zoom,            // IN/OUT
+    float sFitPx,       // pixels/unit, issu de ton fit
+    float& zoom,        // IN/OUT
     fvec2& worldCenter  // IN/OUT
 ) {
     if (factor <= 0.0f || sFitPx <= 0.0f)
@@ -186,7 +187,7 @@ inline float computeFitScalePx(const fvec2& worldMin, const fvec2& worldMax, con
     if (W <= 0.0f || H <= 0.0f || viewportSize.x <= 0.0f || viewportSize.y <= 0.0f)
         return 0.0f;
     const fvec4 rc = getScreenRectWithSize({W, H}, viewportSize);  // {x,y,w,h}
-    return rc.z / W;                                                     // == rc.w / H
+    return rc.z / W;                                               // == rc.w / H
 }
 
 // Fit "contain" d'un AABB monde dans un framebuffer en pixels.
@@ -223,4 +224,5 @@ inline void computeFitToContent(
     voInvScale = (s != 0.0f) ? (1.0f / s) : 0.0f;
 }
 
+}  // namespace screen
 }  // namespace ez

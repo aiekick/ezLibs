@@ -1,7 +1,9 @@
+#pragma once
+
 /*
 MIT License
 
-Copyright (c) 2014-2023 Stephane Cuillerdier (aka aiekick)
+Copyright (c) 2014-2024 Stephane Cuillerdier (aka aiekick)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
+// ezGL is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
+
 
 /* Simple quad Vfx
  * Quad Mesh
