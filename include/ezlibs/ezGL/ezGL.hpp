@@ -115,3 +115,4 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
 #include "quadVfx.hpp"
 #include "quadVfxauto.hpp"
 #include "canvas.hpp"
+#include "bufferBlock.hpp"

@@ -30,6 +30,7 @@ SOFTWARE.
 #include <thread>
 #include <string>
 #include <vector>
+#include <chrono>
 #include <functional>
 #include <chrono>
 #include <memory>
@@ -57,6 +58,9 @@ public:
         void setProgress(float v) {
             fixTime();
             m_progress.store(v, std::memory_order_relaxed);
+            if (v == 1.0f) { // for let the user see the 100% on the progressbar, 100 ms is 6 frames at 60 fps
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
         }
         void addProgress(float dv) {
             fixTime();

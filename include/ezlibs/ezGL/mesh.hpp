@@ -26,7 +26,6 @@ SOFTWARE.
 
 // ezGL is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
-
 #include "ezGL.hpp"
 
 #include <vector>
@@ -65,13 +64,13 @@ public:
         std::vector<uint32_t> vIndices = {},
         std::vector<GLint> vIndicesOffsets = {},
         std::vector<GLsizei> vIndicesCounts = {},
-        GLsizei vArraysCount=0) {
-        auto res = std::make_shared<Mesh<T>>();
-        res->m_This = res;
-        if (!res->init(vVertices, vVerticesFormat, vIndices, vIndicesOffsets, vIndicesCounts, vArraysCount, true)) {
-            res.reset();
+        GLsizei vArraysCount = 0) {
+        auto pRet = std::make_shared<Mesh<T>>();
+        pRet->m_This = pRet;
+        if (!pRet->init(vVertices, vVerticesFormat, vIndices, vIndicesOffsets, vIndicesCounts, vArraysCount, true)) {
+            pRet.reset();
         }
-        return res;
+        return pRet;
     }
     static std::shared_ptr<Mesh<T>> createDynamicDraw(
         std::vector<T> vVertices,
@@ -80,11 +79,12 @@ public:
         std::vector<GLint> vIndicesOffsets = {},
         std::vector<GLsizei> vIndicesCounts = {},
         GLsizei vArraysCount = 0) {
-        res->m_This = res;
-        if (!res->init(vVertices, vVerticesFormat, vIndices, vIndicesOffsets, vIndicesCounts, vArraysCount, false)) {
-            res.reset();
+        auto pRet = std::make_shared<Mesh<T>>();
+        pRet->m_This = pRet;
+        if (!pRet->init(vVertices, vVerticesFormat, vIndices, vIndicesOffsets, vIndicesCounts, vArraysCount, false)) {
+            pRet.reset();
         }
-        return res;
+        return pRet;
     }
 
 public:
@@ -195,13 +195,13 @@ public:
         glBindVertexArray(0);
     }
 
-    void render(GLenum vRenderMode, const GLsizei vVerticesIdx = 0, const GLsizei vIndicesIdx = 0) {
+    void render(GLenum vRenderMode, const GLsizei vVerticesIdx = 0, const GLsizei vIndicesIdx = 0, const GLsizei vInstanceCount = 0) {
 #ifdef PROFILER_SCOPED
         PROFILER_SCOPED("Mesh", "render");
 #endif
         m_uploadMeshDatasIfNeeded(vVerticesIdx, vIndicesIdx);
         if (bind()) {
-            m_render(vRenderMode, vIndicesIdx);
+            m_render(vRenderMode, vIndicesIdx, vInstanceCount);
             unbind();
         }
     }
@@ -235,15 +235,26 @@ public:
     void needNewUpload() { m_needNewMeshUpload = true; }
 
 private:
-    void m_render(GLenum vRenderMode, const GLsizei vIndicesIdx = 0) {
+    void m_render(GLenum vRenderMode, const GLsizei vIndicesIdx = 0, const GLsizei vInstanceCount = 0) {
         if (!m_Indices.empty()) {
+            if (vInstanceCount > 0) {
 #ifdef PROFILER_SCOPED
-            PROFILER_SCOPED("Opengl", "glDrawElements");
+                PROFILER_SCOPED("Opengl", "glDrawElementsInstanced");
 #endif
-            if (vIndicesIdx == 0) {
-                glDrawElements(vRenderMode, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, nullptr);
+                if (vIndicesIdx == 0) {
+                    glDrawElementsInstanced(vRenderMode, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, nullptr, vInstanceCount);
+                } else {
+                    glDrawElementsInstanced(vRenderMode, vIndicesIdx, GL_UNSIGNED_INT, nullptr, vInstanceCount);
+                }
             } else {
-                glDrawElements(vRenderMode, vIndicesIdx, GL_UNSIGNED_INT, nullptr);
+#ifdef PROFILER_SCOPED
+                PROFILER_SCOPED("Opengl", "glDrawElements");
+#endif
+                if (vIndicesIdx == 0) {
+                    glDrawElements(vRenderMode, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, nullptr);
+                } else {
+                    glDrawElements(vRenderMode, vIndicesIdx, GL_UNSIGNED_INT, nullptr);
+                }
             }
         } else if ((!m_IndicesOffsets.empty()) && (!m_IndicesCounts.empty()) && (m_ArraysCount > 0)) {
 #ifdef PROFILER_SCOPED

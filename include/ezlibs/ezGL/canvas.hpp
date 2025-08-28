@@ -42,9 +42,15 @@ public:
         float mouseWheel{};
     };
     struct Transform {
+        ez::fvec2 origin;
+        float scale{1.0f};  // px / unité monde
+        float invScale{1.0f};
+    };
+    struct UniformTransform {
         ez::fvec2 uScale{1.0f};
         ez::fvec2 uOffset;
     };
+
 
 private:
     bool m_isRenderingActive{true};
@@ -54,15 +60,11 @@ private:
     ez::gl::FBOPipeLinePtr mp_fboPipeline;
     ez::fvec2 m_fboSize;
 
-    // Canvas state (pixels)
-    ez::fvec2 m_origin;
-    float m_scale{1.0f};  // px / unité monde
-    float m_invScale{1.0f};
-
     MouseDatas m_mouseDatas;
+    Transform m_transform;
 
     // Uniforms NDC pour le shader (uScale/uOffset)
-    Transform m_transform;
+    UniformTransform m_uniformTransform;
 
     // Souris (interne)
     ez::fvec2 m_lastMousePos;
@@ -75,7 +77,6 @@ public:
         mp_fboPipeline = ez::gl::FBOPipeLine::create(vDisplayRect.z, vDisplayRect.w, 1, false, false);
         ret &= (mp_fboPipeline != nullptr);
         m_fboSize = m_displayRect.zw();
-        m_origin = m_fboSize * 0.5f;
         return ret;
     }
     void unit() {}
@@ -92,8 +93,8 @@ public:
             m_displayRect = vNewDisplayRect;
             if (!m_fboSize.emptyOR()) {
                 ez::fvec2 rescale = m_displayRect.zw() / m_fboSize;
-                m_origin *= rescale;
-                m_scale *= ez::mini(rescale.x, rescale.y);
+                m_transform.origin *= rescale;
+                m_transform.scale *= ez::mini(rescale.x, rescale.y);
             }
             m_fboSize = vNewDisplayRect.zw();
             m_computeTransform();
@@ -131,32 +132,35 @@ public:
 #ifdef IMGUI_API
 #ifdef _DEBUG
         if (ImGui::CollapsingHeader("Debug##Renderer")) {
-            ImGui::Text("Origin Px : %f,%f", m_origin.x, m_origin.y);
+            ImGui::Text("Origin Px : %f,%f", m_transform.origin.x, m_transform.origin.y);
             ImGui::Text("FBO Size : %f,%f", m_fboSize.x, m_fboSize.y);
-            ImGui::Text("Scale : %f", m_scale);
-            ImGui::Text("Sclae inv : %f", m_invScale);
-            ImGui::DragFloat2("Offset", &m_transform.uOffset.x);
-            ImGui::DragFloat2("Scale", &m_transform.uScale.x);
+            ImGui::Text("Scale : %f", m_transform.scale);
+            ImGui::Text("Sclae inv : %f", m_transform.invScale);
+            ImGui::DragFloat2("Offset", &m_uniformTransform.uOffset.x);
+            ImGui::DragFloat2("Scale", &m_uniformTransform.uScale.x);
         }
 #endif
 #endif
         return false;
     }
 
+    void updateTransform() { m_computeTransform(); }
+
     void fitToContent(const ez::fAABB& vBoundingBox) {
         m_computeFitToContent(  //
             vBoundingBox.lowerBound,
             vBoundingBox.upperBound,
             m_fboSize,
-            m_origin,
-            m_scale,
-            m_invScale);
+            m_transform.origin,
+            m_transform.scale,
+            m_transform.invScale);
         m_computeTransform();
     }
 
     ez::fvec4& getBackgroundColorRef() { return m_clearColor; }
     MouseDatas& getMouseDatasRef() { return m_mouseDatas; }
     Transform& getTransfomRef() { return m_transform; }
+    UniformTransform& getUniformTransfomRef() { return m_uniformTransform; }
 
 private:
     bool m_mouseActions(const MouseDatas& vMouseDatas) {
@@ -180,27 +184,27 @@ private:
     }
 
     void m_setScale(float v) {
-        m_scale = v;
-        m_invScale = (v != 0.0f) ? (1.0f / v) : 0.0f;
+        m_transform.scale = v;
+        m_transform.invScale = (v != 0.0f) ? (1.0f / v) : 0.0f;
     }
 
     void m_applyPanDrag(const ez::fvec2& dragPx) {
-        m_origin.x += dragPx.x;
-        m_origin.y += dragPx.y;
+        m_transform.origin.x += dragPx.x;
+        m_transform.origin.y += dragPx.y;
     }
 
     void m_applyZoomAtMouse(float factor, const ez::fvec2& mousePx) {
         if (factor <= 0.0f) {
             return;
         }
-        float newScale = m_scale * factor;
+        float newScale = m_transform.scale * factor;
         newScale = std::max(1e-6f, std::min(newScale, 1e6f));
-        const float applied = (m_scale > 0.0f) ? (newScale / m_scale) : 1.0f;
+        const float applied = (m_transform.scale > 0.0f) ? (newScale / m_transform.scale) : 1.0f;
         if (applied == 1.0f) {
             return;
         }
-        m_origin.x = m_origin.x + (1.0f - applied) * (mousePx.x - m_origin.x);
-        m_origin.y = m_origin.y + (1.0f - applied) * (mousePx.y - m_origin.y);
+        m_transform.origin.x = m_transform.origin.x + (1.0f - applied) * (mousePx.x - m_transform.origin.x);
+        m_transform.origin.y = m_transform.origin.y + (1.0f - applied) * (mousePx.y - m_transform.origin.y);
         m_setScale(newScale);
     }
 
@@ -213,11 +217,11 @@ private:
             m_transform = {};
             return;
         }
-        m_transform.uScale.x = (2.0f * m_scale) / VW;
-        m_transform.uOffset.x = (2.0f * m_origin.x) / VW - 1.0f;
+        m_uniformTransform.uScale.x = (2.0f * m_transform.scale) / VW;
+        m_uniformTransform.uOffset.x = (2.0f * m_transform.origin.x) / VW - 1.0f;
         // Y-down (framebuffer in top-left, classic UI)
-        m_transform.uScale.y = -(2.0f * m_scale) / VH;
-        m_transform.uOffset.y = 1.0f - (2.0f * m_origin.y) / VH;
+        m_uniformTransform.uScale.y = -(2.0f * m_transform.scale) / VH;
+        m_uniformTransform.uOffset.y = 1.0f - (2.0f * m_transform.origin.y) / VH;
     }
 
     // Fit "contain" d'un AABB monde dans un framebuffer en pixels.

@@ -30,7 +30,8 @@ SOFTWARE.
 #include <unordered_map>
 #include <vector>
 #include <string>
-#include <cstring> // memset, memcpy
+#include <memory>
+#include <cstring>  // memset, memcpy
 #include <cmath>
 
 #define PRINT_BLOCK_DATAS
@@ -38,52 +39,102 @@ SOFTWARE.
 namespace ez {
 namespace gl {
 
+class BufferBlock;
+using BufferBlockPtr = std::unique_ptr<BufferBlock>;
+
 class BufferBlock {
+public:
+    static BufferBlockPtr create(const std::string& vName, GLenum vTarget) {
+        return BufferBlockPtr(new BufferBlock(vName, vTarget));  // cpp11
+    }
+
 protected:
     GLuint m_buffer = 0;  // buffer id
     GLenum m_target = 0;  // ex : GL_UNIFORM_BUFFER;
-    GLenum m_usage = 0;  // ex: GL_DYNAMIC_DRAW;
     std::string m_name;
 
 public:
     BufferBlock() = default;
-    explicit BufferBlock(const std::string& vName, GLenum target, GLenum usage) : m_name(vName), m_target(target), m_usage(usage) {}
-    virtual ~BufferBlock() { destroy(); }
-    void create(size_t size, const void* data) {
-        glGenBuffers(1, &m_buffer);
-        CheckGLErrors;
-        glBindBuffer(m_target, m_buffer);
-        glBufferData(m_target, size, data, m_usage);
-        CheckGLErrors;
-    }
-    void upload(size_t size, const void* data) {
+    explicit BufferBlock(const std::string& vName, GLenum vTarget) : m_name(vName), m_target(vTarget) { m_create(); }
+    virtual ~BufferBlock() { m_destroy(); }
+    const std::string& getName() const { return m_name; }
+    void upload(GLenum vUsage, const void* vData, size_t vSize) {
 #ifdef PROFILER_SCOPED_PTR
         PROFILER_SCOPED_PTR(this, "upload BufferBlock ", "%s", m_name.c_str());
 #endif
         glBindBuffer(m_target, m_buffer);
-        glBufferData(m_target, size, data, m_usage);
+        glBufferData(m_target, vSize, vData, vUsage);
         CheckGLErrors;
     }
-    void bind(GLuint binding) {
-        glBindBufferBase(m_target, binding, m_buffer);
+    void bind(GLuint vBinding) {
+        glBindBufferBase(m_target, vBinding, m_buffer);
         CheckGLErrors;
     }
-    void destroy() {
+    GLuint id() const { return m_buffer; }
+
+private:
+    void m_create() {
+        glGenBuffers(1, &m_buffer);
+        CheckGLErrors;
+    }
+    void m_destroy() {
         if (m_buffer != 0) {
             glDeleteBuffers(1, &m_buffer);
             CheckGLErrors;
             m_buffer = 0;
         }
     }
-    GLuint id() const { return m_buffer; }
 };
+
+/*
+usage :
+    struct Datas {
+        fvec2 p;
+        fvec2 t
+    };
+    BufferBlockAuto<GL_SHADER_STORAGE_BUFFER, Datas> ssbo;
+    ssbo.getDatasRef().push_back(Datas{}};
+    ssbo.upload(GL_STATIC_DRAW);
+*/
+template <GLenum TTARGET, typename TDATAS>
+class BufferBlockAuto;
+template <GLenum TTARGET, typename TDATAS>
+using BufferBlockAutoPtr = std::unique_ptr<BufferBlockAuto<TTARGET, TDATAS>>;
+
+template <GLenum TTARGET, typename TDATAS>
+class BufferBlockAuto {
+public:
+    static BufferBlockAutoPtr<TTARGET, TDATAS> create(const std::string& vName) {
+        return BufferBlockAutoPtr<TTARGET, TDATAS>(new BufferBlockAuto<TTARGET, TDATAS>(vName));  // cpp11
+    }
+
+private:
+    BufferBlockPtr mp_buffer;
+    std::vector<TDATAS> m_datas;
+
+public:
+    BufferBlockAuto() = default;
+    explicit BufferBlockAuto(const std::string& vName) { mp_buffer = BufferBlock::create(vName, TTARGET); }
+    virtual ~BufferBlockAuto() = default;
+    const std::vector<TDATAS>& getDatas() const { return m_datas; }
+    std::vector<TDATAS>& getDatasRef() { return m_datas; }
+    GLuint getId() const { return mp_buffer->id(); }
+    void bind(GLuint vBinding) { mp_buffer->bind(vBinding); }
+    void upload(GLenum vUsage) { mp_buffer->upload(vUsage, m_datas.data(), sizeof(TDATAS) * m_datas.size()); }
+    BufferBlock* getBufferBlockPtr() { return mp_buffer.get(); }  // for adding in es::gl::program
+};
+template <typename TDATAS>
+using SSBO = BufferBlockAuto<GL_SHADER_STORAGE_BUFFER, TDATAS>;
+template <typename TDATAS>
+using SSBOPtr = std::unique_ptr<SSBO<TDATAS>>;
 
 // UBOAuto : layout std140
 // this ubo can be udpated dynamically by code and will manage automatically resources and layout std140
 
 class UBOAuto {
 private:
-    BufferBlock m_buffer;
+    BufferBlockPtr mp_buffer;
+    std::string m_name;
     // key = uniform name, offset in buffer for have op on uniform data
     std::unordered_map<std::string, uint32_t> m_offsets;
     // uniforms datas buffer
@@ -93,13 +144,10 @@ private:
     bool m_isDirty = true;
 
 public:
-    UBOAuto(const std::string& vName) : m_buffer(vName, GL_UNIFORM_BUFFER, GL_DYNAMIC_DRAW) {}
+    UBOAuto(const std::string& vName) : m_name(vName) { create(); }
     ~UBOAuto() { unit(); }
     bool init() { return true; }
-    void unit() {
-        m_buffer.destroy();
-        clear();
-    }
+    void unit() { clear(); }
     void clear() {
         m_datas.clear();
         m_offsets.clear();
@@ -107,11 +155,14 @@ public:
     }
     void setDirty() { m_isDirty = true; }
     bool isDirty() const { return m_isDirty; }
-    void create() { m_buffer.create(m_datas.size(), m_datas.data()); }
-    void destroy() { m_buffer.destroy(); }
+    void create() {
+        mp_buffer = BufferBlock::create(m_name, GL_UNIFORM_BUFFER);
+        mp_buffer->upload(GL_DYNAMIC_DRAW, m_datas.data(), m_datas.size());
+    }
+    void destroy() { mp_buffer.reset(); }
     bool recreate() {
         bool res = false;
-        if (!m_datas.empty() && m_buffer.id() != 0U) {
+        if (!m_datas.empty() && mp_buffer->id() != 0U) {
             destroy();
             create();
             res = true;
@@ -120,12 +171,12 @@ public:
     }
     void uploadIfDirty() {
         if (m_isDirty && !m_datas.empty()) {
-            m_buffer.upload(m_datas.size(), m_datas.data());
+            mp_buffer->upload(GL_DYNAMIC_DRAW, m_datas.data(), m_datas.size());
             m_isDirty = false;
         }
     }
-    void bind(const uint32_t vBinding) { m_buffer.bind(vBinding); }
-    GLuint id() const { return m_buffer.id(); }
+    void bind(const uint32_t vBinding) { mp_buffer->bind(vBinding); }
+    GLuint id() const { return mp_buffer->id(); }
     // add size to uniform block, return startOffset
     bool registerByteSize(const std::string& vKey, uint32_t vSizeInBytes, uint32_t* vStartOffset) {
         if (offsetExist(vKey)) {
@@ -203,7 +254,7 @@ protected:
                 return 4;  // float, int, uint
             if (vSize <= 8)
                 return 8;  // vec2, ivec2
-            return 16;  // vec3 (12), vec4 (16), mat3 row (12)
+            return 16;     // vec3 (12), vec4 (16), mat3 row (12)
         }
 
         // vSize > 16 → struct, array, mat*, etc.

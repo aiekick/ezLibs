@@ -195,7 +195,7 @@ public:
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->setUniformPreUploadFunctor(vUniformPreUploadFunctor);
     }
-    void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock* vBufferPtr) {
+    void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock** vBufferPtr) {
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->addBufferBlock(vShaderType, vBufferName, vBinding, vBufferPtr);
     }

@@ -296,6 +296,7 @@ public:
     }
     bool check() { return (glIsTexture(m_TexId) == GL_TRUE); }
     GLuint getTexId() const { return m_TexId; }
+    std::array<GLsizei, 2U> getSize() const { return {m_Width, m_Height}; }
 
 #ifdef STB_IMAGE_WRITER_INCLUDE
     bool saveToPng(const std::string& vFilePathName) const {
@@ -407,7 +408,7 @@ private:
         if (m_EnableMipMap) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
             CheckGLErrors;
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 8U);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 8);
             CheckGLErrors;
             updateMipMaping();
         } else {
@@ -460,7 +461,6 @@ private:
         }
     }
 };
-
 class Texture2DArray;
 typedef std::shared_ptr<Texture2DArray> Texture2DArrayPtr;
 typedef std::weak_ptr<Texture2DArray> Texture2DArrayWeak;
@@ -474,21 +474,12 @@ public:
         const GLenum vInternalFormat,  // ex: GL_RGBA8, GL_R16F, ...
         const GLenum vAllocFormat,     // ex: GL_RGBA, GL_RED, GL_RG
         const GLenum vPixelFormat,     // ex: GL_UNSIGNED_BYTE, GL_HALF_FLOAT, GL_FLOAT
-        const std::string vWrap,
-        const std::string vFilter) {
+        const std::string& vWrap,
+        const std::string& vFilter,
+        const bool vUseMipMapping) {
         auto res = std::make_shared<Texture2DArray>();
         res->m_This = res;
-        if (!res->init(vSx, vSy, vLayers, vInternalFormat, vAllocFormat, vPixelFormat, vWrap, vFilter)) {
-            res.reset();
-        }
-        return res;
-    }
-
-    // Factory "vide" avec defaults (RGBA8 / UBYTE)
-    static Texture2DArrayPtr createEmpty(const GLsizei vSx, const GLsizei vSy, const GLsizei vLayers, const std::string vWrap, const std::string vFilter) {
-        auto res = std::make_shared<Texture2DArray>();
-        res->m_This = res;
-        if (!res->init(vSx, vSy, vLayers, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, vWrap, vFilter)) {
+        if (!res->init(vSx, vSy, vLayers, vInternalFormat, vAllocFormat, vPixelFormat, vWrap, vFilter, vUseMipMapping)) {
             res.reset();
         }
         return res;
@@ -501,14 +492,19 @@ private:
     GLsizei m_Height = 0;
     GLsizei m_Layers = 0;
 
-    GLenum m_InternalFormat = GL_RGBA8;       // format interne de stockage
-    GLenum m_AllocFormat = GL_RGBA;           // format pour TexImage (déclaration)
-    GLenum m_PixelFormat = GL_UNSIGNED_BYTE;  // type pour TexImage
+    GLenum m_InternalFormat = GL_RGBA8;  // stockage interne
+    GLenum m_AllocFormat = GL_RGBA;      // format déclaration
+    GLenum m_PixelFormat = GL_UNSIGNED_BYTE;
 
+    std::string m_wrap;
+    std::string m_filter;
+
+    std::vector<int> m_FreeList;  // pile de layers libres
+
+    bool m_useMipMapping = false;
     GLsizei m_MipCount = 0;
-
-    std::vector<int> m_FreeList;        // pile de layers libres
-    std::vector<bool> m_LevelDeclared;  // niveaux (L) déjà glTexImage3D
+    bool m_useImmutable = false;        // vrai si glTexStorage3D est dispo et choisi
+    std::vector<bool> m_LevelDeclared;  // niveaux (L) “disponibles” pour sampling
     GLint m_MinDeclaredLevel = -1;
     GLint m_MaxDeclaredLevel = -1;
 
@@ -525,8 +521,9 @@ public:
         const GLenum vInternalFormat,
         const GLenum vAllocFormat,
         const GLenum vPixelFormat,
-        const std::string vWrap,
-        const std::string vFilter) {
+        const std::string& vWrap,
+        const std::string& vFilter,
+        const bool vUseMipMapping) {
         unit();
         assert(vSx > 0 && vSy > 0 && vLayers > 0);
         m_Width = vSx;
@@ -535,25 +532,62 @@ public:
         m_InternalFormat = vInternalFormat;
         m_AllocFormat = vAllocFormat;
         m_PixelFormat = vPixelFormat;
+        m_wrap = vWrap;
+        m_filter = vFilter;
+        m_useMipMapping = vUseMipMapping;
+
+        GLint maxLayers = 0;
+        glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxLayers);
+        if (vLayers > maxLayers) {
+#ifdef EZ_TOOLS_LOG
+            LogVarError("The layers count is superior to the max admissible of %i for your GPU", maxLayers);
+#endif
+            return false;
+        }
 
         glGenTextures(1, &m_TexId);
         CheckGLErrors;
-        if (m_TexId == 0U)
+        if (m_TexId == 0U) {
             return false;
+        }
 
-        m_setParameters(vWrap, vFilter);
+        // Mip count théorique
+        m_MipCount = m_useMipMapping ? m_computeMipCount(m_Width, m_Height) : 1;
+        m_LevelDeclared.assign((size_t)m_MipCount, false);
+        m_MinDeclaredLevel = -1;
+        m_MaxDeclaredLevel = -1;
+
+        // Paramètres de base (wrap/filter + fenêtre LOD initiale)
+        m_setParameters(m_wrap, m_filter);
+
+        // Détection simple de glTexStorage3D à l’exécution
+        m_useImmutable = (reinterpret_cast<void*>(glTexStorage3D) != nullptr);
+
+        glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
+        CheckGLErrors;
+
+        if (m_useImmutable) {
+            // Allocation immuable de tous les niveaux
+            glTexStorage3D(GL_TEXTURE_2D_ARRAY, m_MipCount, m_InternalFormat, m_Width, m_Height, m_Layers);
+            CheckGLErrors;
+
+            // Rien n’est “rempli” mais tous les niveaux existent. On n’active la fenêtre [BASE..MAX]
+            // qu’une fois des niveaux marqués comme déclarés (upload effectués).
+            // On pourrait au choix marquer level 0 comme déclaré immédiatement si tu veux sampler tout de suite.
+        } else {
+            // Fallback : aucune alloc ici, on allouera paresseusement par niveau via TexImage3D
+            // à la première demande (m_ensureLevelDeclared).
+        }
+
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+        CheckGLErrors;
 
         // Prépare free-list
         m_FreeList.clear();
         m_FreeList.reserve((size_t)vLayers);
-        for (int i = vLayers - 1; i >= 0; --i)
+        for (int i = vLayers - 1; i >= 0; --i) {
             m_FreeList.push_back(i);
-
-        // Mips théoriques, mais non alloués au départ
-        m_MipCount = m_computeMipCount(m_Width, m_Height);
-        m_LevelDeclared.assign((size_t)m_MipCount, false);
-        m_MinDeclaredLevel = -1;
-        m_MaxDeclaredLevel = -1;
+        }
 
         return check();
     }
@@ -569,20 +603,26 @@ public:
         m_AllocFormat = GL_RGBA;
         m_PixelFormat = GL_UNSIGNED_BYTE;
         m_MipCount = 0;
+        m_useImmutable = false;
         m_FreeList.clear();
         m_LevelDeclared.clear();
         m_MinDeclaredLevel = m_MaxDeclaredLevel = -1;
     }
 
     // Alloue une layer libre et uploade le mip 'vLevel' avec 'vpPixels'
-    // Retourne l'index de layer, ou -1 si saturation/erreur.
-    int addTile(const GLsizei vLevel, const void* vpPixels, const GLenum vFormat, const GLenum vType, const std::string vFilter = "linear") {
-        if (m_TexId == 0U || vpPixels == nullptr)
+    // Retourne l'index de layer :
+    // -1 : erreur
+    // -2 : saturation
+    int addLayer(const GLsizei vLevel, const void* vpPixels) {
+        if (m_TexId == 0U || vpPixels == nullptr) {
             return -1;
-        if (vLevel < 0 || vLevel >= m_MipCount)
+        }
+        if (vLevel < 0 || vLevel >= m_MipCount) {
             return -1;
-        if (m_FreeList.empty())
-            return -1;
+        }
+        if (m_FreeList.empty()) {
+            return -2;
+        }
 
         const int layer = m_FreeList.back();
         m_FreeList.pop_back();
@@ -599,28 +639,30 @@ public:
         CheckGLErrors;
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         CheckGLErrors;
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, vLevel, 0, 0, layer, w, h, 1, vFormat, vType, vpPixels);
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, vLevel, 0, 0, layer, w, h, 1, m_AllocFormat, m_PixelFormat, vpPixels);
         CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         CheckGLErrors;
 
-        // Si on commence à avoir >=2 niveaux déclarés, active le tri-linéaire selon vFilter
-        m_enableMipTrilinearIfPossible(vFilter);
+        m_enableMipTrilinearIfPossible(m_filter);
 
         return layer;
     }
 
     // Met à jour un mip sur une layer existante
-    bool uploadTile(const GLint vLayer, const GLsizei vLevel, const void* vpPixels, const GLenum vFormat, const GLenum vType, const std::string vFilter = "linear") {
-        if (m_TexId == 0U || vpPixels == nullptr)
+    bool uploadLayer(const GLint vLayer, const GLsizei vLevel, const void* vpPixels) {
+        if (m_TexId == 0U || vpPixels == nullptr) {
             return false;
-        if (vLayer < 0 || vLayer >= m_Layers)
+        }
+        if (vLayer < 0 || vLayer >= m_Layers) {
             return false;
-        if (vLevel < 0 || vLevel >= m_MipCount)
+        }
+        if (vLevel < 0 || vLevel >= m_MipCount) {
             return false;
-
-        if (!m_ensureLevelDeclared(vLevel))
+        }
+        if (!m_ensureLevelDeclared(vLevel)) {
             return false;
+        }
 
         const GLsizei w = std::max<GLsizei>(1, m_Width >> vLevel);
         const GLsizei h = std::max<GLsizei>(1, m_Height >> vLevel);
@@ -629,31 +671,34 @@ public:
         CheckGLErrors;
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         CheckGLErrors;
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, vLevel, 0, 0, vLayer, w, h, 1, vFormat, vType, vpPixels);
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, vLevel, 0, 0, vLayer, w, h, 1, m_AllocFormat, m_PixelFormat, vpPixels);
         CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         CheckGLErrors;
 
-        m_enableMipTrilinearIfPossible(vFilter);
+        m_enableMipTrilinearIfPossible(m_filter);
         return true;
     }
 
-    // Libère la layer (réutilisable par addTile)
-    void removeTile(const GLint vLayer) {
-        if (m_TexId == 0U)
+    // Libère la layer (réutilisable par addLayer)
+    void removeLayer(const GLint vLayer) {
+        if (m_TexId == 0U) {
             return;
-        if (vLayer < 0 || vLayer >= m_Layers)
+        }
+        if (vLayer < 0 || vLayer >= m_Layers) {
             return;
-        // éviter doublons
+        }
         const bool found = (std::find(m_FreeList.begin(), m_FreeList.end(), vLayer) != m_FreeList.end());
-        if (!found)
+        if (!found) {
             m_FreeList.push_back(vLayer);
+        }
     }
 
     // Paramètres (wrap/filter) — safe à appeler à tout moment
-    void setParameters(const std::string vWrap, const std::string vFilter) {
-        if (m_TexId == 0U)
+    void setParameters(const std::string& vWrap, const std::string& vFilter) {
+        if (m_TexId == 0U) {
             return;
+        }
         m_setParameters(vWrap, vFilter);
         m_enableMipTrilinearIfPossible(vFilter);
     }
@@ -675,90 +720,111 @@ private:
         }
         return m;
     }
+
     void m_updateLodClamp() {
-        if (m_TexId == 0U)
+        if (m_TexId == 0U) {
             return;
-        if (m_MinDeclaredLevel < 0 || m_MaxDeclaredLevel < 0)
+        }
+        if (m_MinDeclaredLevel < 0 || m_MaxDeclaredLevel < 0) {
             return;
+        }
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
         CheckGLErrors;
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, m_MinDeclaredLevel);
+        CheckGLErrors;
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, m_MaxDeclaredLevel);
         CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         CheckGLErrors;
     }
+
     bool m_ensureLevelDeclared(const GLsizei vLevel) {
-        if (vLevel < 0 || vLevel >= m_MipCount)
+        if (vLevel < 0 || vLevel >= m_MipCount) {
             return false;
-        if (m_LevelDeclared.empty())
+        }
+        if (m_LevelDeclared.empty()) {
             return false;
+        }
         if (m_LevelDeclared[(size_t)vLevel]) {
             m_updateLodClamp();
             return true;
         }
-        const GLsizei w = std::max<GLsizei>(1, m_Width >> vLevel);
-        const GLsizei h = std::max<GLsizei>(1, m_Height >> vLevel);
 
-        glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
-        CheckGLErrors;
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, vLevel, m_InternalFormat, w, h, m_Layers, 0, m_AllocFormat, m_PixelFormat, nullptr);
-        CheckGLErrors;
-        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-        CheckGLErrors;
+        if (!m_useImmutable) {
+            // Fallback : on alloue le niveau (toutes layers) avec data=nullptr
+            const GLsizei w = std::max<GLsizei>(1, m_Width >> vLevel);
+            const GLsizei h = std::max<GLsizei>(1, m_Height >> vLevel);
+
+            glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
+            CheckGLErrors;
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, vLevel, m_InternalFormat, w, h, m_Layers, 0, m_AllocFormat, m_PixelFormat, nullptr);
+            CheckGLErrors;
+            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+            CheckGLErrors;
+        }  // en immutable, rien à allouer : les niveaux existent déjà
 
         m_LevelDeclared[(size_t)vLevel] = true;
-        if (m_MinDeclaredLevel < 0 || vLevel < m_MinDeclaredLevel)
+
+        if (m_MinDeclaredLevel < 0 || vLevel < m_MinDeclaredLevel) {
             m_MinDeclaredLevel = vLevel;
-        if (m_MaxDeclaredLevel < 0 || vLevel > m_MaxDeclaredLevel)
+        }
+        if (m_MaxDeclaredLevel < 0 || vLevel > m_MaxDeclaredLevel) {
             m_MaxDeclaredLevel = vLevel;
+        }
+
         m_updateLodClamp();
         return true;
     }
-    void m_setParameters(const std::string vWrap, const std::string vFilter) {
+
+    void m_setParameters(const std::string& vWrap, const std::string& vFilter) {
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
         CheckGLErrors;
 
         // Wrap
         GLenum wrap = GL_CLAMP_TO_EDGE;
-        if (vWrap == "repeat")
+        if (vWrap == "repeat") {
             wrap = GL_REPEAT;
-        else if (vWrap == "mirror")
+        } else if (vWrap == "mirror") {
             wrap = GL_MIRRORED_REPEAT;
-        // "clamp" par défaut
+        }
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, wrap);
+        CheckGLErrors;
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, wrap);
         CheckGLErrors;
 
         // Filter
-        if (vFilter == "nearest") {
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // on remettra MIPMAP si plusieurs niveaux
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        } else {
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        }
+        const bool linear = (vFilter != "nearest");
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+        CheckGLErrors;
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
         CheckGLErrors;
 
-        // Par défaut, on désactive le sampling de niveaux non déclarés
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 1000);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, -1000);
+        // Fenêtre LOD initiale : [0 .. m_MipCount-1] si mipmap, sinon [0..0].
+        const GLint initialBase = 0;
+        const GLint initialMax = (m_useMipMapping && m_MipCount > 0) ? (m_MipCount - 1) : 0;
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, initialBase);
+        CheckGLErrors;
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, initialMax);
         CheckGLErrors;
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         CheckGLErrors;
     }
-    void m_enableMipTrilinearIfPossible(const std::string vFilter) {
-        // Si on a au moins deux niveaux contigus, autoriser le tri-linéaire si demandé (linear).
-        if (m_MinDeclaredLevel < 0 || m_MaxDeclaredLevel < 0)
+
+    void m_enableMipTrilinearIfPossible(const std::string& vFilter) {
+        if (!m_useMipMapping) {
             return;
-        if (m_MaxDeclaredLevel <= m_MinDeclaredLevel)
+        }
+        if (m_MinDeclaredLevel < 0 || m_MaxDeclaredLevel < 0) {
+            return;
+        }
+        if (m_MaxDeclaredLevel <= m_MinDeclaredLevel) {
             return;  // un seul niveau
+        }
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
         CheckGLErrors;
         const bool linear = (vFilter != "nearest");
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
-        // MAG reste GL_LINEAR ou GL_NEAREST selon vFilter (déjà posé)
         CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         CheckGLErrors;

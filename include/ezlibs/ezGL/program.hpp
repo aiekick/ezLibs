@@ -54,6 +54,7 @@ public:
         uint32_t* datas_u = nullptr;  // uint
         bool* datas_b = nullptr;  // bool
         uint32_t* data_s2d = nullptr;  // sampler2D
+        uint32_t* data_s2darr = nullptr;  // sampler2DArray
         int32_t matrix_size = 0;  // matrixSize 2,3,4
         GLint loc = -1;
         GLuint channels = 0U;
@@ -62,7 +63,7 @@ public:
         bool dirty = false; // need a new upload
         bool used = false;
         bool showed = false;
-        BufferBlock* buffer_ptr = nullptr;  // a buffer block ex: UBO /SSBO
+        BufferBlock** buffer_ptr = nullptr;  // a buffer block ex: UBO /SSBO
         int32_t bufferBinding = -1;  // the binding point in the sahder of the buffer block
         UniformWidgetFunctor widget_functor = nullptr;
     };
@@ -148,7 +149,7 @@ public:
     }
     const char* getLabelName() { return m_ProgramName.c_str(); }
     void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) { m_UniformPreUploadFunctor = vUniformPreUploadFunctor; }
-    void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock* vBufferPtr) {
+    void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock** vBufferPtr) {
         assert(vShaderType > 0);
         assert(!vBufferName.empty());
         assert(vBinding > -1);
@@ -315,6 +316,17 @@ public:
         uni.showed = vShowWidget;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
+    void addUniformSampler2DArray(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vSampler2DArrayPtr) {
+        assert(vShaderType > 0);
+        assert(!vUniformName.empty());
+        // assert(vSampler2D != -1);, if the sampler must point on a buffer after, its normal to have it at -1
+        Uniform uni;
+        uni.name = vUniformName;
+        uni.data_s2darr = vSampler2DArrayPtr;
+        uni.channels = 0;
+        uni.showed = false; // no way to display a texture 2d array
+        m_Uniforms[vShaderType][vUniformName] = uni;
+    }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr = nullptr) {
 #ifdef PROFILER_SCOPED
         PROFILER_SCOPED(m_ProgramName, "uploadUniforms");
@@ -444,11 +456,25 @@ public:
                         glUniform1i(uni.second.loc, textureSlotId);
                         CheckGLErrors;
                         ++textureSlotId;
+                    } else if (uni.second.data_s2darr != nullptr) {
+#ifdef PROFILER_SCOPED_PTR
+                        PROFILER_SCOPED_PTR(&uni, "upload sampler2DArray", "%s", name_c_str);
+#endif
+                        glActiveTexture(GL_TEXTURE0 + textureSlotId);
+                        CheckGLErrors;
+                        glBindTexture(GL_TEXTURE_2D_ARRAY, *uni.second.data_s2darr);
+                        CheckGLErrors;
+                        glUniform1i(uni.second.loc, textureSlotId);
+                        CheckGLErrors;
+                        ++textureSlotId;
                     }
                 }
                 // buffer have no widgets, and no use infos
-                if (uni.second.bufferBinding > -1 && uni.second.buffer_ptr != nullptr && uni.second.buffer_ptr->id() > 0U) {
-                    uni.second.buffer_ptr->bind(uni.second.bufferBinding);
+                if (uni.second.bufferBinding > -1 &&      //
+                    uni.second.buffer_ptr != nullptr &&   //
+                    *uni.second.buffer_ptr != nullptr &&  //
+                    (*uni.second.buffer_ptr)->id() > 0U) {
+                    (*uni.second.buffer_ptr)->bind(uni.second.bufferBinding);
                 }
             }
         }
