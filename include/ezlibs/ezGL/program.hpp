@@ -480,9 +480,14 @@ public:
         }
     }
 #ifdef IMGUI_INCLUDE
-    void drawUniformWidgets() {
+    bool drawUniformWidgets(bool vShowCollapsingHeader = true) {
+        bool ret = false;
         ImGui::PushID(m_ProgramName.c_str());
-        if (ImGui::CollapsingHeader(m_ProgramName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+        bool opened = true;
+        if (vShowCollapsingHeader) {
+            opened = ImGui::CollapsingHeader(m_ProgramName.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+        }
+        if (opened) {
             ImGui::Indent();
             for (auto& shader_type : m_Uniforms) {
                 switch (shader_type.first) {
@@ -500,19 +505,19 @@ public:
                             if (uni.second.datas_f != nullptr) {
                                 for (GLuint i = 0; i < uni.second.elements; ++i) {
                                     switch (uni.second.channels) {
-                                        case 1U: ImGui::DragFloat(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 2U: ImGui::DragFloat2(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 3U: ImGui::DragFloat3(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 4U: ImGui::DragFloat4(uni.second.name.c_str(), uni.second.datas_f + i); break;
+                                        case 1U: ret |= ImGui::DragFloat(uni.second.name.c_str(), uni.second.datas_f + i); break;
+                                        case 2U: ret |= ImGui::DragFloat2(uni.second.name.c_str(), uni.second.datas_f + i); break;
+                                        case 3U: ret |= ImGui::DragFloat3(uni.second.name.c_str(), uni.second.datas_f + i); break;
+                                        case 4U: ret |= ImGui::DragFloat4(uni.second.name.c_str(), uni.second.datas_f + i); break;
                                     }
                                 }
                             } else if (uni.second.datas_i != nullptr) {
                                 for (GLuint i = 0; i < uni.second.elements; ++i) {
                                     switch (uni.second.channels) {
-                                        case 1U: ImGui::DragInt(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 2U: ImGui::DragInt2(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 3U: ImGui::DragInt3(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 4U: ImGui::DragInt4(uni.second.name.c_str(), uni.second.datas_i + i); break;
+                                        case 1U: ret |= ImGui::DragInt(uni.second.name.c_str(), uni.second.datas_i + i); break;
+                                        case 2U: ret |= ImGui::DragInt2(uni.second.name.c_str(), uni.second.datas_i + i); break;
+                                        case 3U: ret |= ImGui::DragInt3(uni.second.name.c_str(), uni.second.datas_i + i); break;
+                                        case 4U: ret |= ImGui::DragInt4(uni.second.name.c_str(), uni.second.datas_i + i); break;
                                     }
                                 }
                             } else if (uni.second.data_s2d != 0U) {
@@ -529,6 +534,7 @@ public:
             ImGui::Unindent();
         }
         ImGui::PopID();
+        return ret;
     }
 #endif
 
