@@ -40,10 +40,11 @@ public:
         ez::fvec2 displayRect;
         ez::fvec2 mousePos;
         float mouseWheel{};
+        bool isLeftButtonDown{};
     };
     struct Transform {
         ez::fvec2 origin;
-        float scale{1.0f};  // px / unité monde
+        float scale{1.0f};  // px / unitï¿½ monde
         float invScale{1.0f};
     };
     struct UniformTransform {
@@ -171,7 +172,7 @@ private:
             m_applyZoomAtMouse(factor, vMouseDatas.mousePos);
             ret = true;
         }
-        if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+        if (vMouseDatas.isLeftButtonDown) {
             const ez::fvec2 delta = vMouseDatas.mousePos - m_lastMousePos;
             m_isPanning = true;
             m_applyPanDrag(delta);
@@ -225,7 +226,7 @@ private:
     }
 
     // Fit "contain" d'un AABB monde dans un framebuffer en pixels.
-    // Mapping utilisé : screen = world * scale + originPx
+    // Mapping utilisï¿½ : screen = world * scale + originPx
     void m_computeFitToContent(
         const ez::fvec2& vWorldMin,
         const ez::fvec2& vWorldMax,

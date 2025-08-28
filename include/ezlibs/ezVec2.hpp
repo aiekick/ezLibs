@@ -54,7 +54,7 @@ struct is_valid_type : std::integral_constant<bool, (std::is_floating_point<T>::
 template <typename T>
 struct vec2 {
     // Disable this template if T is not an integral or floating point type
-    static_assert(is_valid_type<T>::value, "Invalid type for vec2. Only integral types larger than (u)int16_t and floating-point types are allowed.");
+    //static_assert(is_valid_type<T>::value, "Invalid type for vec2. Only integral types larger than (u)int8_t and floating-point types are allowed.");
 
     T x = static_cast<T>(0), y = static_cast<T>(0);
 

@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
-cmake_policy(SET CMP0135 OLD) ## for ExternalProject_Add
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CmakeTargets")
@@ -16,6 +15,7 @@ option(TESTING_MATH "Enable testing of Math related libs" ON)
 option(TESTING_MISC "Enable testing of Misc related libs" ON)
 option(TESTING_OPENGL "Enable testing of Opengl related libs" ON)
 option(TESTING_TIME "Enable testing of Time related libs" ON)
+option(TESTING_GEO "Enable testing of Geo related libs" ON)
 
 if (USE_LEAK_SANITIZER)
 	add_compile_options(-fexceptions -pthread -ldl -lGL -Wall -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all)
@@ -33,7 +33,7 @@ if (USE_CODE_COVERAGE)
 endif()
 
 function(AddTest arg)
-  add_test("${arg}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT}" "${arg}")
+  	add_test("${arg}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT}" "${arg}")
 endfunction(AddTest)
 
 if (TESTING_WIP)
@@ -70,6 +70,10 @@ endif()
 
 if (TESTING_TIME)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TestTime)
+endif()
+
+if (TESTING_GEO)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TestGeo)
 endif()
 
 if (USE_CODE_COVERAGE)

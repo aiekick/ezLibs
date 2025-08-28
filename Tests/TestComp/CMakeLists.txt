@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
-cmake_policy(SET CMP0110 OLD) ## for use [] in test names like "ezTools.double.Vec2.[]"
+cmake_minimum_required(VERSION 3.10)
 
 set(PROJECT EzLibs_TestComp)
 enable_language(C CXX)

@@ -122,6 +122,25 @@ AddTest("TestEzSqlite_SyntaxError_SelectTrailingCommaBeforeFrom")
 AddTest("TestEzSqlite_SyntaxError_MultiLine_ShowLocation")
 
 ##########################################################
+##### TESTS EzScreen #####################################
+##########################################################
+
+AddTest("TestEzScreen_FloorNb_Scalar_Float")
+AddTest("TestEzScreen_FloorNb_Scalar_Double")
+AddTest("TestEzScreen_FloorNb_Scalar_Int_NoOp")
+AddTest("TestEzScreen_FloorNb_Vec4_Float")
+AddTest("TestEzScreen_FloorNb_Vec4_Int_NoOp")
+AddTest("TestEzScreen_GetScreenRectWithSize_Pillarbox")
+AddTest("TestEzScreen_GetScreenRectWithSize_Letterbox")
+AddTest("TestEzScreen_GetScreenRectWithRatio_2dot0_Letterbox")
+AddTest("TestEzScreen_GetScreenRectWithRatio_0dot5_Pillarbox")
+AddTest("TestEzScreen_ScreenToWorld_Centered_YDown_And_YUp")
+AddTest("TestEzScreen_CenteredZoom_KeepPointUnderMouse")
+AddTest("TestEzScreen_ZoomedTranslation_YDown")
+AddTest("TestEzScreen_ComputeFitScalePx")
+AddTest("TestEzScreen_ComputeFitToContent")
+
+##########################################################
 ##### TESTS EzQrCode #####################################
 ##########################################################
 

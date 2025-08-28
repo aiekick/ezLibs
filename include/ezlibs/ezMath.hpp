@@ -273,20 +273,46 @@ inline T mod(T v, T l) {
     return std::fmod(v, l);
 }
 
-// Computes the inverse of the linear interpolation mix.
-// Only floating-point types (float, double, long double) are allowed.
-template <typename T>
-inline T invMix(T i, T s, T r) {
-    static_assert(std::is_floating_point<T>::value, "invMix is only valid for floating point types");
-    return (r - i) / (s - i);
-}
-
 // Linearly interpolates between a and b by t.
 // Only floating-point types (float, double, long double) are allowed.
 template <typename T>
 inline T lerp(T a, T b, T t) {
-    static_assert(std::is_floating_point<T>::value, "lerp is only valid for floating point types");
+    static_assert(std::is_arithmetic<T>::value, "lerp is only valid for arithmetic types");
     return a * (static_cast<T>(1.0) - t) + b * t;
+}
+
+// Computes the linear normalisation value of t from range [a:b] to range [0:1]
+// Works with both integral and floating-point types.
+template <typename T>
+inline T invLerp(T a, T b, T t) {
+    static_assert(std::is_arithmetic<T>::value, "invLerp is only valid for arithmetic types");
+    return (t - a) / (b - a);
+}
+
+// Performs linear interpolation (lerp) between a and b by t.
+// Only floating-point types (float, double, long double) are allowed.
+template <typename T>
+inline T mix(T a, T b, T t) {
+    static_assert(std::is_arithmetic<T>::value, "mix is only valid for arithmetic types");
+    return lerp(a, b, t);
+}
+
+// Computes the linear normalisation value of t from range [a:b] to range [0:1]
+// compute normalisation of t from range [a:b] to range [0:1]
+// Only floating-point types (float, double, long double) are allowed.
+template <typename T>
+inline T invMix(T a, T b, T t) {
+    static_assert(std::is_arithmetic<T>::value, "invMix is only valid for arithmetic types");
+    return invLerp(a, b, t);
+}
+
+// Computes the linear normalisation value of t from range [a:b] to range [0:1]
+// compute normalisation of t from range [a:b] to range [0:1]
+// Only floating-point types (float, double, long double) are allowed.
+template <typename T>
+inline T norm(T min, T max, T v) {
+    static_assert(std::is_arithmetic<T>::value, "norm is only valid for arithmetic types");
+    return invLerp(min, max, v);
 }
 
 // Exponentially interpolates between a and b by t.
@@ -294,17 +320,10 @@ inline T lerp(T a, T b, T t) {
 template <typename T>
 inline T eerp(T a, T b, T t) {
     static_assert(std::is_floating_point<T>::value, "eerp is only valid for floating point types");
-    if (a == static_cast<T>(0))
+    if (a == static_cast<T>(0)) {
         return static_cast<T>(0);
+    }
     return std::pow(a * (b / a), t);
-}
-
-// Performs linear interpolation (lerp) between a and b by t.
-// Only floating-point types (float, double, long double) are allowed.
-template <typename T>
-inline T mix(T a, T b, T t) {
-    static_assert(std::is_floating_point<T>::value, "mix is only valid for floating point types");
-    return lerp(a, b, t);
 }
 
 // Say if the string is an integer
@@ -313,6 +332,25 @@ inline bool isInteger(const std::string& vStr, const int vBase = 10) {
     std::strtol(vStr.c_str(), &end, vBase);
     return *end == '\0';  // end is on the end if all is number
 }
+
+template <typename TTYPE>
+struct range {
+    TTYPE rMin{};
+    TTYPE rMax{};
+    range() = default;
+    explicit range(TTYPE vMin, TTYPE vMax) : rMin(vMin), rMax(vMax) {}
+    // compute normalisation of value from range [min:max] to range [0:1]
+    TTYPE norm(TTYPE vValue) { return invLerp(rMin, rMax, vValue); }
+    // move min et max according to vValue
+    void combine(TTYPE vValue) {
+        if (rMin > vValue) {
+            rMin = vValue;
+        }
+        if (rMax < vValue) {
+            rMax = vValue;
+        }
+    }
+};
 
 }  // namespace ez
 

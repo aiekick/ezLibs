@@ -7,6 +7,7 @@
 #include <TestEzFigFont.h>
 #include <TestEzSha.h>
 #include <TestEzSqlite.h>
+#include <TestEzScreen.h>
 #ifdef TESTING_WIP
 #include <TestEzQrCode.h>
 #endif
@@ -25,6 +26,7 @@ bool TestMisc(const std::string& vTest) {
     else IfTestCollectionExist(TestEzFigFont);
     else IfTestCollectionExist(TestEzSha);
     else IfTestCollectionExist(TestEzSqlite);
+    else IfTestCollectionExist(TestEzScreen);
 #ifdef TESTING_WIP
     else IfTestCollectionExist(TestEzQrCode);
 #endif
@@ -41,5 +43,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzGraph_Evaluation") ? 0 : 1;
+    return TestMisc("TestEzScreen_FloorNb_Scalar_Float") ? 0 : 1;
 }

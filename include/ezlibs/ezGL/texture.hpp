@@ -40,6 +40,7 @@ SOFTWARE.
 #include <cassert>
 #include <memory>
 #include <string>
+#include <array>
 
 namespace ez {
 namespace gl {
@@ -311,7 +312,7 @@ public:
         if (w <= 0 || h <= 0)
             return false;
 
-        // 2) Sauvegarde état pack + configuration propre
+        // 2) Sauvegarde ?tat pack + configuration propre
         GLint prevAlign = 0, prevRowLen = 0, prevSkipRows = 0, prevSkipPix = 0;
         glGetIntegerv(GL_PACK_ALIGNMENT, &prevAlign);
         glGetIntegerv(GL_PACK_ROW_LENGTH, &prevRowLen);
@@ -327,11 +328,11 @@ public:
         std::vector<unsigned char> pixels(static_cast<size_t>(w) * static_cast<size_t>(h) * 4u);
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 
-        // 4) Écriture PNG (top-left) : flip vertical pour correspondre aux viewers
+        // 4) ?criture PNG (top-left) : flip vertical pour correspondre aux viewers
         stbi_flip_vertically_on_write(1);
         const int ok = stbi_write_png(vFilePathName.c_str(), w, h, 4, pixels.data(), w * 4);
 
-        // 5) Restauration état pack
+        // 5) Restauration ?tat pack
         glPixelStorei(GL_PACK_ALIGNMENT, prevAlign);
         glPixelStorei(GL_PACK_ROW_LENGTH, prevRowLen);
         glPixelStorei(GL_PACK_SKIP_ROWS, prevSkipRows);
@@ -493,7 +494,7 @@ private:
     GLsizei m_Layers = 0;
 
     GLenum m_InternalFormat = GL_RGBA8;  // stockage interne
-    GLenum m_AllocFormat = GL_RGBA;      // format déclaration
+    GLenum m_AllocFormat = GL_RGBA;      // format d?claration
     GLenum m_PixelFormat = GL_UNSIGNED_BYTE;
 
     std::string m_wrap;
@@ -504,7 +505,7 @@ private:
     bool m_useMipMapping = false;
     GLsizei m_MipCount = 0;
     bool m_useImmutable = false;        // vrai si glTexStorage3D est dispo et choisi
-    std::vector<bool> m_LevelDeclared;  // niveaux (L) “disponibles” pour sampling
+    std::vector<bool> m_LevelDeclared;  // niveaux (L) ?disponibles? pour sampling
     GLint m_MinDeclaredLevel = -1;
     GLint m_MaxDeclaredLevel = -1;
 
@@ -551,16 +552,16 @@ public:
             return false;
         }
 
-        // Mip count théorique
+        // Mip count th?orique
         m_MipCount = m_useMipMapping ? m_computeMipCount(m_Width, m_Height) : 1;
         m_LevelDeclared.assign((size_t)m_MipCount, false);
         m_MinDeclaredLevel = -1;
         m_MaxDeclaredLevel = -1;
 
-        // Paramètres de base (wrap/filter + fenêtre LOD initiale)
+        // Param?tres de base (wrap/filter + fen?tre LOD initiale)
         m_setParameters(m_wrap, m_filter);
 
-        // Détection simple de glTexStorage3D à l’exécution
+        // D?tection simple de glTexStorage3D ? l?ex?cution
         m_useImmutable = (reinterpret_cast<void*>(glTexStorage3D) != nullptr);
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
@@ -571,18 +572,18 @@ public:
             glTexStorage3D(GL_TEXTURE_2D_ARRAY, m_MipCount, m_InternalFormat, m_Width, m_Height, m_Layers);
             CheckGLErrors;
 
-            // Rien n’est “rempli” mais tous les niveaux existent. On n’active la fenêtre [BASE..MAX]
-            // qu’une fois des niveaux marqués comme déclarés (upload effectués).
-            // On pourrait au choix marquer level 0 comme déclaré immédiatement si tu veux sampler tout de suite.
+            // Rien n?est ?rempli? mais tous les niveaux existent. On n?active la fen?tre [BASE..MAX]
+            // qu?une fois des niveaux marqu?s comme d?clar?s (upload effectu?s).
+            // On pourrait au choix marquer level 0 comme d?clar? imm?diatement si tu veux sampler tout de suite.
         } else {
             // Fallback : aucune alloc ici, on allouera paresseusement par niveau via TexImage3D
-            // à la première demande (m_ensureLevelDeclared).
+            // ? la premi?re demande (m_ensureLevelDeclared).
         }
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         CheckGLErrors;
 
-        // Prépare free-list
+        // Pr?pare free-list
         m_FreeList.clear();
         m_FreeList.reserve((size_t)vLayers);
         for (int i = vLayers - 1; i >= 0; --i) {
@@ -649,7 +650,7 @@ public:
         return layer;
     }
 
-    // Met à jour un mip sur une layer existante
+    // Met ? jour un mip sur une layer existante
     bool uploadLayer(const GLint vLayer, const GLsizei vLevel, const void* vpPixels) {
         if (m_TexId == 0U || vpPixels == nullptr) {
             return false;
@@ -680,7 +681,7 @@ public:
         return true;
     }
 
-    // Libère la layer (réutilisable par addLayer)
+    // Lib?re la layer (r?utilisable par addLayer)
     void removeLayer(const GLint vLayer) {
         if (m_TexId == 0U) {
             return;
@@ -694,7 +695,7 @@ public:
         }
     }
 
-    // Paramètres (wrap/filter) — safe à appeler à tout moment
+    // Param?tres (wrap/filter) ? safe ? appeler ? tout moment
     void setParameters(const std::string& vWrap, const std::string& vFilter) {
         if (m_TexId == 0U) {
             return;
@@ -761,7 +762,7 @@ private:
             CheckGLErrors;
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
             CheckGLErrors;
-        }  // en immutable, rien à allouer : les niveaux existent déjà
+        }  // en immutable, rien ? allouer : les niveaux existent d?j?
 
         m_LevelDeclared[(size_t)vLevel] = true;
 
@@ -799,7 +800,7 @@ private:
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
         CheckGLErrors;
 
-        // Fenêtre LOD initiale : [0 .. m_MipCount-1] si mipmap, sinon [0..0].
+        // Fen?tre LOD initiale : [0 .. m_MipCount-1] si mipmap, sinon [0..0].
         const GLint initialBase = 0;
         const GLint initialMax = (m_useMipMapping && m_MipCount > 0) ? (m_MipCount - 1) : 0;
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, initialBase);

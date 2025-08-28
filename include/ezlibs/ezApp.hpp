@@ -102,6 +102,9 @@ private:
 public:
     App() = default;
     App(int32_t /*vArgc*/, char** vArgv) {
+#ifdef _MSC_VER
+        SetConsoleOutputCP(CP_UTF8);
+#endif
         setAppPath(vArgv[0]);
         setCurDirectory(getAppPath());
     }

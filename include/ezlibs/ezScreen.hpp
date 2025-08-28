@@ -29,8 +29,30 @@ SOFTWARE.
 namespace ez {
 namespace screen {
 
+// --- not blocking floor is not float or double ---
 template <typename T>
-inline vec4<T> getScreenRectWithSize(vec2<T> vItemSize, vec2<T> vMaxSize, bool vLogError = true) {
+inline typename std::enable_if<std::is_floating_point<T>::value, T>::type floor_nb(T v) {
+    return floor<T>(v);
+}
+
+template <typename T>
+inline typename std::enable_if<!std::is_floating_point<T>::value, T>::type floor_nb(T v) {
+    return v;
+}
+
+// --- not blocking floor vec4 is not float or double ---
+template <typename T>
+inline typename std::enable_if<std::is_floating_point<T>::value, vec4<T>>::type floor_nb(const vec4<T>& v) {
+    return vec4<T>(static_cast<T>(std::floor(v.x)), static_cast<T>(std::floor(v.y)), static_cast<T>(std::floor(v.z)), static_cast<T>(std::floor(v.w)));
+}
+
+template <typename T>
+inline typename std::enable_if<!std::is_floating_point<T>::value, vec4<T>>::type floor_nb(const vec4<T>& v) {
+    return v;
+}
+
+template <typename T>
+inline vec4<T> getScreenRectWithSize(vec2<T> vItemSize, vec2<T> vMaxSize) {
     vec4<T> rc;
 
     fvec2 visibleSize = fvec2((float)vMaxSize.x, (float)vMaxSize.y);
@@ -62,9 +84,7 @@ inline vec4<T> getScreenRectWithSize(vec2<T> vItemSize, vec2<T> vMaxSize, bool v
             rc.w = (T)newY;
         }
 
-        if constexpr (std::is_same<T, float>::value || std::is_same<T, double>::value) {
-            rc = floor<T>(rc);
-        }
+        rc = floor_nb<T>(rc);
 
         /*const float newRatio = (float)rc.w / (float)rc.h;
         if (vLogError)
@@ -76,7 +96,7 @@ inline vec4<T> getScreenRectWithSize(vec2<T> vItemSize, vec2<T> vMaxSize, bool v
 }
 
 template <typename T>
-inline vec4<T> getScreenRectWithRatio(float vRatio, vec2<T> vMaxSize, bool vLogError = true) {
+inline vec4<T> getScreenRectWithRatio(float vRatio, vec2<T> vMaxSize) {
     vec4<T> rc;
 
     fvec2 visibleSize = fvec2((float)vMaxSize.x, (float)vMaxSize.y);
@@ -106,9 +126,7 @@ inline vec4<T> getScreenRectWithRatio(float vRatio, vec2<T> vMaxSize, bool vLogE
             rc.w = (T)newY;
         }
 
-        if constexpr (std::is_same<T, float>::value || std::is_same<T, double>::value) {
-            rc = floor<T>(rc);
-        }
+        rc = floor_nb<T>(rc);
 
         /*const float newRatio = (float)rc.w / (float)rc.h;
         if (vLogError)
