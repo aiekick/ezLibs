@@ -52,13 +52,13 @@ namespace ez {
 
 class FileWatcher {
 public:
-#ifdef WINDOWS_OS 
+#ifdef WINDOWS_OS
     using Callback = std::function<void(const std::vector<std::wstring>&)>;
-    #else
+#else
     using Callback = std::function<void(const std::vector<std::string>&)>;
-    #endif
+#endif
 private:
-#ifdef WINDOWS_OS 
+#ifdef WINDOWS_OS
     std::wstring m_filePathNameW;
 #else
     std::string m_filePathName;
@@ -71,7 +71,7 @@ public:
     FileWatcher() : m_callback(nullptr), m_running(false) {}
     ~FileWatcher() { stop(); }
 
-#ifdef WINDOWS_OS 
+#ifdef WINDOWS_OS
     void watchFile(const std::wstring& vFilePathName, Callback vCallback) {
         m_filePathNameW = vFilePathName;
         m_callback = vCallback;
@@ -90,7 +90,7 @@ public:
             return;
         m_running = true;
 
-#ifdef _WIN32
+#ifdef WINDOWS_OS
         m_thread = std::thread(&FileWatcher::watchWindows, this);
 #elif defined(LINUX_OS)
         m_thread = std::thread(&FileWatcher::watchLinux, this);
@@ -109,6 +109,7 @@ public:
     }
 
 private:
+#ifdef WINDOWS_OS
     std::wstring getParentDirW(const std::wstring& path) const {
         size_t slash = path.find_last_of(L"/\\");
         if (slash == std::wstring::npos)
@@ -122,8 +123,23 @@ private:
             return path;
         return path.substr(slash + 1);
     }
+#else
+    std::wstring getParentDir(const std::string& path) const {
+        size_t slash = path.find_last_of("/\\");
+        if (slash == std::string::npos)
+            return L".";
+        return path.substr(0, slash);
+    }
 
-#ifdef _WIN32
+    std::wstring getFileNameOnly(const std::string& path) const {
+        size_t slash = path.find_last_of("/\\");
+        if (slash == std::string::npos)
+            return path;
+        return path.substr(slash + 1);
+    }
+#endif
+
+#ifdef WINDOWS_OS
     void watchWindows() {
         std::wstring dirPath = getParentDirW(m_filePathNameW);
         std::wstring fileNameOnly = getFileNameOnlyW(m_filePathNameW);
@@ -160,8 +176,6 @@ private:
 
         CloseHandle(hDir);
     }
-
-
 #elif defined(LINUX_OS)
     void watchLinux() {
         int fd = inotify_init1(IN_NONBLOCK);

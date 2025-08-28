@@ -1,4 +1,4 @@
-#include <ezlibs/ezSqLite.hpp>  // ton header parser
+#include <ezlibs/ezSqlite.hpp>  // ton header parser
 #include <ezlibs/ezCTest.hpp>
 #include <string>
 
