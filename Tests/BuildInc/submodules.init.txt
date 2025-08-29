@@ -1,0 +1,2 @@
+git submodule add --force -b "master" https://github.com/aiekick/EzLibs.git 3rdparty/ezlibs
+

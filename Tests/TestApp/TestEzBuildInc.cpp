@@ -35,6 +35,7 @@ bool TestEzBuildInc_base() {
 #define Project_MinorNumber 3
 #define Project_MajorNumber 0
 #define Project_BuildId "0.3.3629"
+#define Project_BuildIdNum 00033629
 )";
     if (!ez::file::saveStringToFile(baseContent, file)) {
         return false;
@@ -55,6 +56,7 @@ bool TestEzBuildInc_base() {
 #define Project_MinorNumber 3
 #define Project_MajorNumber 0
 #define Project_BuildId "0.3.3630"
+#define Project_BuildIdNum 00033630
 #define Project_FigFontLabel u8R"(                       _              _             ___      ____  
                       (_)            | |           / _ \    |___ \ 
  _ __   _ __   ___     _   ___   ___ | |_  __   __| | | |     __) |
@@ -78,6 +80,7 @@ bool TestEzBuildInc_base() {
 #define Project_MinorNumber 3
 #define Project_MajorNumber 0
 #define Project_BuildId "0.3.3630"
+#define Project_BuildIdNum 00033630
 #define Project_FigFontLabel u8R"(         ___      ____  
         / _ \    |___ \ 
 __   __| | | |     __) |
@@ -98,6 +101,7 @@ __   __| | | |     __) |
 #define Project_MinorNumber 3
 #define Project_MajorNumber 0
 #define Project_BuildId "0.3.3630"
+#define Project_BuildIdNum 00033630
 #define Project_FigFontLabel u8R"(         ___      ____      ____     __   ____    ___  
         / _ \    |___ \    |___ \   / /  |___ \  / _ \ 
 __   __| | | |     __) |     __) | / /_    __) || | | |
@@ -118,6 +122,7 @@ __   __| | | |     __) |     __) | / /_    __) || | | |
 #define Project_MinorNumber 3
 #define Project_MajorNumber 0
 #define Project_BuildId "0.3.3630"
+#define Project_BuildIdNum 00033630
 #define Project_FigFontLabel u8R"(                       _              _             ___      ____      ____     __   ____    ___  
                       (_)            | |           / _ \    |___ \    |___ \   / /  |___ \  / _ \ 
  _ __   _ __   ___     _   ___   ___ | |_  __   __| | | |     __) |     __) | / /_    __) || | | |

@@ -23,18 +23,30 @@ if (USE_LEAK_SANITIZER)
 endif()
 
 if (USE_CODE_COVERAGE)
-	if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		add_compile_options(-fprofile-instr-generate -fcoverage-mapping -fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
-		add_link_options(-fprofile-instr-generate -fcoverage-mapping -fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
-	else()
-		add_compile_options(-fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
-		add_link_options(-fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
-	endif()
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # LLVM source-based coverage (no gcov flags here)
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping -O0 -fno-inline -fno-elide-constructors)
+    add_link_options(-fprofile-instr-generate -fcoverage-mapping)
+  else()
+    # GCC / others: gcov-style coverage
+    add_compile_options(-fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
+    add_link_options(-fprofile-arcs -ftest-coverage --coverage -fno-inline -O0)
+  endif()
 endif()
 
 function(AddTest arg)
   	add_test("${arg}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT}" "${arg}")
 endfunction(AddTest)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/BuildInc)
+set_target_properties(BuildInc PROPERTIES FOLDER 3rdparty)
+
+function(StageBuildInc)
+	add_custom_command(
+		TARGET ${PROJECT}
+		COMMAND BuildInc ezLibs $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/include/ezlibs.hpp> -ff ${CMAKE_SOURCE_DIR}/Tests/res/big.flf
+	)
+endfunction(StageBuildInc)
 
 if (TESTING_WIP)
 	add_definitions(-DTESTING_WIP)
@@ -77,19 +89,5 @@ if (TESTING_GEO)
 endif()
 
 if (USE_CODE_COVERAGE)
-	set(COVERAGE_WEB_PAGE "coverage.html")
-	set(COVERAGE_XML "coverage.xml") # for codecov
-	add_custom_target(cov DEPENDS ${COVERAGE_WEB_PAGE} ${COVERAGE_XML})
-	add_custom_command(
-		OUTPUT ${COVERAGE_WEB_PAGE}
-		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --decisions --calls --exclude-unreachable-branches --exclude-throw-branches --exclude-noncode-lines --html-single-page --html-details ${COVERAGE_WEB_PAGE}
-	)
-	add_custom_command(
-		OUTPUT ${COVERAGE_XML}
-		COMMAND gcovr -r ../.. . -f "${EZ_LIBS_INCLUDE_DIR}" --decisions --calls --exclude-unreachable-branches --exclude-throw-branches --exclude-noncode-lines --cobertura > ${COVERAGE_XML}
-	)
-	set_directory_properties(PROPERTIES
-		ADDITIONAL_CLEAN_FILES ${COVERAGE_WEB_PAGE}
-		ADDITIONAL_CLEAN_FILES ${COVERAGE_XML}
-	)
+	include(${CMAKE_CURRENT_SOURCE_DIR}/coverage/coverage.cmake)
 endif()

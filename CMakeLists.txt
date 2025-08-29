@@ -1,4 +1,26 @@
 cmake_minimum_required(VERSION 3.20)
+
+# --- Auto-select Clang on Linux (must be before project()) ---
+if(UNIX AND NOT APPLE)
+  # Only set compilers if not already specified (fresh build dir)
+  if(NOT DEFINED CMAKE_C_COMPILER AND NOT DEFINED CMAKE_CXX_COMPILER)
+    # Option 1: pick clang from PATH directly
+    # set(CMAKE_C_COMPILER clang CACHE FILEPATH "" FORCE)
+    # set(CMAKE_CXX_COMPILER clang++ CACHE FILEPATH "" FORCE)
+
+    # Option 2: resolve absolute paths then set (more explicit)
+    find_program(_CLANG   NAMES clang)
+    find_program(_CLANGXX NAMES clang++)
+    if(_CLANG AND _CLANGXX)
+      set(CMAKE_C_COMPILER   "${_CLANG}"   CACHE FILEPATH "" FORCE)
+      set(CMAKE_CXX_COMPILER "${_CLANGXX}" CACHE FILEPATH "" FORCE)
+      message(STATUS "Using Clang: C=${_CLANG} CXX=${_CLANGXX}")
+    else()
+      message(FATAL_ERROR "Clang not found on Linux. Please install clang/clang++.")
+    endif()
+  endif()
+endif()
+
 project(ezLibs)
 set(CMAKE_CXX_STANDARD 11)
 

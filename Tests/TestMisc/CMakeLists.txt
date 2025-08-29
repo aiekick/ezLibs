@@ -38,6 +38,8 @@ target_include_directories(${PROJECT} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+StageBuildInc()
+
 ##########################################################
 ##### TESTS EzCmdProcessor ###############################
 ##########################################################
