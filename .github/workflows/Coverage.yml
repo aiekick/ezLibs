@@ -15,7 +15,7 @@ on:
       - '.gitignore'
       - 'README.md'
       - 'LICENSE'
-      -
+      
 permissions:
   contents: read
 
