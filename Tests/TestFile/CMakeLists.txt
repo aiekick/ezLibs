@@ -39,7 +39,6 @@ target_include_directories(${PROJECT} PRIVATE
 if(APPLE)
     target_link_options(${PROJECT} PRIVATE
         "-framework" "CoreFoundation"
-        "-framework" "CoreServices"
     )
 endif()
 
