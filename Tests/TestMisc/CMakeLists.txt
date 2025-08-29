@@ -39,11 +39,9 @@ target_include_directories(${PROJECT} PRIVATE
 )
 
 if(APPLE)
-	find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
-    find_library(CORESERVICES_FRAMEWORK CoreServices)
-    target_link_libraries(${PROJECT} INTERFACE
-        ${COREFOUNDATION_FRAMEWORK}
-        ${CORESERVICES_FRAMEWORK}
+	target_link_libraries(TestApp PRIVATE
+        "-framework" "CoreFoundation"
+        "-framework" "FSEvents"
     )
 endif()
 
