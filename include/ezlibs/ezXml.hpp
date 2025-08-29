@@ -313,7 +313,7 @@ namespace ez {
             }
         };
 
-        template<>
+        template <>
         inline Node &Node::setContent(const bool &vContent) {
             m_content = vContent ? "true" : "false";
             return *this;

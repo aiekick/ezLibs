@@ -4,6 +4,10 @@ set(PROJECT EzLibs_TestTime)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.h)
@@ -25,6 +29,8 @@ set_target_properties(${PROJECT} PROPERTIES FOLDER Tests)
 target_include_directories(${PROJECT} PRIVATE 
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+StageBuildInc()
 
 ##########################################################
 ##### EzTime #############################################

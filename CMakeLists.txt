@@ -1,6 +1,25 @@
 cmake_minimum_required(VERSION 3.20)
+
+# --- Force Clang on Linux ---
+if(UNIX AND NOT APPLE)
+  if(NOT DEFINED CMAKE_C_COMPILER AND NOT DEFINED CMAKE_CXX_COMPILER)
+    find_program(_CLANG   NAMES clang)
+    find_program(_CLANGXX NAMES clang++)
+    if(_CLANG AND _CLANGXX)
+      set(CMAKE_C_COMPILER   "${_CLANG}"   CACHE FILEPATH "" FORCE)
+      set(CMAKE_CXX_COMPILER "${_CLANGXX}" CACHE FILEPATH "" FORCE)
+      message(STATUS "Using Clang: C=${_CLANG} CXX=${_CLANGXX}")
+    else()
+      message(FATAL_ERROR "Clang not found on Linux. Please install clang/clang++.")
+    endif()
+  endif()
+endif()
+
 project(ezLibs)
+
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(USE_EZ_LIBS_TESTING "Enable ezLibs testing" OFF)
 

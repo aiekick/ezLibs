@@ -4,6 +4,9 @@ set(PROJECT EzLibs_TestMath)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(USE_EZ_EXPR_PERFOS_GENERATION "Enable the perfos file generation of EzExpr" OFF)
 
@@ -35,6 +38,8 @@ set_target_properties(${PROJECT} PROPERTIES FOLDER Tests)
 target_include_directories(${PROJECT} PRIVATE 
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+StageBuildInc()
 
 ##########################################################
 ## TESTS EzExpr PARSING ##################################

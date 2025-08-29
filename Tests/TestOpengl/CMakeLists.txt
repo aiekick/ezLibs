@@ -7,6 +7,10 @@ project(${PROJECT} CXX)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if (CMAKE_SYSTEM_NAME STREQUAL Linux)
   find_package(X11 REQUIRED)
   if (NOT X11_Xi_FOUND)
@@ -58,6 +62,8 @@ set_target_properties(${PROJECT} PROPERTIES FOLDER Tests/Opengl)
 target_compile_definitions(${PROJECT} PRIVATE 
 	-DOPENGL_LOADER="${GLAD_INCLUDE_DIR}/glad/glad.h"
 )
+
+StageBuildInc()
 
 ##########################################################
 ##########################################################

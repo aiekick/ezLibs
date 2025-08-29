@@ -81,6 +81,7 @@ private:
     dmsCoord m_max;      // max latitude (x) and max longitude (y) in DMS
     uint32_t m_nLats{};  // number of rows (latitude samples)
     uint32_t m_nLons{};  // number of cols (longitude samples)
+    ez::range<TDATAS> m_range;
     bool m_valid{false};
 
 public:
@@ -88,7 +89,7 @@ public:
 
     // vMin is the (lat, lon) of the minimal corner (in degrees)
     // m_datas must be a rectangular matrix: rows = lats, cols = lons
-    tile(const DatasContainer& vDatas, const dmsCoord& vMin) : m_datas(vDatas), m_min(vMin) { m_valid = m_analyse(); }
+    tile(const DatasContainer& vDatas, const dmsCoord& vMin) : m_datas(vDatas), m_min(vMin) { m_valid = check(); }
 
     bool isValid() const { return m_valid; }
 
@@ -99,6 +100,12 @@ public:
     // Min/Max DMS coords
     const dmsCoord& getMinDms() const { return m_min; }
     const dmsCoord& getMaxDms() const { return m_max; }
+
+    // range
+    ez::range<TDATAS> getRange() const { return m_range; }
+
+    DatasContainer& getDatasRef() { return m_datas; }
+    const DatasContainer& getDatas() const { return m_datas; }
 
     // -----------------------------------------------------------------------------
     // Discrete access by indices
@@ -263,15 +270,16 @@ public:
         return true;
     }
 
-private:
     // Validate the matrix, set sizes and deduce m_max from m_min and dimensions.
-    bool m_analyse() {
+    bool check() {
         if (m_datas.empty()) {
 #ifdef EZ_TOOLS_LOG
             LogVarError(u8R"(tile: data matrix is empty)");
 #endif
             return false;
         }
+
+        m_range = {};
 
         // rows = latitudes
         m_nLats = static_cast<uint32_t>(m_datas.size());
@@ -292,6 +300,9 @@ private:
                 LogVarError(u8R"(tile: non-rectangular matrix (row sizes differ))");
 #endif
                 return false;
+            }
+            for (const auto& v : row) {
+                m_range.combine(v);
             }
         }
 

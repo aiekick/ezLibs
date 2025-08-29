@@ -116,10 +116,20 @@ public:
         }
         return *this;
     }
+    std::string getBuildIdInt() {
+        std::stringstream ss;
+        ss << std::setfill('0') << std::setw(2) << m_majorNumber << std::setfill('0') << std::setw(2) << m_minorNumber << m_buildNumber;
+        return ss.str();
+    }
+    std::string getBuildIdStr() {
+        std::stringstream ss;
+        ss << m_majorNumber << "." << m_minorNumber << "." << m_buildNumber;
+        return ss.str();
+    }
     std::string getInfos() {
         std::stringstream project, build_id, file, infos;
         std::string project_str, build_id_str, file_str;
-        build_id << "Build Id : " << m_majorNumber << "." << m_minorNumber << "." << m_buildNumber;
+        build_id << "Build Id : " << getBuildIdStr() << " / " << getBuildIdInt();
         build_id_str = build_id.str();
         size_t row_len = build_id_str.size();
         if (m_lastWriteStatus) {
@@ -130,7 +140,7 @@ public:
         file_str = file.str();
         if (row_len < file_str.size()) {
             row_len = file_str.size();
-        }        
+        }
         if (!m_project.empty()) {
             project << "Project : " << m_project;
             project_str = project.str();
@@ -196,7 +206,8 @@ public:
         content << "#define " << m_project << "_BuildNumber " << m_buildNumber << std::endl;
         content << "#define " << m_project << "_MinorNumber " << m_minorNumber << std::endl;
         content << "#define " << m_project << "_MajorNumber " << m_majorNumber << std::endl;
-        content << "#define " << m_project << "_BuildId \"" << m_majorNumber << "." << m_minorNumber << "." << m_buildNumber << "\"" << std::endl;
+        content << "#define " << m_project << "_BuildId \"" << getBuildIdStr() << "\"" << std::endl;
+        content << "#define " << m_project << "_BuildIdNum " << getBuildIdInt() << std::endl;
 #ifdef EZ_FIG_FONT
         if (m_figFontGenerator.isValid()) {
             std::stringstream version;

@@ -32,6 +32,7 @@ SOFTWARE.
 #include <cstdint>
 
 #include "ezGeo.hpp"
+#include "ezTile.hpp"
 #include "../ezBinBuf.hpp"
 #include "../ezMath.hpp"
 
@@ -45,11 +46,7 @@ public:
         std::string lonStr;
         int8_t lat;
         int8_t lon;
-        uint16_t nLats{};
-        uint16_t nLons{};
-        std::vector<std::vector<int16_t>> matrice;
-        ez::range<int16_t> range{};
-        bool valid{};
+        tile<int16_t> tile;
     };
 
 private:
@@ -57,7 +54,6 @@ private:
 
 public:
     bool load(const std::string& vName, const std::vector<uint8_t> vBytes) {
-        m_datas.valid = false;
         if (vBytes.empty()) {
 #ifdef EZ_TOOLS_LOG
             LogVarError(u8R"(Bytes are empty)");
@@ -70,32 +66,32 @@ public:
 #endif
             return false;
         }
-        m_datas.nLats = m_datas.nLons = m_computeSizeFromBufferSize(vBytes.size());
+        m_datas.lat = parseDemCoordinate(m_datas.latStr);
+        m_datas.lon = parseDemCoordinate(m_datas.lonStr);
+        const auto side = m_computeSizeFromBufferSize(vBytes.size());
+        const auto nLats = side;
+        const auto nLons = side;
         ez::BinBuf binBuf;
         binBuf.setDatas(vBytes);
         size_t pos = 0;
-        m_datas.matrice.resize(m_datas.nLons);
-        for (uint16_t row = 0; row < m_datas.nLats; ++row) {
+        auto& tileDatas = m_datas.tile.getDatasRef();
+        tileDatas.resize(nLats);
+        for (uint16_t row = 0; row < nLats; ++row) {
             // read row
-            auto& matRow = m_datas.matrice.at(row);
-            matRow.resize(m_datas.nLats);
+            auto& matRow = tileDatas.at(row);
+            matRow.resize(nLons);
             binBuf.readArrayBE<int16_t>(pos, matRow.data(), matRow.size());
-            // re range
-            for (const auto& value : matRow) {
-                m_datas.range.combine(value);
-            }
         }
-        m_datas.valid = !m_datas.matrice.empty();
-        return isValid();
+        return m_datas.tile.check();
     }
 
     bool save(const std::string& vFile) const { return false; }
 
-    bool isValid() const { return m_datas.valid; }
+    bool isValid() const { return m_datas.tile.isValid(); }
     const Datas& getDatas() const { return m_datas; }
     Datas& getDatasRef() { return m_datas; }
 
-    private:
+private:
     int16_t m_computeSizeFromBufferSize(const size_t vBufferSize) {
         auto side = static_cast<uint32_t>(std::sqrt(static_cast<double>(vBufferSize) / 2.0));
         if (side < 3601) {
