@@ -62,7 +62,6 @@ target_compile_definitions(${PROJECT} PRIVATE
 if(APPLE)
     target_link_options(${PROJECT} PRIVATE
         "-framework" "CoreFoundation"
-        "-framework" "CoreServices"
     )
 endif()
 
