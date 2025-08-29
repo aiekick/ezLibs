@@ -28,8 +28,11 @@ target_include_directories(${PROJECT} PRIVATE
 )
 
 if(APPLE)
-    target_link_options(${PROJECT} PRIVATE
-        "-framework" "CoreFoundation"
+	find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
+    find_library(CORESERVICES_FRAMEWORK CoreServices)
+    target_link_libraries(${PROJECT} INTERFACE
+        ${COREFOUNDATION_FRAMEWORK}
+        ${CORESERVICES_FRAMEWORK}
     )
 endif()
 
