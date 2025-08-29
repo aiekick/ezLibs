@@ -46,7 +46,7 @@ SOFTWARE.
 #include <Windows.h>
 #include <shellapi.h> // ShellExecute
 #define stat _stat
-#else  // UNIX
+#else  // UNIX_OS
 #ifndef EZ_FILE_SLASH_TYPE
 #define EZ_FILE_SLASH_TYPE "/"
 #endif  // EZ_FILE_SLASH_TYPE
@@ -178,12 +178,12 @@ struct PathInfos {
 
     std::string GetFPNE_WithPathNameExt(std::string vPath, const std::string &vName, const std::string &vExt) {
         if (vPath[0] == EZ_FILE_SLASH_TYPE[0]) {
-#ifdef WIN32
+#ifdef WINDOWS_OS
             // if it happening on window this seem that this path msut be a relative path but with an error
             vPath = vPath.substr(1);  // bad formated path go relative
 #endif
         } else {
-#ifdef UNIX
+#ifdef UNIX_OS
             vPath = "/" + vPath;  // make it absolute
 #endif
         }
@@ -330,7 +330,7 @@ inline bool destroyDir(const std::string &vPath) {
         if (isDirectoryExist(vPath)) {
 #ifdef WINDOWS_OS
             return (RemoveDirectoryA(vPath.c_str()) != 0 );
-#else
+#elif defined(UNIX_OS)
             return (rmdir(vPath.c_str())==0);
 #endif
         }
@@ -384,7 +384,7 @@ inline bool createPathIfNotExist(const std::string &vPath) {
 // will open the file is the associated app
 inline void openFile(const std::string &vFile) {
     const auto file = correctSlashTypeForFilePathName(vFile);
-#if defined(WIN32)
+#if defined(WINDOWS_OS)
     auto *result = ShellExecute(nullptr, "", file.c_str(), nullptr, nullptr, SW_SHOW);
     if (result < (HINSTANCE)32) {  //-V112
         // try to open an editor
@@ -400,12 +400,12 @@ inline void openFile(const std::string &vFile) {
                 nullptr, "", "explorer.exe", sCmdExplorer.c_str(), nullptr, SW_NORMAL);  // ce serait peut etre mieu d'utilsier la commande system comme dans SelectFile
         }
     }
-#elif defined(LINUX)
+#elif defined(LINUX_OS)
     int pid = fork();
     if (pid == 0) {
         execl("/usr/bin/xdg-open", "xdg-open", file.c_str(), (char *)0);
     }
-#elif defined(APPLE)
+#elif defined(APPLE_OS)
     std::string cmd = "open " + file;
     std::system(cmd.c_str());
 #endif
@@ -414,12 +414,12 @@ inline void openFile(const std::string &vFile) {
 // will open the url in the related browser
 inline void openUrl(const std::string &vUrl) {
     const auto url = correctSlashTypeForFilePathName(vUrl);
-#ifdef WIN32
+#ifdef WINDOWS_OS
     ShellExecute(nullptr, nullptr, url.c_str(), nullptr, nullptr, SW_SHOW);
-#elif defined(LINUX)
+#elif defined(LINUX_OS)
     auto cmd = ez::str::toStr("<mybrowser> %s", url.c_str());
     std::system(cmd.c_str());
-#elif defined(APPLE)
+#elif defined(APPLE_OS)
     // std::string sCmdOpenWith = "open -a Firefox " + vUrl;
     std::string cmd = "open " + url;
     std::system(cmd.c_str());
@@ -429,15 +429,15 @@ inline void openUrl(const std::string &vUrl) {
 // will open the current file explorer and will select the file
 inline void selectFile(const std::string &vFileToSelect) {
     const auto fileToSelect = correctSlashTypeForFilePathName(vFileToSelect);
-#ifdef WIN32
+#ifdef WINDOWS_OS
     if (!fileToSelect.empty()) {
         const std::string sCmdOpenWith = "explorer /select," + fileToSelect;
         std::system(sCmdOpenWith.c_str());
     }
-#elif defined(LINUX)
+#elif defined(LINUX_OS)
     // todo : is there a similar cmd on linux ?
     assert(nullptr);
-#elif defined(APPLE)
+#elif defined(APPLE_OS)
     if (!fileToSelect.empty()) {
         std::string cmd = "open -R " + fileToSelect;
         std::system(cmd.c_str());
@@ -447,7 +447,7 @@ inline void selectFile(const std::string &vFileToSelect) {
 
 inline std::vector<std::string> getDrives() {
     std::vector<std::string> res;
-#ifdef WIN32
+#ifdef WINDOWS_OS
     const DWORD mydrives = 2048;
     char lpBuffer[2048 + 1];
     const DWORD countChars = GetLogicalDriveStrings(mydrives, lpBuffer);
@@ -456,7 +456,7 @@ inline std::vector<std::string> getDrives() {
         ez::str::replaceString(var, "\\", "");
         res = ez::str::splitStringToVector(var, "\0");
     }
-#else
+#elif defined(UNIX_OS)
     assert(nullptr);
 #endif
     return res;

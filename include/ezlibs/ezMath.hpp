@@ -350,6 +350,10 @@ struct range {
             rMax = vValue;
         }
     }
+    void combine(range<TTYPE> vRange) {
+        combine(vRange.rMin);
+        combine(vRange.rMax);
+    }
 };
 
 }  // namespace ez

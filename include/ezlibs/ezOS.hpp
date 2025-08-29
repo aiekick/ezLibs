@@ -34,7 +34,7 @@ SOFTWARE.
 #define LINUX_OS
 #define UNIX_OS
 #else
-#define MAC_OS
+#define APPLE_OS
 #define UNIX_OS
 #endif
 

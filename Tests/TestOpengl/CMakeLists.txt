@@ -59,6 +59,13 @@ target_compile_definitions(${PROJECT} PRIVATE
 	-DOPENGL_LOADER="${GLAD_INCLUDE_DIR}/glad/glad.h"
 )
 
+if(APPLE)
+    target_link_options(${PROJECT} PRIVATE
+        "-framework" "CoreFoundation"
+        "-framework" "CoreServices"
+    )
+endif()
+
 ##########################################################
 ##########################################################
 ##########################################################

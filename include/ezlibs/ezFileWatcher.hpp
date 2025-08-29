@@ -42,7 +42,7 @@ SOFTWARE.
 #elif defined(LINUX_OS)
 #include <sys/inotify.h>
 #include <unistd.h>
-#elif defined(MAC_OS)
+#elif defined(APPLE_OS)
 #include <CoreServices/CoreServices.h>
 #else
 #error "Platform not supported"
@@ -94,7 +94,7 @@ public:
         m_thread = std::thread(&FileWatcher::watchWindows, this);
 #elif defined(LINUX_OS)
         m_thread = std::thread(&FileWatcher::watchLinux, this);
-#elif defined(MAC_OS)
+#elif defined(APPLE_OS)
         m_thread = std::thread(&FileWatcher::watchMacOS, this);
 #endif
     }
@@ -205,7 +205,7 @@ private:
         close(fd);
     }
 
-#elif defined(MAC_OS)
+#elif defined(APPLE_OS)
     static void
     fileChangedCallback(ConstFSEventStreamRef, void* userData, size_t numEvents, void* eventPaths, const FSEventStreamEventFlags*, const FSEventStreamEventId*) {
         FileWatcher* watcher = static_cast<FileWatcher*>(userData);

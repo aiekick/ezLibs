@@ -39,7 +39,7 @@ SOFTWARE.
 #define GetCurrentDir _getcwd
 #define SetCurrentDir _chdir
 #define SLASH_CHAR "\\"
-#elif defined(LINUX_OS) || defined(MAC_OS)
+#elif defined(LINUX_OS) || defined(APPLE_OS)
 // includes
 #include <unistd.h>
 #include <sys/param.h>
@@ -54,10 +54,10 @@ SOFTWARE.
 #include <dirent.h>
 #include <cstdlib>
 #include <stdio.h>
-#ifdef MAC_OS
+#ifdef APPLE_OS
 #include <dlfcn.h>
 #include <sys/syslimits.h>  // PATH_MAX
-#endif                      // MAC_OS
+#endif                      // APPLE_OS
 #ifdef STDC_HEADERS
 #include <stdlib.h>
 #include <stddef.h>
@@ -135,7 +135,7 @@ public:
             if (bytes >= 0) {
                 buffer[bytes] = '\0';
             }
-#elif defined(MAC_OS)
+#elif defined(APPLE_OS)
             auto path = m_getMacOsAppPath();
             auto pos = path.find_last_of("\\/");
             m_AppPath = path.substr(0, pos);
@@ -171,7 +171,7 @@ private:
         str::replaceString(vPath, "/", SLASH_CHAR);
     }
 
-#if defined(MAC_OS)
+#if defined(APPLE_OS)
     static std::string m_getMacOsAppPath() {
         Dl_info module_info;
         if (dladdr((void*)getCurDirectory, &module_info)) { // use of getCurDirectory who is a static function
