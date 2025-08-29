@@ -37,6 +37,7 @@ SOFTWARE.
 #include STB_IMAGE_WRITER_INCLUDE
 #endif // STB_IMAGE_WRITER_INCLUDE
 
+#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <string>

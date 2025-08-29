@@ -39,16 +39,19 @@ SOFTWARE.
 #include "ezOS.hpp"
 #include <sys/stat.h>
 
-#ifndef EZ_FILE_SLASH_TYPE
 #ifdef WINDOWS_OS
+#ifndef EZ_FILE_SLASH_TYPE
 #define EZ_FILE_SLASH_TYPE "\\"
+#endif  // EZ_FILE_SLASH_TYPE
 #include <Windows.h>
 #include <shellapi.h> // ShellExecute
 #define stat _stat
 #else  // UNIX
+#ifndef EZ_FILE_SLASH_TYPE
 #define EZ_FILE_SLASH_TYPE "/"
-#endif
 #endif  // EZ_FILE_SLASH_TYPE
+#include <unistd.h> // rmdir
+#endif
 
 namespace ez {
 namespace file {
@@ -322,17 +325,30 @@ inline bool destroyFile(const std::string &vFilePathName) {
     return false;
 }
 
+inline bool destroyDir(const std::string &vPath) {
+    if (!vPath.empty()) {
+        if (isDirectoryExist(vPath)) {
+#ifdef WINDOWS_OS
+            return (RemoveDirectoryA(vPath.c_str()) != 0 );
+#else
+            return (rmdir(vPath.c_str())==0);
+#endif
+        }
+    }
+    return false;
+}
+
 inline bool createDirectoryIfNotExist(const std::string &name) {
     bool res = false;
     if (!name.empty()) {
         const auto filePathName = correctSlashTypeForFilePathName(name);
         if (!isDirectoryExist(filePathName)) {
             res = true;
-#ifdef WIN32
+#ifdef WINDOWS_OS
             if (CreateDirectory(filePathName.c_str(), nullptr) == 0) {
                 res = true;
             }
-#elif defined(UNIX)
+#elif defined(UNIX_OS)
             auto cmd = ez::str::toStr("mkdir -p %s", filePathName.c_str());
             const int dir_err = std::system(cmd.c_str());
             if (dir_err == -1) {

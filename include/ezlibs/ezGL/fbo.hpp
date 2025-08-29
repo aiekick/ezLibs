@@ -327,9 +327,6 @@ public:
         m_BackFBOPtr = m_FrontFBOPtr;
         m_FrontFBOPtr = tmp;
     }
-    const fvec2& getSize() const {
-
-    }
 };
 
 }  // namespace gl

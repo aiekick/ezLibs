@@ -36,6 +36,8 @@ SOFTWARE.
 #include <memory>
 #include <limits>
 
+#include "ezStr.hpp"
+
 namespace ez {
 namespace sqlite {
 
@@ -276,7 +278,7 @@ public:
     };
 
     struct SourcePos {
-        uint32_t offset;  // octets depuis le début
+        uint32_t offset;  // octets depuis le d?but
         uint32_t line;  // 1-based
         uint32_t column;  // 1-based (en octets)
         SourcePos() : offset(0u), line(0u), column(0u) {}
@@ -294,7 +296,7 @@ public:
         Identifier, String, Number, Blob,
         Parameter,                 // ?, ?123, :name, @name, $name
 
-        // Mots-clés (sous-ensemble utile)
+        // Mots-cl?s (sous-ensemble utile)
         KwSelect, KwFrom, KwWhere, KwGroup, KwBy, KwHaving,
         KwOrder, KwLimit, KwOffset, KwWith,
         KwInsert, KwInto, KwValues, KwUpdate, KwSet, KwDelete,
@@ -302,7 +304,7 @@ public:
         KwUnique, KwCheck, KwReferences, KwWithout, KwRowid, KwOn, KwConflict,
         KwAs,
 
-        // Opérateurs / délimiteurs
+        // Op?rateurs / d?limiteurs
         Plus, Minus, Star, Slash, Percent, PipePipe, Amp, Pipe, Tilde,
         Shl, Shr, Eq, EqEq, Ne, Ne2, Lt, Le, Gt, Ge, Assign,
         Comma, Dot, LParen, RParen, Semicolon,
@@ -371,7 +373,7 @@ private:
     // --------- private (vars)
     Options m_options;
     uint32_t m_sourceSize{};
-    std::vector<uint32_t> m_lineStarts;  // offset du début de chaque ligne
+    std::vector<uint32_t> m_lineStarts;  // offset du d?but de chaque ligne
 
 public:
     // --------- public (methods)
@@ -406,16 +408,16 @@ public:
         std::vector<StatementRange> ranges;
         m_splitStatements(toks, ranges);
 
-        // 3) Détection kind + vérifs structurelles
+        // 3) D?tection kind + v?rifs structurelles
         for (size_t i = 0; i < ranges.size(); ++i) {
             const StatementRange& r = ranges[i];
             Statement st;
             st.range = r;
             st.kind = m_detectKind(toks, r);
-            // Vérifs générales: parenthèses
+            // V?rifs g?n?rales: parenth?ses
             m_checkParens(toks, r, vOut);
 
-            // Vérifs par kind
+            // V?rifs par kind
             switch (st.kind) {
                 case StatementKind::CreateTable: m_checkCreateTable(toks, r, vSql, vOut); break;
                 case StatementKind::Insert: m_checkInsert(toks, r, vOut); break;
@@ -428,7 +430,7 @@ public:
         }
 
         vOut.ok = vOut.errors.empty();
-        return true;  // true = le parse a tourné ; vOut.ok dit s'il y a des erreurs
+        return true;  // true = le parse a tourn? ; vOut.ok dit s'il y a des erreurs
     }
 
     bool computeLineColumn(uint32_t vOffset, uint32_t& vOutLine, uint32_t& vOutColumn) const {
@@ -493,7 +495,7 @@ private:
         const uint32_t n = static_cast<uint32_t>(vSql.size());
         uint32_t i = 0u;
 
-        // petit lambda pour émettre un token
+        // petit lambda pour ?mettre un token
         struct Emitter {
             const std::string* src;
             const Parser* self;
@@ -555,7 +557,7 @@ private:
                 }
             }
 
-            // chaînes '...'
+            // cha?nes '...'
             if (c == '\'') {
                 const uint32_t s = i++;
                 bool closed = false;
@@ -564,7 +566,7 @@ private:
                         if (i + 1u < n && vSql[i + 1u] == '\'') {
                             i += 2u;
                             continue;
-                        }  // quote doublée
+                        }  // quote doubl?e
                         ++i;
                         closed = true;
                         break;
@@ -613,7 +615,7 @@ private:
                 }
             }
 
-            // paramètres
+            // param?tres
             if (c == '?' || c == ':' || c == '@' || c == '$') {
                 const uint32_t s = i++;
                 if (c == '?') {
@@ -654,7 +656,7 @@ private:
                 continue;
             }
 
-            // identifiers quotés "..."
+            // identifiers quot?s "..."
             if (c == '"') {
                 const uint32_t s = i++;
                 bool closed = false;
@@ -700,7 +702,7 @@ private:
             }
 
             // clang-format off
-            // identifiers / mots-clés non quotés
+            // identifiers / mots-cl?s non quot?s
             if (m_isAlpha(c)) {
                 const uint32_t s = i++;
                 while (i<n && (m_isAlnum(vSql[i]) || vSql[i]=='$')) ++i;
@@ -744,7 +746,7 @@ private:
                 continue;
             }
 
-            // opérateurs / ponctuation
+            // op?rateurs / ponctuation
             if (i+1u<n) {
                 char c2 = vSql[i+1u];
                 if (c=='|' && c2=='|') { emit.emit(TokenKind::PipePipe, i, i+2u); i+=2u; continue; }
@@ -813,7 +815,7 @@ private:
                 }
                 break;
             }
-            // pas d'espaces ici (déjà consommés au lexing)
+            // pas d'espaces ici (d?j? consomm?s au lexing)
             if (!hasContent) {
                 hasContent = true;
                 curStart = t.start.offset;
@@ -846,14 +848,14 @@ private:
                 case TokenKind::KwInsert: return StatementKind::Insert;
                 case TokenKind::KwUpdate: return StatementKind::Update;
                 case TokenKind::KwDelete: return StatementKind::Delete;
-                case TokenKind::KwCreate: return StatementKind::CreateTable;  // affiné in check
+                case TokenKind::KwCreate: return StatementKind::CreateTable;  // affin? in check
                 default: return StatementKind::Other;
             }
         }
         return StatementKind::Other;
     }
 
-    // --- vérifs générales
+    // --- v?rifs g?n?rales
     void m_checkParens(const std::vector<Token>& vToks, const StatementRange& vRng, Report& vOut) const {
         int32_t depth = 0;
         for (size_t i = 0; i < vToks.size(); ++i) {
@@ -877,7 +879,7 @@ private:
         }
     }
 
-    // --- vérifs par kind
+    // --- v?rifs par kind
     void m_checkCreateTable(const std::vector<Token>& vToks, const StatementRange& vRng, const std::string& /*vSql*/, Report& vOut) const {
         bool sawCreate = false, sawTable = false;
         const Token* nameTok = NULL;
@@ -1107,12 +1109,12 @@ private:
             }
         }
         if (selIdx == static_cast<size_t>(-1)) {
-            return;  // pas un SELECT (sécurité)
+            return;  // pas un SELECT (s?curit?)
         }
 
         // 2) Scanner la projection: SELECT <expr> [, <expr> ...] [FROM ... | ...]
         bool seenAny = false;
-        bool expectingExpr = true;  // vrai au début / after chaque virgule
+        bool expectingExpr = true;  // vrai au d?but / after chaque virgule
         size_t i = selIdx + 1u;
 
         for (; i < vToks.size(); ++i) {
@@ -1123,7 +1125,7 @@ private:
 
             const TokenKind k = t.kind;
 
-            // Fin de projection : mots-clés majeurs or fin
+            // Fin de projection : mots-cl?s majeurs or fin
             const bool endOfProjection = (k == TokenKind::KwFrom) || (k == TokenKind::KwWhere) || (k == TokenKind::KwGroup) || (k == TokenKind::KwOrder) ||
                 (k == TokenKind::KwLimit) || (k == TokenKind::KwOffset) || (k == TokenKind::Semicolon) || (k == TokenKind::EndOfFile);
 
@@ -1132,7 +1134,7 @@ private:
                     // Rien after SELECT
                     m_addError(vOut.errors, vToks[selIdx].start.offset, "projected SELECT missing", "*, identifier, expression");
                 } else if (expectingExpr) {
-                    // Virgule traînante: ex. "SELECT id, FROM ..."
+                    // Virgule tra?nante: ex. "SELECT id, FROM ..."
                     m_addError(vOut.errors, t.start.offset, "expression of projection missing before thistoken", "expression after ','");
                 }
                 break;
@@ -1140,14 +1142,14 @@ private:
 
             if (k == TokenKind::Comma) {
                 if (expectingExpr) {
-                    // Cas ",," or ", FROM" (doublement signalé ici)
+                    // Cas ",," or ", FROM" (doublement signal? ici)
                     m_addError(vOut.errors, t.start.offset, "expression of projection missing after ','", "expression");
                 }
                 expectingExpr = true;
                 continue;
             }
 
-            // Têtes possibles d'expression (simplifiées)
+            // T?tes possibles d'expression (simplifi?es)
             const bool isExprHead = (k == TokenKind::Star) || (k == TokenKind::Identifier) || (k == TokenKind::Number) || (k == TokenKind::String) ||
                 (k == TokenKind::Parameter) || (k == TokenKind::LParen);
 
@@ -1160,8 +1162,8 @@ private:
             // Token inexpected en position d'expression
             if (expectingExpr && !seenAny) {
                 m_addError(vOut.errors, t.start.offset, "token inexpected in projection SELECT", "*, identifier, expression");
-                // On continue pour tenter de repérer FROM/ORDER/LIMIT
-                expectingExpr = false;  // évite cascade sur ce jeton
+                // On continue pour tenter de rep?rer FROM/ORDER/LIMIT
+                expectingExpr = false;  // ?vite cascade sur ce jeton
                 continue;
             }
         }
@@ -1175,7 +1177,7 @@ private:
             }
         }
 
-        // 3) Vérifier FROM (facultatif en SQLite, donc on ne l'exige pas, on valide seulement sa forme)
+        // 3) V?rifier FROM (facultatif en SQLite, donc on ne l'exige pas, on valide seulement sa forme)
         for (size_t idx = selIdx + 1u; idx < vToks.size(); ++idx) {
             const Token& t = vToks[idx];
             if (t.start.offset < vRng.beginOffset) {
@@ -1195,11 +1197,11 @@ private:
                         m_addError(vOut.errors, vToks[j].start.offset, "element invalid after FROM", "identifier or sub-query");
                     }
                 }
-                break;  // un seul FROM principal ici (checker léger)
+                break;  // un seul FROM principal ici (checker l?ger)
             }
         }
 
-        // 4) ORDER BY et LIMIT/OFFSET (inchangé)
+        // 4) ORDER BY et LIMIT/OFFSET (inchang?)
         for (size_t idx = selIdx + 1u; idx < vToks.size(); ++idx) {
             const Token& t = vToks[idx];
             if (t.start.offset < vRng.beginOffset) {
@@ -1241,7 +1243,7 @@ private:
                     }
                     if (k2 == TokenKind::Comma) {
                         ++j;
-                        continue;  // LIMIT x, y accepté
+                        continue;  // LIMIT x, y accept?
                     }
                     m_addError(vOut.errors, vToks[j].start.offset, "invalid value for LIMIT/OFFSET", "number of parameters");
                     break;

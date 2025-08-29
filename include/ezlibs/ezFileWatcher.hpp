@@ -124,14 +124,14 @@ private:
         return path.substr(slash + 1);
     }
 #else
-    std::wstring getParentDir(const std::string& path) const {
+    std::string getParentDir(const std::string& path) const {
         size_t slash = path.find_last_of("/\\");
         if (slash == std::string::npos)
-            return L".";
+            return ".";
         return path.substr(0, slash);
     }
 
-    std::wstring getFileNameOnly(const std::string& path) const {
+    std::string getFileNameOnly(const std::string& path) const {
         size_t slash = path.find_last_of("/\\");
         if (slash == std::string::npos)
             return path;
@@ -163,7 +163,7 @@ private:
                     std::wstring changedFile(pNotify->FileName, pNotify->FileNameLength / sizeof(WCHAR));
 
                     if (changedFile == fileNameOnly && m_callback) {
-                        // Conversion ici si nécessaire :
+                        // Conversion ici si n?cessaire :
                         m_callback({m_filePathNameW});
                     }
 

@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#include <TestEzGeo.h>
+﻿#include <TestEzGeo.h>
 #include <ezlibs/ezCTest.hpp>
 #include <ezlibs/ezGeo/ezTile.hpp>
 #include <iostream>

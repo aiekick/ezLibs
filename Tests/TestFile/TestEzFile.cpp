@@ -88,22 +88,16 @@ bool TestEzFile_correctSlashTypeForFilePathName() {
 bool TestEzFile_createDirectoryIfNotExist() {
     const std::string dir = "test_temp_dir";
     ez::file::destroyFile(dir);  // just in case it's a file
-#ifdef WINDOWS_OS
-    RemoveDirectoryA(dir.c_str());
-#else
-    std::string cmd = "rm -rf " + dir;
-    std::system(cmd.c_str());
-#endif
+    ez::file::destroyDir(dir);
 
-    bool ok = ez::file::createDirectoryIfNotExist(dir);
-    CTEST_ASSERT(ok || ez::file::isDirectoryExist(dir));
+    CTEST_ASSERT(!ez::file::isDirectoryExist(dir));
+    CTEST_ASSERT(ez::file::createDirectoryIfNotExist(dir));
     CTEST_ASSERT(ez::file::isDirectoryExist(dir));
+    CTEST_ASSERT(!ez::file::createDirectoryIfNotExist(dir));
+    ez::file::destroyDir(dir);
+    CTEST_ASSERT(ez::file::createDirectoryIfNotExist(dir));
 
-#ifdef WINDOWS_OS
-    RemoveDirectoryA(dir.c_str());
-#else
-    std::system(cmd.c_str());
-#endif
+    ez::file::destroyDir(dir);
     return true;
 }
 
