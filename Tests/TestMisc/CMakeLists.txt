@@ -39,7 +39,7 @@ target_include_directories(${PROJECT} PRIVATE
 )
 
 if(APPLE)
-	target_link_libraries(TestApp PRIVATE
+	target_link_libraries(${PROJECT} PRIVATE
         "-framework" "CoreFoundation"
         "-framework" "FSEvents"
     )
