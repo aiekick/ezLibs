@@ -36,12 +36,6 @@ target_include_directories(${PROJECT} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-if(APPLE)
-	target_link_libraries(${PROJECT} PRIVATE
-        "-framework" "FSEvents"
-    )
-endif()
-
 ##########################################################
 ##### TESTS ##############################################
 ##########################################################
