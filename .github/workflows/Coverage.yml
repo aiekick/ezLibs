@@ -50,8 +50,10 @@ jobs:
             -DCOVERAGE_VERBOSE=ON \
             -DUSE_EZ_EXPR_PERFOS_GENERATION=ON
 
-      - name: Force-cover
+      - name: Builf forceCover
         run: cmake --build build --target forceCover -j 12
+        
+      - name: Run forceCover
         run: cmake --build build --target forcecover_prep -j 12
 
       - name: Build tests
