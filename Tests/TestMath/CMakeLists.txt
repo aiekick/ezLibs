@@ -4,6 +4,9 @@ set(PROJECT EzLibs_TestMath)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(USE_EZ_EXPR_PERFOS_GENERATION "Enable the perfos file generation of EzExpr" OFF)
 
