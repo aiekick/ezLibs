@@ -23,5 +23,5 @@ int main(int argc, char** argv) {
         return TestTime(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestTime("TestEzTile_AllPos_Continuous_Wrap") ? 0 : 1;
+    return TestTime("TestEzTile_Base_NonZeroMin") ? 0 : 1;
 }

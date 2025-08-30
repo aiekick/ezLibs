@@ -34,21 +34,21 @@ static const ez::dmsCoord kMinNonZero(0.56, 1.89);
 // [ [-50,  0],
 //   [ 100, 200] ]
 static ez::geo::tile<int16_t>::DatasContainer MakeDatas2x2_AltitudesMixed() {
-    return ez::geo::tile<int16_t>::DatasContainer{{static_cast<int16_t>(-50), static_cast<int16_t>(0)}, {static_cast<int16_t>(100), static_cast<int16_t>(200)}};
+    return ez::geo::tile<int16_t>::DatasContainer{{-50, 0}, {100, 200}};
 }
 
 // All-negative altitudes:
 // [ [-200, -100],
 //   [  -50,  -25] ]
 static ez::geo::tile<int16_t>::DatasContainer MakeDatas2x2_AllNeg() {
-    return ez::geo::tile<int16_t>::DatasContainer{{static_cast<int16_t>(-200), static_cast<int16_t>(-100)}, {static_cast<int16_t>(-50), static_cast<int16_t>(-25)}};
+    return ez::geo::tile<int16_t>::DatasContainer{{-200, -100}, {-50, -25}};
 }
 
 // All-positive altitudes:
 // [ [10, 20],
 //   [30, 40] ]
 static ez::geo::tile<int16_t>::DatasContainer MakeDatas2x2_AllPos() {
-    return ez::geo::tile<int16_t>::DatasContainer{{static_cast<int16_t>(10), static_cast<int16_t>(20)}, {static_cast<int16_t>(30), static_cast<int16_t>(40)}};
+    return ez::geo::tile<int16_t>::DatasContainer{{10, 20}, {30, 40}};
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -74,6 +74,11 @@ bool TestEzTile_Base_NonZeroMin() {
     CTEST_ASSERT(approxEqualDouble(minDms.y.toAngle(), 1.89));
     CTEST_ASSERT(approxEqualDouble(maxDms.x.toAngle(), 0.56 + 2.0));
     CTEST_ASSERT(approxEqualDouble(maxDms.y.toAngle(), 1.89 + 2.0));
+
+    // Range
+    CTEST_ASSERT(tile.getRange().rMin == -50);
+    CTEST_ASSERT(tile.getRange().rMax == 200);
+    CTEST_ASSERT(approxEqualDouble(tile.getRange().norm(75), 0.5));
 
     return true;
 }

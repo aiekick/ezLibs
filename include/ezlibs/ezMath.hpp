@@ -340,7 +340,7 @@ struct range {
     range() = default;
     explicit range(TTYPE vMin, TTYPE vMax) : rMin(vMin), rMax(vMax) {}
     // compute normalisation of value from range [min:max] to range [0:1]
-    TTYPE norm(TTYPE vValue) { return invLerp(rMin, rMax, vValue); }
+    double norm(TTYPE vValue) const { return invLerp<double>(rMin, rMax, vValue); }
     // move min et max according to vValue
     void combine(TTYPE vValue) {
         if (rMin > vValue) {

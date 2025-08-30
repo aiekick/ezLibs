@@ -42,13 +42,13 @@ function(AddTest arg)
   	add_test("${arg}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT}" "${arg}")
 endfunction(AddTest)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/BuildInc)
-set_target_properties(BuildInc PROPERTIES FOLDER 3rdparty)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ezBuildInc)
+set_target_properties(ezBuildInc PROPERTIES FOLDER 3rdparty/tools)
 
 function(StageBuildInc)
 	add_custom_command(
 		TARGET ${PROJECT}
-		COMMAND BuildInc ezLibs $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/include/ezlibs.hpp> -ff ${CMAKE_SOURCE_DIR}/Tests/res/big.flf
+		COMMAND ezBuildInc ezLibs $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/include/ezlibs.hpp> -ff ${CMAKE_SOURCE_DIR}/Tests/res/big.flf
 	)
 endfunction(StageBuildInc)
 
