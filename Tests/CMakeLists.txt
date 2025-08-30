@@ -17,6 +17,10 @@ option(TESTING_OPENGL "Enable testing of Opengl related libs" ON)
 option(TESTING_TIME "Enable testing of Time related libs" ON)
 option(TESTING_GEO "Enable testing of Geo related libs" ON)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if (USE_LEAK_SANITIZER)
 	add_compile_options(-fexceptions -pthread -ldl -lGL -Wall -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all)
 	add_link_options(-fexceptions -pthread -ldl -lGL -Wall -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all)
@@ -47,6 +51,10 @@ function(StageBuildInc)
 		COMMAND BuildInc ezLibs $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/include/ezlibs.hpp> -ff ${CMAKE_SOURCE_DIR}/Tests/res/big.flf
 	)
 endfunction(StageBuildInc)
+
+if (USE_CODE_COVERAGE)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/coverage)
+endif()
 
 if (TESTING_WIP)
 	add_definitions(-DTESTING_WIP)

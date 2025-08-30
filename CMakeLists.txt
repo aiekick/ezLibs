@@ -22,7 +22,10 @@ if(UNIX AND NOT APPLE)
 endif()
 
 project(ezLibs)
+
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(USE_EZ_LIBS_TESTING "Enable ezLibs testing" OFF)
 

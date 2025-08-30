@@ -38,13 +38,6 @@ jobs:
             sudo apt-get install -y "libclang-rt-${CLANG_MAJOR}-dev" || true
           fi
 
-      - name: Build force_cover (v4.0)
-        run: |
-          mkdir -p third_party
-          git clone --depth 1 --branch v4.0 https://github.com/emilydolson/force-cover third_party/force_cover
-          make -C third_party/force_cover
-          test -x third_party/force_cover/force_cover
-
       - name: Configure (Clang + LLVM source-based coverage)
         env:
           CC: clang
@@ -55,15 +48,13 @@ jobs:
             -DUSE_EZ_LIBS_TESTING=ON \
             -DUSE_CODE_COVERAGE=ON \
             -DCOVERAGE_VERBOSE=ON \
-            -DUSE_EZ_EXPR_PERFOS_GENERATION=ON \
-            -DFORCE_COVER_EXECUTABLE="${{ github.workspace }}/third_party/force_cover/force_cover" \
-            -DFIX_COVERAGE_PY="${{ github.workspace }}/third_party/force_cover/fix_coverage.py" \
-            -DFORCE_COVER_HEADER_DIRS="${{ github.workspace }}/include"
+            -DUSE_EZ_EXPR_PERFOS_GENERATION=ON
 
       - name: Force-cover
+        run: cmake --build build --target forceCover -j 12
         run: cmake --build build --target forcecover_prep -j 12
 
-      - name: Build
+      - name: Build tests
         run: cmake --build build -j 12
 
       - name: Generate coverage
@@ -76,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage_bundle.tar.gz
-          path: build\coverage_bundle.tar.gz
+          path: build/Tests/coverage_bundle.tar.gz
 
       - name: Setup web pages
         uses: actions/configure-pages@v5
