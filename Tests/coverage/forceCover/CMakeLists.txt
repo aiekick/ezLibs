@@ -9,13 +9,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Option to enable coverage build
 option(FORCE_COVER_BUILD_COVERAGE "Build forceCoverCoverage target with coverage instrumentation" OFF)
 
-find_package(LLVM REQUIRED CONFIG)
-find_package(Clang REQUIRED CONFIG)
-
-message(STATUS "LLVM Version: ${LLVM_PACKAGE_VERSION}")
-message(STATUS "LLVM Include dirs: ${LLVM_INCLUDE_DIRS}")
-message(STATUS "Clang Include dirs: ${Clang_INCLUDE_DIRS}")
-
 add_definitions(${LLVM_DEFINITIONS})
 
 # Shared list of Clang + LLVM libs (with linker group)
