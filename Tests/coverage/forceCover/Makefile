@@ -102,6 +102,7 @@ CLANG_LIBS := \
 	-lclangToolingCore \
 	-lclangTooling \
 	-lclangFormat \
+	-lclangSupport \
 	-lclangToolingSyntax \
 	-lclangAPINotes \
 	-Wl,--end-group
