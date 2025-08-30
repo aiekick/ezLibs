@@ -99,7 +99,6 @@ CLANG_LIBS := \
 	-lclangStaticAnalyzerCheckers \
 	-lclangStaticAnalyzerCore \
 	-lclangSerialization \
-	-lclangSupport \
 	-lclangToolingCore \
 	-lclangTooling \
 	-lclangFormat \
@@ -109,23 +108,21 @@ CLANG_LIBS := \
 
 
 .PHONY: all
-all: force_cover
+all: forceCover
 
-force_cover: force_cover.cpp
+forceCover: forceCover.cpp
 	$(CXX) $(CXXFLAGS) $(LLVM_CXXFLAGS) $(CLANG_INCLUDES) $^ \
 		$(CLANG_LIBS) $(LLVM_LDFLAGS) -o $@
 
-
-force_cover_coverage: force_cover.cpp
+forceCoverCoverage: forceCover.cpp
 	$(CXX) $(CXXFLAGS) -fprofile-instr-generate -fcoverage-mapping -O0 \
 		$(LLVM_CXXFLAGS) $(CLANG_INCLUDES) $^ \
-		$(CLANG_LIBS) $(LLVM_LDFLAGS) -o force_cover
-
+		$(CLANG_LIBS) $(LLVM_LDFLAGS) -o forceCover
 
 .PHONY: clean format
 
 clean:
-	rm force_cover
+	rm forceCover
 
 format:
 	find . -name "*.cpp" | xargs clang-format -style=file -i
