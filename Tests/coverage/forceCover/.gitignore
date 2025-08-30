@@ -1,0 +1,47 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+example.cc~
+force_cover.cpp~
+Makefile~
+force_cover
+example
+
+# Output
+coverage*.txt
+*.profdata
+*.profraw
+examples/example_with_template_coverage_info.cc
+testing/example_coverage.txt
+testing/header_file_with_templates.hpp
+testing/observed_example
+testing/observed_example.cc
