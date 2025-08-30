@@ -1,4 +1,4 @@
-# Verbosité (0=silence; 1=progression; 2=+liste erreurs; 3=+contenu erreurs)
+# Verbosité
 if(NOT DEFINED FORCE_COVER_VERBOSE)
   set(FORCE_COVER_VERBOSE 0)
 endif()
@@ -34,10 +34,7 @@ endif()
 file(REMOVE_RECURSE "${FC_MIRROR_DIR}")
 file(MAKE_DIRECTORY "${FC_MIRROR_DIR}")
 
-# Motifs à traiter
 set(_patterns *.h *.hpp *.hh *.hxx *.ipp *.tpp *.inl)
-
-# Collecte headers
 set(_all_headers)
 foreach(_root IN LISTS FORCE_COVER_HEADER_DIRS)
   if(EXISTS "${_root}")
@@ -51,7 +48,6 @@ list(REMOVE_DUPLICATES _all_headers)
 list(LENGTH _all_headers _n_headers)
 message(STATUS "[force-cover] headers à traiter : ${_n_headers}")
 
-# Flags parser
 set(_FLAGS "-I${FC_MIRROR_DIR}" "--language" "c++" "-std=${FORCE_COVER_STD}")
 foreach(_inc IN LISTS FORCE_COVER_HEADER_DIRS)
   list(APPEND _FLAGS "-I${_inc}")
@@ -73,16 +69,11 @@ set(_idx 0)
 
 foreach(_src IN LISTS _all_headers)
   math(EXPR _idx "${_idx}+1")
-  # Calcul du modulo pour la progression
   math(EXPR _mod "${_idx} % ${FORCE_COVER_PROGRESS_EVERY}")
-  if(FORCE_COVER_VERBOSE GREATER 0
-     OR _idx EQUAL 1
-     OR _mod EQUAL 0
-     OR _idx EQUAL _n_headers)
+  if(FORCE_COVER_VERBOSE GREATER 0 OR _idx EQUAL 1 OR _mod EQUAL 0 OR _idx EQUAL _n_headers)
     message(STATUS "[force-cover] ${_idx}/${_n_headers} : ${_src}")
   endif()
 
-  # chemin relatif
   set(_rel "")
   foreach(_root IN LISTS FORCE_COVER_HEADER_DIRS)
     if(_rel STREQUAL "" AND _src MATCHES "^${_root}(/|$)")
@@ -113,7 +104,6 @@ foreach(_src IN LISTS _all_headers)
     RESULT_VARIABLE _rv
   )
 
-  # Adopte la sortie si non vide, sinon fallback
   if(EXISTS "${_tmp}")
     file(SIZE "${_tmp}" _sz)
     if(_sz GREATER 0)
