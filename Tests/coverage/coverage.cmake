@@ -25,7 +25,7 @@ set(PY_PATCH_INLINE         "${COV_DIR}/patch_genhtml_forcecover_inline.py") # o
 
 # --- Entrées force_cover (défauts si non passés par -D)
 if(NOT DEFINED FORCE_COVER_EXECUTABLE)
-  set(FORCE_COVER_EXECUTABLE "${CMAKE_BINARY_DIR}/Tests/coverage/forceCover/forceCover")
+  set(FORCE_COVER_EXECUTABLE "${CMAKE_SOURCE_DIR}/Tests/coverage/forceCover/forceCover")
 endif()
 if(NOT DEFINED FIX_COVERAGE_PY)
   set(FIX_COVERAGE_PY "${CMAKE_SOURCE_DIR}/Tests/coverage/forceCover/fixCoverage.py")
@@ -45,7 +45,7 @@ endif()
 
 # --- Fichiers de sortie
 set(COVERAGE_TXT       "${OUT_DIR}/coverage.txt")
-set(COVERAGE_TXT_UTF8  "${OUT_DIR}/coverage.utf8.txt")
+set(COVERAGE_TXT_UTF8  "${OUT_DIR}/coverage_utf8.txt")
 set(REPORT_TXT         "${OUT_DIR}/report.txt")
 set(LCOV_INFO          "${OUT_DIR}/lcov.info")
 set(LCOV_HTML_DIR      "${OUT_DIR}/coverage_lcov")

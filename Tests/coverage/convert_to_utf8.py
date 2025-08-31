@@ -2,7 +2,7 @@
 import sys, io, codecs
 
 if len(sys.argv) != 3:
-    print("usage: convert_to_utf8.py in.txt out.utf8.txt", file=sys.stderr)
+    print("usage: convert_to_utf8.py in.txt out_utf8.txt", file=sys.stderr)
     sys.exit(1)
 
 src, dst = sys.argv[1], sys.argv[2]

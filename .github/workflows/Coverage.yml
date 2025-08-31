@@ -82,7 +82,7 @@ jobs:
       - name: Upload coverage to Codecov (LCOV)
         uses: codecov/codecov-action@v5
         with:
-          files: ./build/Tests/lcov.info
+          files: ./build/Tests/coverage_utf8.txt
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
