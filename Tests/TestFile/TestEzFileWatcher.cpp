@@ -17,62 +17,68 @@
 ////////////////////////////////////////////////////////////////////////////
 // 
 // Join using forward slash so Watcher sees relative paths consistently.
-static std::string pathJoin(const std::string& dir, const std::string& name) {
-    if (dir.empty()) {
-        return name;
+static std::string pathJoin(const std::string& vDir, const std::string& vName) {
+    if (vDir.empty()) {
+        return vName;
     }
-    if (name.empty()) {
-        return dir;
+    if (vName.empty()) {
+        return vDir;
     }
-    if (dir.back() == '/') {
-        return dir + name;
+    if (vDir.back() == '/') {
+        return vDir + vName;
     }
-    return dir + "/" + name;
+    return vDir + "/" + vName;
 }
 
 // Write/overwrite a file with content.
-static void writeFile(const std::string& path, const std::string& content) {
-    std::ofstream ofs(path.c_str(), std::ios::binary | std::ios::trunc);
-    ofs << content;
+static void writeFile(const std::string& vPath, const std::string& vContent) {
+    LogVarLightInfo("== ACTION ON FS ==> Create file %s", vPath.c_str());
+    std::ofstream ofs(vPath.c_str(), std::ios::binary | std::ios::trunc);
+    ofs << vContent;
     ofs.flush();
 }
 
 // Append to a file.
-static void appendFile(const std::string& path, const std::string& content) {
-    std::ofstream ofs(path.c_str(), std::ios::binary | std::ios::app);
-    ofs << content;
+static void appendFile(const std::string& vPath, const std::string& vContent) {
+    LogVarLightInfo("== ACTION ON FS ==> Modify file %s", vPath.c_str());
+    std::ofstream ofs(vPath.c_str(), std::ios::binary | std::ios::app);
+    ofs << vContent;
     ofs.flush();
 }
 
 // Remove a file if it exists (best-effort).
-static void removeFile(const std::string& path) {
-    std::remove(path.c_str());
+static void removeFile(const std::string& vPath) {
+    LogVarLightInfo("== ACTION ON FS ==> Delete file %s", vPath.c_str());
+    std::remove(vPath.c_str());
 }
 
 // Rename a file (best-effort). Returns true on success.
-static bool renameFile(const std::string& oldPath, const std::string& newPath) {
+static bool renameFile(const std::string& vOldPath, const std::string& vNewPath) {
+    LogVarLightInfo("== ACTION ON FS ==> Rename file %s to %s", vOldPath.c_str(), vNewPath.c_str());
 #if defined(WINDOWS_OS)
-    return MoveFileA(oldPath.c_str(), newPath.c_str()) != 0;
+    return MoveFileA(vOldPath.c_str(), vNewPath.c_str()) != 0;
 #else
-    return std::rename(oldPath.c_str(), newPath.c_str()) == 0;
+    return std::rename(vOldPath.c_str(), vNewPath.c_str()) == 0;
 #endif
 }
 
 // Create a directory if it does not exist. Returns true if created or already exists.
-static bool makeDir(const std::string& dirPath) {
+static bool makeDir(const std::string& vDir) {
+    LogVarLightInfo("== ACTION ON FS ==> Create dir %s", vDir.c_str());
 #if defined(WINDOWS_OS)
-    return CreateDirectoryA(dirPath.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
+    return CreateDirectoryA(vDir.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
 #else
-    return (mkdir(dirPath.c_str(), 0755) == 0) || (errno == EEXIST);
+    return (mkdir(vDir.c_str(), 0755) == 0) || (errno == EEXIST);
 #endif
 }
 
 // Remove a directory (must be empty). Returns true on success.
-static bool removeDir(const std::string& dirPath) {
+static bool removeDir(const std::string& vDir) {
+    LogVarLightInfo("== ACTION ON FS ==> Delete dir %s", vDir.c_str());
 #if defined(WINDOWS_OS)
-    return RemoveDirectoryA(dirPath.c_str()) != 0;
+    return RemoveDirectoryA(vDir.c_str()) != 0;
 #else
-    return rmdir(dirPath.c_str()) == 0;
+    return rmdir(vDir.c_str()) == 0;
 #endif
 }
 
@@ -115,7 +121,7 @@ bool TestEzFileWatcher_Dir() {
 
     std::vector<ez::file::Watcher::PathResult> results;
     ez::file::Watcher watcher;
-    uint32_t timeoutMs{1000};  // give some headroom across platforms/CI
+    uint32_t timeoutMs{3000};  // give some headroom across platforms/CI
     std::mutex resultsMutex;
 
     bool retCreation = false;
@@ -123,10 +129,12 @@ bool TestEzFileWatcher_Dir() {
     bool retRenaming = false;
     bool retDeletion = false;
 
-    watcher.setCallback([&](const std::set<ez::file::Watcher::PathResult>& callbackResults) {
-        if (!callbackResults.empty()) {
+    watcher.setCallback([&](const std::set<ez::file::Watcher::PathResult>& vResults) {
+        if (!vResults.empty()) {
             std::lock_guard<std::mutex> lock(resultsMutex);
-            results.push_back(*callbackResults.begin());
+            for(const auto &result : vResults){
+                results.push_back(result);
+            }
         }
     });
 

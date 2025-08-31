@@ -488,7 +488,6 @@ public:
     using Callback = std::function<void(const std::set<PathResult> &)>;
 
 private:
-    bool m_verbose{};
     std::string m_appPath;
     Callback m_callback;
     std::thread m_thread;
@@ -551,8 +550,7 @@ private:
         PatternType getPatternType() const { return m_patternType; }
         PhysicalType getPhysicalType() const { return m_physicalType; }
 
-        bool isPatternMatch(const std::string &vPath, bool vVerbose) const {
-            (void)vVerbose;
+        bool isPatternMatch(const std::string &vPath) const {
             switch (m_patternType) {
                 case PatternType::PATH: {
                     return (!m_fileNameExt.empty()) ? (m_fileNameExt == vPath) : (m_path == vPath);
@@ -587,7 +585,23 @@ private:
 
     std::unique_ptr<IBackend> m_backend;
 
-    void m_emitIfMatch(  //
+    static void m_logPathResult(const PathResult& vPathResult) {
+#ifdef _DEBUG
+        const char *mode = " ";
+        switch (pr.modifType) {
+            case PathResult::ModifType::CREATION: mode = "CREATION"; break;
+            case PathResult::ModifType::DELETION: mode = "DELETION"; break;
+            case PathResult::ModifType::MODIFICATION: mode = "MODIFICATION"; break;
+            case PathResult::ModifType::RENAMED: mode = "RENAMED"; break;
+            default: break;
+        }
+        LogVarLightInfo("Event : RP(%s) OP(%s) NP(%s) MODE(%s)", pr.rootPath.c_str(), pr.oldPath.c_str(), pr.newPath.c_str(), mode);
+#else
+        (void)vPathResult;
+#endif
+    }
+
+    static void m_emitIfMatch(  //
         const std::string &rootKey,
         const std::vector<PatternWeak> &relatedPatterns,
         const std::string &relNewName,
@@ -598,9 +612,11 @@ private:
             if (auto p = pw.lock()) {
                 if (p->getPhysicalType() == Pattern::PhysicalType::DIR) {
                     out.emplace(pr);
+                    m_logPathResult(pr);
                 } else {
-                    if (!relNewName.empty() && p->isPatternMatch(relNewName, m_verbose)) {
+                    if (!relNewName.empty() && p->isPatternMatch(relNewName)) {
                         out.emplace(pr);
+                        m_logPathResult(pr);
                     }
                 }
             }
@@ -620,7 +636,6 @@ public:
     Watcher() : m_appPath(m_getAppPath()) {}
     ~Watcher() { stop(); }
 
-    void setVerbose(const bool vVerbose) { m_verbose = vVerbose; }
     void setCallback(Callback vCallback) { m_callback = vCallback; }
 
     // watch a directory. can be absolute or relative the to the app
@@ -919,20 +934,11 @@ private:
                             if (auto pPat = patW.lock()) {
                                 if (pPat->getPhysicalType() == Pattern::PhysicalType::DIR) {
                                     voFiles.emplace(pr);
-#ifdef _DEBUG
-                                    const char *mode = " ";
-                                    switch (pr.modifType) {
-                                        case PathResult::ModifType::CREATION: mode = "CREATION"; break;
-                                        case PathResult::ModifType::DELETION: mode = "DELETION"; break;
-                                        case PathResult::ModifType::MODIFICATION: mode = "MODIFICATION"; break;
-                                        case PathResult::ModifType::RENAMED: mode = "RENAMED"; break;
-                                        default: break;
-                                    }
-                                    LogVarLightInfo("Event : RP(%s) OP(%s) NP(%s) MODE(%s)", pr.rootPath.c_str(), pr.oldPath.c_str(), pr.newPath.c_str(), mode);
-#endif
+                                    m_logPathResult(pr);
                                 } else {
                                     if (pPat->isPatternMatch(pr.newPath, owner.m_verbose)) {
                                         voFiles.emplace(pr);
+                                        m_logPathResult(pr);
                                     }
                                 }
                             }
@@ -980,7 +986,6 @@ private:
 
     class BackendLinux : public IBackend {
     public:
-
         struct WatchHandle {
             int wd{-1};
             std::string rootKey;
