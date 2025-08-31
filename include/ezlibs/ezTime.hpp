@@ -31,9 +31,11 @@ SOFTWARE.
 #include <ctime>
 #include <string>
 #include <chrono>
+#include <thread>
 #include <iomanip>
 #include <sstream>
 #include <cstdint>
+#include <functional>
 
 #ifndef EZ_TIME
 #define EZ_TIME
@@ -243,6 +245,19 @@ double measureOperationUs(TLAMBDA vLambda, size_t vCountOperations = 1) {
         total /= static_cast<double>(vCountOperations);
     }
     return total.count();
+}
+
+// will wait the condition to be true with a timeout and a step for inc time until ok or timeout
+static bool waitUntil(const std::function<bool(void)>& vCond, uint32_t vTimeoutMs, uint32_t vStepMs = 50) {
+    using clock = std::chrono::steady_clock;
+    auto start = clock::now();
+    while (!vCond()) {
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - start).count() >= vTimeoutMs) {
+            return vCond();  // last chance
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(vStepMs));
+    }
+    return true;
 }
 
 }  // namespace time

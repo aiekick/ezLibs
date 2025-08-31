@@ -1,3 +1,4 @@
+#include <ezlibs/ezCTest.hpp>
 #include <TestEzBmp.h>
 #ifdef TESTING_WIP
 #include <TestEzGif.h>
@@ -17,10 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-
-#define IfTestCollectionExist(v)             \
-    if (vTest.find(#v) != std::string::npos) \
-    return v(vTest)
 
 bool TestFile(const std::string& vTest) {
     IfTestCollectionExist(TestEzBmp);
@@ -49,5 +46,5 @@ int main(int argc, char** argv) {
         return TestFile(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestFile("TestEzFileWatcher_BasicTrigger") ? 0 : 1;
+    return TestFile("TestEzFileWatcher_Dir") ? 0 : 1;
 }

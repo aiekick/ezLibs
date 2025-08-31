@@ -57,10 +57,20 @@ SOFTWARE.
     if (!(cond))           \
     return false
 
-#define CTEST_ASSERT_MESSAGE(cond, str)                   \
-    if (!(cond)) {                                        \
-        LogVarLightError("Error : (%s) is false", #cond); \
-        return false;                                     \
+#define CTEST_ASSERT_MESSAGE(cond, str)                    \
+    if (!(cond)) {                                         \
+        LogVarLightError("Test : Error => (%s) is false", #cond);  \
+        return false;                                      \
+    } else {                                               \
+        LogVarLightError("Test : Succeed => (%s) is true", #cond); \
+    }
+
+#define CTEST_ASSERT_MESSAGE_DELAYED(status, cond, str)    \
+    if (!(cond)) {                                         \
+        LogVarLightError("Test : Error => (%s) is false", #cond);  \
+        status = false;                                    \
+    } else {                                               \
+        LogVarLightError("Test : Succeed => (%s) is true", #cond); \
     }
 
 #define CTEST_TRY_CATCH(EXPR)         \
@@ -75,6 +85,14 @@ SOFTWARE.
             return false;             \
         }                             \
     }
+
+#define IfTestCollectionExist(v)             \
+    if (vTest.find(#v) != std::string::npos) \
+    return v(vTest)
+
+#define IfTestExist(v)            \
+    if (vTest == std::string(#v)) \
+    return v()
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////

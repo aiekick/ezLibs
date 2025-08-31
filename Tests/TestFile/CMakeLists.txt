@@ -82,7 +82,11 @@ AddTest("TestEzBinBuf_OutOfRange")
 ##### TESTS EzFileWatcher ################################
 ##########################################################
 
-AddTest("TestEzFileWatcher_BasicTrigger")
+AddTest("TestEzFileWatcher_start_stop")
+AddTest("TestEzFileWatcher_Dir")
+AddTest("TestEzFileWatcher_File_PATH")
+AddTest("TestEzFileWatcher_File_GLOB")
+AddTest("TestEzFileWatcher_File_REGEX")
 
 ##########################################################
 ##### TESTS EzGif ########################################
