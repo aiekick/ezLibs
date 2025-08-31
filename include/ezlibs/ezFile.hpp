@@ -588,14 +588,14 @@ private:
     static void m_logPathResult(const PathResult& vPathResult) {
 #ifdef _DEBUG
         const char *mode = " ";
-        switch (pr.modifType) {
+        switch (vPathResult.modifType) {
             case PathResult::ModifType::CREATION: mode = "CREATION"; break;
             case PathResult::ModifType::DELETION: mode = "DELETION"; break;
             case PathResult::ModifType::MODIFICATION: mode = "MODIFICATION"; break;
             case PathResult::ModifType::RENAMED: mode = "RENAMED"; break;
             default: break;
         }
-        LogVarLightInfo("Event : RP(%s) OP(%s) NP(%s) MODE(%s)", pr.rootPath.c_str(), pr.oldPath.c_str(), pr.newPath.c_str(), mode);
+        LogVarLightInfo("Event : RP(%s) OP(%s) NP(%s) MODE(%s)", vPathResult.rootPath.c_str(), vPathResult.oldPath.c_str(), vPathResult.newPath.c_str(), mode);
 #else
         (void)vPathResult;
 #endif
@@ -936,7 +936,7 @@ private:
                                     voFiles.emplace(pr);
                                     m_logPathResult(pr);
                                 } else {
-                                    if (pPat->isPatternMatch(pr.newPath, owner.m_verbose)) {
+                                    if (pPat->isPatternMatch(pr.newPath)) {
                                         voFiles.emplace(pr);
                                         m_logPathResult(pr);
                                     }
