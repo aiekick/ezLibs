@@ -25,7 +25,7 @@ set(PY_PATCH_INLINE         "${COV_DIR}/patch_genhtml_forcecover_inline.py") # o
 
 # --- Entrées force_cover (défauts si non passés par -D)
 if(NOT DEFINED FORCE_COVER_EXECUTABLE)
-  set(FORCE_COVER_EXECUTABLE "${CMAKE_BINARY_DIR}/Tests/coverage/forceCover/forceCover")
+  set(FORCE_COVER_EXECUTABLE "${CMAKE_SOURCE_DIR}/Tests/coverage/forceCover/forceCover")
 endif()
 if(NOT DEFINED FIX_COVERAGE_PY)
   set(FIX_COVERAGE_PY "${CMAKE_SOURCE_DIR}/Tests/coverage/forceCover/fixCoverage.py")
