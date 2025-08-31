@@ -15,59 +15,70 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
+// 
+// Join using forward slash so Watcher sees relative paths consistently.
+static std::string pathJoin(const std::string& dir, const std::string& name) {
+    if (dir.empty()) {
+        return name;
+    }
+    if (name.empty()) {
+        return dir;
+    }
+    if (dir.back() == '/') {
+        return dir + name;
+    }
+    return dir + "/" + name;
+}
 
-// ---------- Local helpers (tests only) ----------
-
-/* Write/overwrite a file with content. */
+// Write/overwrite a file with content.
 static void writeFile(const std::string& path, const std::string& content) {
-    LogVarLightInfo("== ACTION ON FS ==> Create file %s", path.c_str());
     std::ofstream ofs(path.c_str(), std::ios::binary | std::ios::trunc);
     ofs << content;
     ofs.flush();
 }
 
-/* Append to a file to ensure a write event. */
+// Append to a file.
 static void appendFile(const std::string& path, const std::string& content) {
-    LogVarLightInfo("== ACTION ON FS ==> Modify file %s", path.c_str());
     std::ofstream ofs(path.c_str(), std::ios::binary | std::ios::app);
     ofs << content;
     ofs.flush();
 }
 
-/* Remove a file if exists (best-effort). */
+// Remove a file if it exists (best-effort).
 static void removeFile(const std::string& path) {
-    LogVarLightInfo("== ACTION ON FS ==> Delete file %s", path.c_str());
     std::remove(path.c_str());
 }
 
-#ifdef WINDOWS_OS
-/* Append to a file to ensure a write event. */
-static void renameFile(const std::string& vOldPath, const std::string& vNewPath) {
-    LogVarLightInfo("== ACTION ON FS ==> Rename file %s to %s", vOldPath.c_str(), vNewPath.c_str());
-    MoveFileA(vOldPath.c_str(), vNewPath.c_str());
-}
-
-/* Create a directory if it does not exist. */
-static bool makeDir(const std::string& vDir) {
-    std::wstring w;
-    // minimal UTF8->UTF16 helper using ez::str if available, else ANSI fallback
-    // Since ez::str::utf8Decode is in the lib, call it indirectly by relying on watcher header including it.
-    // For tests, CreateDirectoryA is enough for ASCII test names.
-    LogVarLightInfo("== ACTION ON FS ==> Create dir %s", vDir.c_str());
-    return CreateDirectoryA(vDir.c_str(), NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
-}
-
-/* Remove directory (must be empty). */
-static void removeDir(const std::string& vDir) {
-    LogVarLightInfo("== ACTION ON FS ==> Delete dir %s", vDir.c_str());
-    RemoveDirectoryA(vDir.c_str());
-}
+// Rename a file (best-effort). Returns true on success.
+static bool renameFile(const std::string& oldPath, const std::string& newPath) {
+#if defined(WINDOWS_OS)
+    return MoveFileA(oldPath.c_str(), newPath.c_str()) != 0;
+#else
+    return std::rename(oldPath.c_str(), newPath.c_str()) == 0;
 #endif
+}
+
+// Create a directory if it does not exist. Returns true if created or already exists.
+static bool makeDir(const std::string& dirPath) {
+#if defined(WINDOWS_OS)
+    return CreateDirectoryA(dirPath.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
+#else
+    return (mkdir(dirPath.c_str(), 0755) == 0) || (errno == EEXIST);
+#endif
+}
+
+// Remove a directory (must be empty). Returns true on success.
+static bool removeDir(const std::string& dirPath) {
+#if defined(WINDOWS_OS)
+    return RemoveDirectoryA(dirPath.c_str()) != 0;
+#else
+    return rmdir(dirPath.c_str()) == 0;
+#endif
+}
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-
 bool TestEzFileWatcher_start_stop() {
     ez::file::Watcher watcher;
 
@@ -83,39 +94,39 @@ bool TestEzFileWatcher_start_stop() {
 
     CTEST_ASSERT_MESSAGE(watcher.start() == true, "Can start because callback is defined");
     CTEST_ASSERT_MESSAGE(watcher.start() == false, "Cannot start again because already started");
-    CTEST_ASSERT_MESSAGE(watcher.stop() == true, "Can stop becasue started");
+    CTEST_ASSERT_MESSAGE(watcher.stop() == true, "Can stop because started");
 
+    (void)triggered;  // not asserted here; just sanity callback wiring
     return true;
 }
 
 bool TestEzFileWatcher_Dir() {
-#ifdef WINDOWS_OS
     const std::string dir = "wd_path";
-    const std::string file = "toto";
-    const std::string renamedFile = "titi";
+    const std::string fileName = "toto";
+    const std::string renamedName = "titi";
 
-    // clean an eventual last test
-    removeFile(dir + "\\" + file);
-    removeFile(dir + "\\" + renamedFile);
+    // Clean any previous artifacts
+    removeFile(pathJoin(dir, fileName));
+    removeFile(pathJoin(dir, renamedName));
     removeDir(dir);
 
-    // create dir + file
+    // Create directory
     makeDir(dir);
 
     std::vector<ez::file::Watcher::PathResult> results;
     ez::file::Watcher watcher;
-    uint32_t timeout{500};
-    std::mutex mutex;
+    uint32_t timeoutMs{1000};  // give some headroom across platforms/CI
+    std::mutex resultsMutex;
 
-    bool ret_creation = false;
-    bool ret_modification = false;
-    bool ret_renaming = false;
-    bool ret_deletion = false;
+    bool retCreation = false;
+    bool retModification = false;
+    bool retRenaming = false;
+    bool retDeletion = false;
 
-    watcher.setCallback([&](const std::set<ez::file::Watcher::PathResult>& vResults) {
-        if (!vResults.empty()) {
-            std::lock_guard<std::mutex> _{mutex};  // portect acceses on result
-            results.push_back(*vResults.begin());
+    watcher.setCallback([&](const std::set<ez::file::Watcher::PathResult>& callbackResults) {
+        if (!callbackResults.empty()) {
+            std::lock_guard<std::mutex> lock(resultsMutex);
+            results.push_back(*callbackResults.begin());
         }
     });
 
@@ -126,101 +137,108 @@ bool TestEzFileWatcher_Dir() {
     CTEST_ASSERT_MESSAGE(watcher.watchDirectory("") == false, "Empty directory");
     CTEST_ASSERT(watcher.watchDirectory(dir) == true);
 
+    // Creation
     {
         LogVarLightInfo("======================================");
-        writeFile(dir + "\\" + file, "init");
-        ret_creation = ez::time::waitUntil(  //
+        writeFile(pathJoin(dir, fileName), "init");
+        retCreation = ez::time::waitUntil(
             [&] {
-                bool ret = false;
-                {
-                    std::lock_guard<std::mutex> _{mutex};  // portect acceses on result
-                    for (const auto& result : results) {
-                        ret =
-                            (result.rootPath == dir &&  //
-                             result.newPath == file &&  //
-                             result.modifType == ez::file::Watcher::PathResult::ModifType::CREATION);
-                        if (ret) {
-                            break;
-                        }
+                std::lock_guard<std::mutex> lock(resultsMutex);
+                for (const auto& result : results) {
+                    const bool match =
+                        (result.rootPath == dir &&      //
+                         result.newPath == fileName &&  //
+                         result.modifType == ez::file::Watcher::PathResult::ModifType::CREATION);
+                    if (match) {
+                        return true;
                     }
                 }
-                return ret;
+                return false;
             },
-            timeout);
-        results.clear();
+            timeoutMs);
+        {
+            std::lock_guard<std::mutex> lock(resultsMutex);
+            results.clear();
+        }
     }
 
+    // Modification
     {
         LogVarLightInfo("======================================");
-        appendFile(dir + "\\" + file, "Yihaa");
-        ret_modification = ez::time::waitUntil(  //
+        appendFile(pathJoin(dir, fileName), "Yihaa");
+        retModification = ez::time::waitUntil(
             [&] {
-                bool ret = false;
-                {
-                    std::lock_guard<std::mutex> _{mutex};  // portect acceses on result
-                    for (const auto& result : results) {
-                        ret =
-                            (result.rootPath == dir &&  //
-                             result.newPath == file &&  //
-                             result.modifType == ez::file::Watcher::PathResult::ModifType::MODIFICATION);
-                        if (ret) {
-                            break;
-                        }
+                std::lock_guard<std::mutex> lock(resultsMutex);
+                for (const auto& result : results) {
+                    const bool match =
+                        (result.rootPath == dir &&      //
+                         result.newPath == fileName &&  //
+                         result.modifType == ez::file::Watcher::PathResult::ModifType::MODIFICATION);
+                    if (match) {
+                        return true;
                     }
                 }
-                return ret;
+                return false;
             },
-            timeout);
-        results.clear();
+            timeoutMs);
+        {
+            std::lock_guard<std::mutex> lock(resultsMutex);
+            results.clear();
+        }
     }
 
+    // Rename
     {
         LogVarLightInfo("======================================");
-        renameFile(dir + "\\" + file, dir + "\\" + renamedFile);
-        ret_renaming = ez::time::waitUntil(  //
+        (void)renameFile(pathJoin(dir, fileName), pathJoin(dir, renamedName));
+        retRenaming = ez::time::waitUntil(
             [&] {
-                bool ret = false;
-                {
-                    std::lock_guard<std::mutex> _{mutex};  // portect acceses on result
-                    for (const auto& result : results) {
-                        ret =
-                            (result.rootPath == dir &&         //
-                             result.oldPath == file &&         //
-                             result.newPath == renamedFile &&  //
-                             result.modifType == ez::file::Watcher::PathResult::ModifType::RENAMED);
-                        if (ret) {
-                            break;
-                        }
+                std::lock_guard<std::mutex> lock(resultsMutex);
+                for (const auto& result : results) {
+                    const bool match =
+                        (result.rootPath == dir &&         //
+#ifndef APPLE_OS
+                         result.oldPath == fileName &&     //
+#endif
+                         result.newPath == renamedName &&  //
+                         result.modifType == ez::file::Watcher::PathResult::ModifType::RENAMED);
+
+                    if (match) {
+                        return true;
                     }
                 }
-                return ret;
+                return false;
             },
-            timeout);
-        results.clear();
+            timeoutMs);
+        {
+            std::lock_guard<std::mutex> lock(resultsMutex);
+            results.clear();
+        }
     }
 
+    // Deletion
     {
         LogVarLightInfo("======================================");
-        removeFile(dir + "\\" + renamedFile);
-        ret_deletion = ez::time::waitUntil(  //
+        removeFile(pathJoin(dir, renamedName));
+        retDeletion = ez::time::waitUntil(
             [&] {
-                bool ret = false;
-                {
-                    std::lock_guard<std::mutex> _{mutex};  // portect acceses on result
-                    for (const auto& result : results) {
-                        ret =
-                            (result.rootPath == dir &&         //
-                             result.newPath == renamedFile &&  //
-                             result.modifType == ez::file::Watcher::PathResult::ModifType::DELETION);
-                        if (ret) {
-                            break;
-                        }
+                std::lock_guard<std::mutex> lock(resultsMutex);
+                for (const auto& result : results) {
+                    const bool match =
+                        (result.rootPath == dir &&         //
+                         result.newPath == renamedName &&  //
+                         result.modifType == ez::file::Watcher::PathResult::ModifType::DELETION);
+                    if (match) {
+                        return true;
                     }
                 }
-                return ret;
+                return false;
             },
-            timeout);
-        results.clear();
+            timeoutMs);
+        {
+            std::lock_guard<std::mutex> lock(resultsMutex);
+            results.clear();
+        }
     }
 
     LogVarLightInfo("== END ===============================");
@@ -228,14 +246,13 @@ bool TestEzFileWatcher_Dir() {
     CTEST_ASSERT_MESSAGE(watcher.stop() == true, "Can stop");
 
     removeDir(dir);
-    
+
     bool testStatus = true;
-    CTEST_ASSERT_MESSAGE_DELAYED(testStatus, ret_creation, "File " + file + " creation detected");
-    CTEST_ASSERT_MESSAGE_DELAYED(testStatus, ret_modification, "File " + file + " modification detected");
-    CTEST_ASSERT_MESSAGE_DELAYED(testStatus, ret_renaming, "File " + renamedFile + " renamed to " + file + "renaming detected");
-    CTEST_ASSERT_MESSAGE_DELAYED(testStatus, ret_deletion, "File " + file + " deletion detected");
+    CTEST_ASSERT_MESSAGE_DELAYED(testStatus, retCreation, "File " + fileName + " creation detected");
+    CTEST_ASSERT_MESSAGE_DELAYED(testStatus, retModification, "File " + fileName + " modification detected");
+    CTEST_ASSERT_MESSAGE_DELAYED(testStatus, retRenaming, "File " + renamedName + " renamed event detected");
+    CTEST_ASSERT_MESSAGE_DELAYED(testStatus, retDeletion, "File " + renamedName + " deletion detected");
     CTEST_ASSERT_MESSAGE(testStatus, "Test Succeed");
-#endif
 
     return true;
 }

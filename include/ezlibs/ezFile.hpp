@@ -491,18 +491,13 @@ private:
     bool m_verbose{};
     std::string m_appPath;
     Callback m_callback;
-    std::mutex m_mutex;
     std::thread m_thread;
-    std::atomic<bool> m_running;
+    std::atomic<bool> m_running{false};
 
-#ifdef WINDOWS_OS
-    typedef std::wstring PathType;
-#else
-    typedef std::string PathType;
-#endif
     struct Pattern;
     using PatternPtr = std::shared_ptr<Pattern>;
     using PatternWeak = std::weak_ptr<Pattern>;
+
     class Pattern {
     public:
         enum class PatternType {  //
@@ -515,7 +510,6 @@ private:
             FILE                   // file watcher
         };
 
-    public:
         static std::shared_ptr<Pattern> sCreatePath(  //
             const std::string &vPath,
             PatternType vPatternType,
@@ -556,141 +550,64 @@ private:
         const std::string &getFileNameExt() const { return m_fileNameExt; }
         PatternType getPatternType() const { return m_patternType; }
         PhysicalType getPhysicalType() const { return m_physicalType; }
+
         bool isPatternMatch(const std::string &vPath, bool vVerbose) const {
-            bool ret = false;
+            (void)vVerbose;
             switch (m_patternType) {
                 case PatternType::PATH: {
-                    ret = (m_path == vPath);
-                } break;
+                    return (!m_fileNameExt.empty()) ? (m_fileNameExt == vPath) : (m_path == vPath);
+                }
                 case PatternType::GLOB: {
-                    return m_isGlobPatternMatch(vPath);
-                } break;
+                    return !ez::str::searchForPatternWithWildcards(vPath, m_fileNameExt).empty();
+                }
                 case PatternType::REGEX: {
-                    return m_isRegexPatternMatch(vPath, vVerbose);
-                } break;
-                default: break;
-            }
-            return ret;
-        }
-
-    private:
-        bool m_isGlobPatternMatch(const std::string &vPath) const { return !ez::str::searchForPatternWithWildcards(vPath, m_fileNameExt).empty(); }
-        bool m_isRegexPatternMatch(const std::string &vPath, bool vVerbose) const {
-            try {
-                std::regex pattern(m_fileNameExt);
-                return std::regex_match(vPath, pattern);
-            } catch (const std::regex_error &ex) {
-                if (vVerbose) {
-#ifdef EZ_TOOLS_LOG
-                    LogVarError("Err : regex not match : %s", ex.what());
-#endif
+                    try {
+                        std::regex pattern(m_fileNameExt);
+                        return std::regex_match(vPath, pattern);
+                    } catch (...) {
+                        return false;
+                    }
                 }
             }
             return false;
         }
     };
+
+    std::mutex m_patternsMutex;
     std::vector<PatternPtr> m_watchPatterns;
 
-    struct WatchHandle {
-        HANDLE hDir;
-        PathType path;
-        std::vector<PatternWeak> relatedPatterns;
-        HANDLE hEvent{};
-        OVERLAPPED ov{};
-        std::array<uint8_t, 4096> buffer;
-        bool inFlight{false};
+    class IBackend {
+    public:
+        virtual ~IBackend() = default;
+        virtual bool onStart(Watcher &owner) = 0;
+        virtual void onStop(Watcher &owner) = 0;
+        virtual bool addPattern(Watcher &owner, const PatternPtr &pattern) = 0;
+        virtual void poll(Watcher &owner, std::set<PathResult> &out) = 0;
     };
-    std::unordered_map<std::string, WatchHandle> m_watchHandles;
-    std::atomic<bool> m_isHandlesDirty{false};
 
-public:
-    Watcher() : m_callback(nullptr), m_running(false), m_appPath(m_getAppPath()) {}
-    ~Watcher() { stop(); }
+    std::unique_ptr<IBackend> m_backend;
 
-    void setVerbose(const bool vVerbose) { m_verbose = vVerbose; }
-    void setCallback(Callback vCallback) { m_callback = vCallback; }
-
-    // watch a directory. can be absolute or relative the to the app
-    // no widlcards or regex are supported for the directory
-    bool watchDirectory(const std::string &vPath) {  //
-        return m_watchPattern(Pattern::sCreatePath(vPath, Pattern::PatternType::PATH, Pattern::PhysicalType::DIR));
-    }
-
-    // will watch from a path a filename.
-    // vRootPath : no widlcards or regex are supported
-    // vFileNameExt : can contain wildcards. regex patterns is authorized but must start with a '(' and end with a ')'
-    bool watchFile(const std::string &vRootPath, const std::string &vFileNameExt) {  //
-        if (!vFileNameExt.empty()) {
-            if (vFileNameExt.front() == '(' && vFileNameExt.back() == ')') {
-                return m_watchPattern(Pattern::sCreatePathFile(vRootPath, vFileNameExt, Pattern::PatternType::REGEX, Pattern::PhysicalType::FILE));
-            } else if (vFileNameExt.find('*') != std::string::npos) {
-                return m_watchPattern(Pattern::sCreatePathFile(vRootPath, vFileNameExt, Pattern::PatternType::GLOB, Pattern::PhysicalType::FILE));
-            } else {
-                return m_watchPattern(Pattern::sCreatePathFile(vRootPath, vFileNameExt, Pattern::PatternType::PATH, Pattern::PhysicalType::FILE));
-            }
-        }
-        return false;
-    }
-
-    bool start() {
-        if (m_running || m_callback == nullptr) {
-            return false;
-        }
-        m_running = true;
-
-#ifdef WINDOWS_OS
-        m_thread = std::thread(&Watcher::m_watchWindows, this);
-#elif defined(LINUX_OS)
-        m_thread = std::thread(&Watcher::m_watchLinux, this);
-#elif defined(APPLE_OS)
-        m_thread = std::thread(&Watcher::m_watchMacOS, this);
-#endif
-        return true;
-    }
-    bool stop() {
-        if (!m_running) {
-            return false;
-        }
-        m_running = false;
-
-        if (m_thread.joinable()) {
-            m_thread.join();
-        }
-
-        // Cancel pending I/O and close handles
-        for (auto &kv : m_watchHandles) {
-            auto &h = kv.second;
-            if (h.inFlight) {
-                CancelIoEx(h.hDir, &h.ov);  // safe if no I/O too
-            }
-            if (h.hEvent) {
-                CloseHandle(h.hEvent);
-                h.hEvent = nullptr;
-            }
-            if (h.hDir && h.hDir != INVALID_HANDLE_VALUE) {
-                CloseHandle(h.hDir);
-                h.hDir = INVALID_HANDLE_VALUE;
-            }
-        }
-        m_watchHandles.clear();
-        return true;
-    }
-
-private:
-    std::string m_getAppPath() { return ez::App().getAppPath(); }
-    bool m_watchPattern(const PatternPtr &vPatternPtr) {
-        if (vPatternPtr != nullptr) {
-            if (m_createHandleIfNeeded(vPatternPtr)) {
-                {
-                    m_isHandlesDirty = true;
-                    std::lock_guard<std::mutex> _{m_mutex};  // protect access to m_watchPatterns
-                    m_watchPatterns.push_back(vPatternPtr);
+    void m_emitIfMatch(  //
+        const std::string &rootKey,
+        const std::vector<PatternWeak> &relatedPatterns,
+        const std::string &relNewName,
+        PathResult &pr,
+        std::set<PathResult> &out) {
+        pr.rootPath = rootKey;
+        for (const auto &pw : relatedPatterns) {
+            if (auto p = pw.lock()) {
+                if (p->getPhysicalType() == Pattern::PhysicalType::DIR) {
+                    out.emplace(pr);
+                } else {
+                    if (!relNewName.empty() && p->isPatternMatch(relNewName, m_verbose)) {
+                        out.emplace(pr);
+                    }
                 }
-                return true;
             }
         }
-        return false;
     }
+
+    std::string m_getAppPath() { return ez::App().getAppPath(); }
     std::string m_removeAppPath(const std::string &vPath) {
         size_t pos = vPath.find(m_appPath);
         if (pos != std::string::npos) {
@@ -699,21 +616,146 @@ private:
         return vPath;
     }
 
-    bool m_createHandleIfNeeded(const PatternWeak &vPattern) {
-        bool ret = false;
-        auto ptr = vPattern.lock();
-        if (ptr != nullptr) {
-            const auto &path = m_removeAppPath(ptr->getPath());
-            std::lock_guard<std::mutex> _{m_mutex};  // protect access to m_watchHandles
-            auto it = m_watchHandles.find(path);
+public:
+    Watcher() : m_appPath(m_getAppPath()) {}
+    ~Watcher() { stop(); }
+
+    void setVerbose(const bool vVerbose) { m_verbose = vVerbose; }
+    void setCallback(Callback vCallback) { m_callback = vCallback; }
+
+    // watch a directory. can be absolute or relative the to the app
+    // no widlcards or regex are supported for the directory
+    bool watchDirectory(const std::string &vPath) { return m_registerPattern(Pattern::sCreatePath(vPath, Pattern::PatternType::PATH, Pattern::PhysicalType::DIR)); }
+
+    // will watch from a path a filename.
+    // vRootPath : no widlcards or regex are supported
+    // vFileNameExt : can contain wildcards. regex patterns is authorized but must start with a '(' and end with a ')'
+    bool watchFile(const std::string &vRootPath, const std::string &vFileNameExt) {
+        if (vRootPath.empty() || vFileNameExt.empty()) {
+            return false;
+        }
+        Pattern::PatternType type = Pattern::PatternType::PATH;
+        if (vFileNameExt.front() == '(' && vFileNameExt.back() == ')') {
+            type = Pattern::PatternType::REGEX;
+        } else if (vFileNameExt.find('*') != std::string::npos) {
+            type = Pattern::PatternType::GLOB;
+        }
+        return m_registerPattern(Pattern::sCreatePathFile(vRootPath, vFileNameExt, type, Pattern::PhysicalType::FILE));
+    }
+
+    bool start() {
+        if (m_running || m_callback == nullptr) {
+            return false;
+        }
+        m_backend = m_createBackend();
+        if (!m_backend) {
+            return false;
+        }
+        if (!m_backend->onStart(*this)) {
+            m_backend.reset();
+            return false;
+        }
+        {
+            std::lock_guard<std::mutex> lock(m_patternsMutex);
+            for (const auto &p : m_watchPatterns) {
+                (void)m_backend->addPattern(*this, p);
+            }
+        }
+        m_running = true;
+        m_thread = std::thread(&Watcher::m_threadLoop, this);
+        return true;
+    }
+
+    bool stop() {
+        if (!m_running) {
+            return false;
+        }
+        m_running = false;
+        if (m_thread.joinable()) {
+            m_thread.join();
+        }
+        if (m_backend) {
+            m_backend->onStop(*this);
+            m_backend.reset();
+        }
+        return true;
+    }
+
+private:
+    bool m_registerPattern(const PatternPtr &pat) {
+        if (!pat) {
+            return false;
+        }
+        {
+            std::lock_guard<std::mutex> lock(m_patternsMutex);
+            m_watchPatterns.push_back(pat);
+        }
+        if (m_backend) {
+            return m_backend->addPattern(*this, pat);
+        }
+        return true;
+    }
+
+    void m_threadLoop() {
+        std::set<PathResult> files;
+        while (m_running) {
+            m_backend->poll(*this, files);
+            if (!files.empty()) {
+                m_callback(files);
+                files.clear();
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+
+    std::unique_ptr<IBackend> m_createBackend();
+
+    // =============================== Backend Windows ===============================
+#if defined(WINDOWS_OS)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
+    class BackendWindows : public IBackend {
+    public:
+        typedef std::wstring PathType;
+        struct WatchHandle {
+            HANDLE hDir{};
+            PathType path;
+            std::vector<PatternWeak> relatedPatterns;
+            HANDLE hEvent{};
+            OVERLAPPED ov{};
+            std::array<uint8_t, 4096> buffer{};
+            bool inFlight{false};
+        };
+
+    private:
+        std::mutex m_mtx;
+        std::unordered_map<std::string, WatchHandle> m_watchHandles;
+        std::vector<WatchHandle *> m_handles;
+        std::atomic<bool> m_isDirty{false};
+
+    public:
+
+        bool onStart(Watcher &owner) override {
+            (void)owner;
+            m_isDirty = true;
+            return true;
+        }
+
+        bool addPattern(Watcher &owner, const PatternPtr &pattern) override {
+            if (!pattern) {
+                return false;
+            }
+            const std::string rootKey = owner.m_removeAppPath(pattern->getPath());
+            std::lock_guard<std::mutex> lock(m_mtx);
+            auto it = m_watchHandles.find(rootKey);
             if (it != m_watchHandles.end()) {
-                it->second.relatedPatterns.push_back(vPattern);
-                ret = true;
+                it->second.relatedPatterns.push_back(pattern);
             } else {
-#ifdef WINDOWS_OS
                 WatchHandle hnd;
-                hnd.path = ez::str::utf8Decode(path);
-                hnd.hDir = CreateFileW(  //
+                hnd.path = ez::str::utf8Decode(rootKey);
+                hnd.hDir = CreateFileW(
                     hnd.path.c_str(),
                     FILE_LIST_DIRECTORY,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -721,330 +763,568 @@ private:
                     OPEN_EXISTING,
                     FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
                     NULL);
-                if (hnd.hDir != INVALID_HANDLE_VALUE) {
-                    hnd.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-                    hnd.ov.hEvent = hnd.hEvent;
-                    ZeroMemory(&hnd.ov, sizeof(hnd.ov));
-                    hnd.inFlight = false;
-                    hnd.relatedPatterns.push_back(vPattern);
-                    m_watchHandles[path] = hnd;
-                    // *** Arm immediately to avoid missing the first changes ***
-                    auto &ref = m_watchHandles[path];
-                    m_postRead(ref);
-                    ret = true;
-                } else {
-#ifdef EZ_TOOLS_LOG
-                    LogVarError("Err : Unable to open directory : %s", path.c_str());
-#endif
+                if (hnd.hDir == INVALID_HANDLE_VALUE) {
+                    LogVarError("Err : Unable to open directory : %s", rootKey.c_str());
+                    return false;
                 }
-#elif defined(LINUX_OS)
-                // todo
-#elif defined(APPLE_OS)
-                // todo
-#endif
+                hnd.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+                hnd.ov.hEvent = hnd.hEvent;
+                ZeroMemory(&hnd.ov, sizeof(hnd.ov));
+                hnd.inFlight = false;
+                hnd.relatedPatterns.push_back(pattern);
+                m_watchHandles[rootKey] = hnd;
+                auto &ref = m_watchHandles[rootKey];
+                m_postRead(ref);  // *** Arm immediately to avoid missing the first changes ***
             }
-        }
-        return ret;
-    }
-
-    static std::string m_getParentDir(const std::string &path) {
-        size_t slash = path.find_last_of("/\\");
-        if (slash == std::string::npos) {
-            return ".";
-        }
-        return path.substr(0, slash);
-    }
-
-    static std::string m_getFileNameExtOnly(const std::string &path) {
-        size_t slash = path.find_last_of("/\\");
-        if (slash == std::string::npos) {
-            return path;
-        }
-        return path.substr(slash + 1);
-    }
-
-#ifdef WINDOWS_OS
-    void completePathResult(PathResult &voResult, const FILE_NOTIFY_INFORMATION *vpNotify) {
-        const auto chFile = m_removeAppPath(ez::str::utf8Encode(std::wstring(vpNotify->FileName, vpNotify->FileNameLength / sizeof(WCHAR))));
-        const char *mode = " ";
-        switch (vpNotify->Action) {
-            case FILE_ACTION_ADDED: {
-                voResult.modifType = PathResult::ModifType::CREATION;
-                voResult.newPath = chFile;
-#ifdef _DEBUG
-                mode = "CREATION";
-#endif
-            } break;
-            case FILE_ACTION_REMOVED: {
-                voResult.modifType = PathResult::ModifType::DELETION;
-                voResult.newPath = chFile;
-#ifdef _DEBUG
-                mode = "DELETION";
-#endif
-            } break;
-            case FILE_ACTION_MODIFIED: {
-                voResult.modifType = PathResult::ModifType::MODIFICATION;
-                voResult.newPath = chFile;
-#ifdef _DEBUG
-                mode = "MODIFICATION";
-#endif
-            } break;
-            case FILE_ACTION_RENAMED_OLD_NAME: {
-                voResult.modifType = PathResult::ModifType::RENAMED;
-                voResult.oldPath = chFile;
-#ifdef _DEBUG
-                mode = "RENAMED";
-#endif
-            } break;
-            case FILE_ACTION_RENAMED_NEW_NAME: {
-                voResult.modifType = PathResult::ModifType::RENAMED;
-                voResult.newPath = chFile;
-#ifdef _DEBUG
-                mode = "RENAMED";
-#endif
-            } break;
-        }
-#ifdef _DEBUG
-        LogVarLightInfo("completePathResult : RP(%s) OP(%s) NP(%s) MODE(%s)", voResult.rootPath.c_str(), voResult.oldPath.c_str(), voResult.newPath.c_str(), mode);
-        #endif
-    }
-    bool m_postRead(WatchHandle &hnd) {
-        // thread running
-        /*if (!m_running) {
-            return false;
-        }*/
-        // Repost only when no I/O is pending
-        if (hnd.inFlight) {
+            m_isDirty = true;
             return true;
         }
 
-        // Reset event & OVERLAPPED before issuing a new read
-        ResetEvent(hnd.hEvent);
-        ZeroMemory(&hnd.ov, sizeof(hnd.ov));
-        hnd.ov.hEvent = hnd.hEvent;
+        void onStop(Watcher &owner) override {
+            (void)owner;
+            std::lock_guard<std::mutex> lock(m_mtx);
+            for (auto &kv : m_watchHandles) {
+                auto &h = kv.second;
+                if (h.inFlight) {
+                    CancelIoEx(h.hDir, &h.ov);  // safe if no I/O too
+                }
+                if (h.hEvent) {
+                    CloseHandle(h.hEvent);
+                    h.hEvent = nullptr;
+                }
+                if (h.hDir && h.hDir != INVALID_HANDLE_VALUE) {
+                    CloseHandle(h.hDir);
+                    h.hDir = INVALID_HANDLE_VALUE;
+                }
+            }
+            m_watchHandles.clear();
+            m_handles.clear();
+        }
 
-        const DWORD kMask = FILE_NOTIFY_CHANGE_FILE_NAME |  // file create/delete/rename in root dir
-            FILE_NOTIFY_CHANGE_LAST_WRITE;                  // file content modifications
-
-        // In OVERLAPPED mode, lpBytesReturned MUST be nullptr
-        BOOL ok = ReadDirectoryChangesW(
-            hnd.hDir,
-            hnd.buffer.data(),
-            static_cast<DWORD>(hnd.buffer.size()),
-            FALSE,  // do NOT watch subtree
-            kMask,
-            nullptr,  // must be null for OVERLAPPED
-            &hnd.ov,
-            nullptr);
-
-        if (!ok) {
-            DWORD err = GetLastError();
-            if (err != ERROR_IO_PENDING) {
-                LogVarWarning("ReadDirectoryChangesW(OVERLAPPED) failed: %u", err);
-                return false;
+        // ---- Your exact functions (content preserved, only owner passed when needed) ----
+        void completePathResult(PathResult &voResult, const FILE_NOTIFY_INFORMATION *vpNotify, Watcher &owner) {
+            const auto chFile = owner.m_removeAppPath(ez::str::utf8Encode(std::wstring(vpNotify->FileName, vpNotify->FileNameLength / sizeof(WCHAR))));
+            const char *mode = " ";
+            switch (vpNotify->Action) {
+                case FILE_ACTION_ADDED: {
+                    voResult.modifType = PathResult::ModifType::CREATION;
+                    voResult.newPath = chFile;
+                } break;
+                case FILE_ACTION_REMOVED: {
+                    voResult.modifType = PathResult::ModifType::DELETION;
+                    voResult.newPath = chFile;
+                } break;
+                case FILE_ACTION_MODIFIED: {
+                    voResult.modifType = PathResult::ModifType::MODIFICATION;
+                    voResult.newPath = chFile;
+                } break;
+                case FILE_ACTION_RENAMED_OLD_NAME: {
+                    voResult.modifType = PathResult::ModifType::RENAMED;
+                    voResult.oldPath = chFile;
+                } break;
+                case FILE_ACTION_RENAMED_NEW_NAME: {
+                    voResult.modifType = PathResult::ModifType::RENAMED;
+                    voResult.newPath = chFile;
+                } break;
             }
         }
 
-        hnd.inFlight = true;
-        return true;
-    }
-    // In class Watcher (private)
-    void m_pollOneHandle(WatchHandle *vpHandle, std::set<PathResult> &voFiles) {
-        // Non-blocking poll of a single handle; parse results and re-arm the async read.
-        if (vpHandle == nullptr) {
-            return;
+        bool m_postRead(WatchHandle &hnd) {
+            if (hnd.inFlight) {
+                return true;
+            }
+
+            // Reset event & OVERLAPPED before issuing a new read
+            ResetEvent(hnd.hEvent);
+            ZeroMemory(&hnd.ov, sizeof(hnd.ov));
+            hnd.ov.hEvent = hnd.hEvent;
+
+            const DWORD kMask = FILE_NOTIFY_CHANGE_FILE_NAME |  // file create/delete/rename in root dir
+                FILE_NOTIFY_CHANGE_LAST_WRITE;                  // file content modifications
+
+            // In OVERLAPPED mode, lpBytesReturned MUST be nullptr
+            BOOL ok = ReadDirectoryChangesW(
+                hnd.hDir,
+                hnd.buffer.data(),
+                static_cast<DWORD>(hnd.buffer.size()),
+                FALSE,  // do NOT watch subtree
+                kMask,
+                nullptr,  // must be null for OVERLAPPED
+                &hnd.ov,
+                nullptr);
+
+            if (!ok) {
+                DWORD err = GetLastError();
+                if (err != ERROR_IO_PENDING) {
+                    LogVarWarning("ReadDirectoryChangesW(OVERLAPPED) failed: %u", err);
+                    return false;
+                }
+            }
+
+            hnd.inFlight = true;
+            return true;
         }
 
-        // 2) Poll event (non-blocking)
-        DWORD wr = WaitForSingleObject(vpHandle->hEvent, 0);
+        // In class Watcher::BackendWindows (private)
+        void m_pollOneHandle(WatchHandle *vpHandle, std::set<PathResult> &voFiles, Watcher &owner) {
+            // Non-blocking poll of a single handle; parse results and re-arm the async read.
+            if (vpHandle == nullptr) {
+                return;
+            }
+
+            // 2) Poll event (non-blocking)
+            DWORD wr = WaitForSingleObject(vpHandle->hEvent, 0);
 #ifdef _DEBUG
-        switch (wr) {
-            case WAIT_ABANDONED: {
-                LogVarLightInfo("WAIT_ABANDONED");
-            } break;
-            case WAIT_OBJECT_0: {
-               // LogVarLightInfo("WAIT_OBJECT_0");
-            } break;
-            case WAIT_TIMEOUT: {
-             //   LogVarLightInfo("WAIT_TIMEOUT");
-            } break;
-            case WAIT_FAILED: {
-                LogVarLightInfo("WAIT_FAILED");
-            } break;
-        }
+            switch (wr) {
+                case WAIT_ABANDONED: {
+                    LogVarLightInfo("WAIT_ABANDONED");
+                } break;
+                case WAIT_OBJECT_0: {
+                    // LogVarLightInfo("WAIT_OBJECT_0");
+                } break;
+                case WAIT_TIMEOUT: {
+                    //   LogVarLightInfo("WAIT_TIMEOUT");
+                } break;
+                case WAIT_FAILED: {
+                    LogVarLightInfo("WAIT_FAILED");
+                } break;
+            }
 #endif
-        if (wr != WAIT_OBJECT_0) {
-            // Nothing ready for this handle
-            return;
-        }
+            if (wr != WAIT_OBJECT_0) {
+                // Nothing ready for this handle
+                return;
+            }
 
-        // I/O finished
-        DWORD bytes = 0;
-        if (GetOverlappedResult(vpHandle->hDir, &vpHandle->ov, &bytes, FALSE)) {
-            // Parse buffer [0..bytes)
-            DWORD offset = 0;
-            PathResult pr{};
-            pr.clear();
-            pr.rootPath = ez::str::utf8Encode(vpHandle->path);
+            // I/O finished
+            DWORD bytes = 0;
+            if (GetOverlappedResult(vpHandle->hDir, &vpHandle->ov, &bytes, FALSE)) {
+                // Parse buffer [0..bytes)
+                DWORD offset = 0;
+                PathResult pr{};
+                pr.clear();
+                pr.rootPath = ez::str::utf8Encode(vpHandle->path);
 
-            while (offset < bytes) {
-                const auto *pNotify = reinterpret_cast<const FILE_NOTIFY_INFORMATION *>(vpHandle->buffer.data() + offset);
-                completePathResult(pr, pNotify);
-                // Only emit when we have a valid newPath (pairs OLD/NEW may come split)
-                if (!pr.newPath.empty()) {
-                    for (const auto &patW : vpHandle->relatedPatterns) {
-                        if (auto pPat = patW.lock()) {
-                            if (pPat->getPhysicalType() == Pattern::PhysicalType::DIR) {
-                                voFiles.emplace(pr);
-#ifdef _DEBUG
-                                const char *mode = " ";
-                                switch (pr.modifType) {
-                                    case PathResult::ModifType::CREATION: mode = "CREATION"; break;
-                                    case PathResult::ModifType::DELETION: mode = "DELETION"; break;
-                                    case PathResult::ModifType::MODIFICATION: mode = "MODIFICATION"; break;
-                                    case PathResult::ModifType::RENAMED: mode = "RENAMED"; break;
-                                }
-                                LogVarLightInfo("Event : RP(%s) OP(%s) NP(%s) MODE(%s)", pr.rootPath.c_str(), pr.oldPath.c_str(), pr.newPath.c_str(), mode);
-#endif
-                            } else {
-                                if (pPat->isPatternMatch(pr.newPath, m_verbose)) {
+                while (offset < bytes) {
+                    const auto *pNotify = reinterpret_cast<const FILE_NOTIFY_INFORMATION *>(vpHandle->buffer.data() + offset);
+                    completePathResult(pr, pNotify, owner);
+                    // Only emit when we have a valid newPath (pairs OLD/NEW may come split)
+                    if (!pr.newPath.empty()) {
+                        // snapshot patterns under lock to avoid concurrent modification
+                        std::vector<PatternWeak> relatedCopy;
+                        {
+                            std::lock_guard<std::mutex> lock(m_mtx);
+                            relatedCopy = vpHandle->relatedPatterns;
+                        }
+                        for (const auto &patW : relatedCopy) {
+                            if (auto pPat = patW.lock()) {
+                                if (pPat->getPhysicalType() == Pattern::PhysicalType::DIR) {
                                     voFiles.emplace(pr);
+#ifdef _DEBUG
+                                    const char *mode = " ";
+                                    switch (pr.modifType) {
+                                        case PathResult::ModifType::CREATION: mode = "CREATION"; break;
+                                        case PathResult::ModifType::DELETION: mode = "DELETION"; break;
+                                        case PathResult::ModifType::MODIFICATION: mode = "MODIFICATION"; break;
+                                        case PathResult::ModifType::RENAMED: mode = "RENAMED"; break;
+                                        default: break;
+                                    }
+                                    LogVarLightInfo("Event : RP(%s) OP(%s) NP(%s) MODE(%s)", pr.rootPath.c_str(), pr.oldPath.c_str(), pr.newPath.c_str(), mode);
+#endif
+                                } else {
+                                    if (pPat->isPatternMatch(pr.newPath, owner.m_verbose)) {
+                                        voFiles.emplace(pr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (pNotify->NextEntryOffset == 0) {
+                        break;
+                    }
+                    offset += pNotify->NextEntryOffset;
+                }
+            } else {
+                LogVarWarning("GetOverlappedResult failed: %u", GetLastError());
+            }
+
+            // Mark as not in-flight and immediately re-arm
+            vpHandle->inFlight = false;
+            (void)m_postRead(*vpHandle);
+        }
+
+        void poll(Watcher &owner, std::set<PathResult> &out) override {
+            if (m_isDirty.exchange(false)) {
+                std::lock_guard<std::mutex> lock(m_mtx);
+                m_handles.clear();
+                m_handles.reserve(m_watchHandles.size());
+                for (auto &kv : m_watchHandles) {
+                    m_handles.push_back(&kv.second);  // store pointer
+                }
+            }
+            for (auto *hnd : m_handles) {
+                if (!hnd->inFlight) {
+                    m_postRead(*hnd);
+                }
+                m_pollOneHandle(hnd, out, owner);
+            }
+        }
+    };
+#endif  // WINDOWS_OS
+
+    // =============================== Backend Linux ===============================
+#if defined(LINUX_OS)
+#include <sys/inotify.h>
+#include <unistd.h>
+#include <limits.h>
+#include <errno.h>
+
+    class BackendLinux : public IBackend {
+    public:
+
+        struct WatchHandle {
+            int wd{-1};
+            std::string rootKey;
+            std::vector<PatternWeak> relatedPatterns;
+        };
+
+        bool onStart(Watcher &owner) override {
+            (void)owner;
+            m_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
+            if (m_fd < 0) {
+                LogVarError("Error: Unable to initialize inotify.");
+                return false;
+            }
+            return true;
+        }
+
+        void onStop(Watcher &owner) override {
+            (void)owner;
+            for (auto &kv : m_handles) {
+                if (kv.second.wd >= 0) {
+                    inotify_rm_watch(m_fd, kv.second.wd);
+                    kv.second.wd = -1;
+                }
+            }
+            if (m_fd >= 0) {
+                close(m_fd);
+                m_fd = -1;
+            }
+            m_wdToRoot.clear();
+            m_pendingRename.clear();
+            m_handles.clear();
+            m_buf.clear();
+        }
+
+        bool addPattern(Watcher &owner, const PatternPtr &pattern) override {
+            if (!pattern) {
+                return false;
+            }
+            const std::string rootKey = owner.m_removeAppPath(pattern->getPath());
+            auto it = m_handles.find(rootKey);
+            if (it != m_handles.end()) {
+                it->second.relatedPatterns.push_back(pattern);
+            } else {
+                const uint32_t mask = IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO;
+                int wd = inotify_add_watch(m_fd, rootKey.c_str(), mask);
+                if (wd < 0) {
+                    LogVarError("Error: inotify_add_watch failed on %s (errno %d)", rootKey.c_str(), errno);
+                    return false;
+                }
+                WatchHandle hnd;
+                hnd.wd = wd;
+                hnd.rootKey = rootKey;
+                hnd.relatedPatterns.push_back(pattern);
+                m_handles[rootKey] = hnd;
+                m_wdToRoot[wd] = rootKey;
+            }
+            return true;
+        }
+
+        void poll(Watcher &owner, std::set<PathResult> &out) override {
+            (void)owner;
+            if (m_fd < 0) {
+                return;
+            }
+            if (m_buf.size() < 64 * 1024) {
+                m_buf.resize(64 * 1024);
+            }
+
+            ssize_t n = read(m_fd, m_buf.data(), m_buf.size());
+            if (n <= 0) {
+                return;
+            }
+
+            ssize_t off = 0;
+            while (off < n) {
+                const inotify_event *ev = reinterpret_cast<const inotify_event *>(m_buf.data() + off);
+
+                auto itRoot = m_wdToRoot.find(ev->wd);
+                if (itRoot != m_wdToRoot.end()) {
+                    const std::string &rootKey = itRoot->second;
+                    auto itH = m_handles.find(rootKey);
+                    if (itH != m_handles.end()) {
+                        const bool isDir = (ev->mask & IN_ISDIR) != 0;
+                        if (!isDir && ev->len > 0) {
+                            const std::string rel(ev->name);
+                            PathResult pr{};
+                            if (ev->mask & IN_CREATE) {
+                                pr.modifType = PathResult::ModifType::CREATION;
+                                pr.newPath = rel;
+                                m_emitIfMatch(rootKey, itH->second.relatedPatterns, rel, pr, out);
+                            } else if (ev->mask & IN_DELETE) {
+                                pr.modifType = PathResult::ModifType::DELETION;
+                                pr.newPath = rel;
+                                m_emitIfMatch(rootKey, itH->second.relatedPatterns, rel, pr, out);
+                            } else if (ev->mask & IN_MODIFY) {
+                                pr.modifType = PathResult::ModifType::MODIFICATION;
+                                pr.newPath = rel;
+                                m_emitIfMatch(rootKey, itH->second.relatedPatterns, rel, pr, out);
+                            } else if (ev->mask & IN_MOVED_FROM) {
+                                m_pendingRename[ev->cookie] = std::make_pair(ev->wd, rel);
+                            } else if (ev->mask & IN_MOVED_TO) {
+                                auto itCookie = m_pendingRename.find(ev->cookie);
+                                if (itCookie != m_pendingRename.end()) {
+                                    if (itCookie->second.first == ev->wd) {
+                                        pr.modifType = PathResult::ModifType::RENAMED;
+                                        pr.oldPath = itCookie->second.second;
+                                        pr.newPath = rel;
+                                        m_emitIfMatch(rootKey, itH->second.relatedPatterns, rel, pr, out);
+                                    } else {
+                                        pr.modifType = PathResult::ModifType::CREATION;
+                                        pr.newPath = rel;
+                                        m_emitIfMatch(rootKey, itH->second.relatedPatterns, rel, pr, out);
+                                    }
+                                    m_pendingRename.erase(itCookie);
+                                } else {
+                                    pr.modifType = PathResult::ModifType::CREATION;
+                                    pr.newPath = rel;
+                                    m_emitIfMatch(rootKey, itH->second.relatedPatterns, rel, pr, out);
                                 }
                             }
                         }
                     }
                 }
-                if (pNotify->NextEntryOffset == 0) {
-                    break;
-                }
-                offset += pNotify->NextEntryOffset;
+
+                off += sizeof(inotify_event) + ev->len;
             }
-        } else {
-            LogVarWarning("GetOverlappedResult failed: %u", GetLastError());
         }
 
-        // Mark as not in-flight and immediately re-arm
-        vpHandle->inFlight = false;
-        (void)m_postRead(*vpHandle);
-    }
-    void m_watchWindows() {
-        std::set<PathResult> files;
-        PathResult pr;
+    private:
+        int m_fd{-1};
+        std::unordered_map<std::string, WatchHandle> m_handles;
+        std::unordered_map<int, std::string> m_wdToRoot;
+        std::unordered_map<uint32_t, std::pair<int, std::string>> m_pendingRename;
+        std::vector<uint8_t> m_buf;
+    };
+#endif  // LINUX_OS
 
-        // Persistent snapshot of handle pointers (avoids copying WatchHandle)
-        std::vector<WatchHandle *> handles;
+    // =============================== Backend macOS ===============================
+#if defined(APPLE_OS)
+    class BackendMac : public IBackend {
+    public:
+#include <CoreServices/CoreServices.h>
 
-        while (m_running) {
-            // Refresh handle list only when dirty
-            if (m_isHandlesDirty.exchange(false)) {
-                std::lock_guard<std::mutex> _{m_mutex};
-                handles.clear();
-                handles.reserve(m_watchHandles.size());
-                for (auto &kv : m_watchHandles) {
-                    handles.push_back(&kv.second);  // store pointer
-                }
-            }
+        struct WatchHandle {
+            std::string rootKey;
+            std::vector<PatternWeak> relatedPatterns;
+        };
 
-            // For each handle: post async read if not in-flight, then poll
-            for (auto *hnd : handles) {
-                // 1) Arm async read if none in flight
-                if (!hnd->inFlight) {
-                    m_postRead(*hnd);
-                }
-
-                // 2) Poll event (non-blocking)
-                m_pollOneHandle(hnd, files);
-            }
-
-            if (!files.empty()) {
-                m_callback(files);
-                files.clear();
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        bool onStart(Watcher &owner) override {
+            (void)owner;
+            m_dirty = true;
+            return true;
         }
-    }
+
+        void onStop(Watcher &owner) override {
+            (void)owner;
+            if (m_stream) {
+                FSEventStreamStop(m_stream);
+                FSEventStreamInvalidate(m_stream);
+                FSEventStreamRelease(m_stream);
+                m_stream = nullptr;
+            }
+            std::lock_guard<std::mutex> lock(m_qmtx);
+            m_queue.clear();
+            m_handles.clear();
+        }
+
+        bool addPattern(Watcher &owner, const PatternPtr &pattern) override {
+            if (!pattern) {
+                return false;
+            }
+            const std::string rootKey = owner.m_removeAppPath(pattern->getPath());
+            auto it = m_handles.find(rootKey);
+            if (it == m_handles.end()) {
+                WatchHandle h;
+                h.rootKey = rootKey;
+                h.relatedPatterns.push_back(pattern);
+                m_handles[rootKey] = std::move(h);
+                m_dirty = true;
+            } else {
+                it->second.relatedPatterns.push_back(pattern);
+            }
+            return true;
+        }
+
+        void poll(Watcher &owner, std::set<PathResult> &out) override {
+            (void)owner;
+
+            if (m_dirty) {
+                if (m_stream) {
+                    FSEventStreamStop(m_stream);
+                    FSEventStreamInvalidate(m_stream);
+                    FSEventStreamRelease(m_stream);
+                    m_stream = nullptr;
+                }
+
+                CFMutableArrayRef paths = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+                for (const auto &kv : m_handles) {
+                    if (!kv.first.empty()) {
+                        CFStringRef s = CFStringCreateWithCString(NULL, kv.first.c_str(), kCFStringEncodingUTF8);
+                        CFArrayAddValue(paths, s);
+                        CFRelease(s);
+                    }
+                }
+
+                if (CFArrayGetCount(paths) > 0) {
+                    FSEventStreamContext ctx{};
+                    ctx.info = this;
+                    const FSEventStreamCreateFlags flags = kFSEventStreamCreateFlagFileEvents | kFSEventStreamCreateFlagNoDefer;
+
+                    m_stream = FSEventStreamCreate(NULL, &BackendMac::sCallback, &ctx, paths, kFSEventStreamEventIdSinceNow, 0.1, flags);
+                    if (m_stream) {
+                        FSEventStreamScheduleWithRunLoop(m_stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+                        FSEventStreamStart(m_stream);
+                    }
+                }
+                CFRelease(paths);
+                m_dirty = false;
+            }
+
+            if (m_stream) {
+                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, true);
+            }
+
+            {
+                std::lock_guard<std::mutex> lock(m_qmtx);
+                for (const PathResult &pr : m_queue) {
+                    out.emplace(pr);
+                }
+                m_queue.clear();
+            }
+        }
+
+    private:
+        static void
+        sCallback(ConstFSEventStreamRef, void *userData, size_t numEvents, void *eventPaths, const FSEventStreamEventFlags *eventFlags, const FSEventStreamEventId *) {
+            BackendMac *self = static_cast<BackendMac *>(userData);
+            if (!self) {
+                return;
+            }
+
+            char **paths = static_cast<char **>(eventPaths);
+
+            // Snapshot roots for matching and pattern list
+            std::vector<std::pair<std::string, std::vector<PatternWeak>>> roots;
+            roots.reserve(self->m_handles.size());
+            for (const auto &kv : self->m_handles) {
+                roots.emplace_back(kv.first, kv.second.relatedPatterns);
+            }
+
+            std::vector<PathResult> local;
+            local.reserve(numEvents);
+
+            for (size_t i = 0; i < numEvents; ++i) {
+                const std::string changed = paths[i];
+                const auto flags = eventFlags[i];
+
+                // Only files
+                if ((flags & kFSEventStreamEventFlagItemIsFile) == 0) {
+                    continue;
+                }
+
+                // Find root; produce relative path
+                for (const auto &r : roots) {
+                    const std::string &rootKey = r.first;
+                    if (changed.size() <= rootKey.size()) {
+                        continue;
+                    }
+                    if (changed.compare(0, rootKey.size(), rootKey) != 0) {
+                        continue;
+                    }
+                    const char sep = changed[rootKey.size()];
+                    if (sep != '/' && sep != '\\') {
+                        continue;
+                    }
+
+                    const std::string rel = changed.substr(rootKey.size() + 1);
+
+                    PathResult pr{};
+                    pr.rootPath = rootKey;
+                    if (flags & kFSEventStreamEventFlagItemCreated) {
+                        pr.modifType = PathResult::ModifType::CREATION;
+                        pr.newPath = rel;
+                    } else if (flags & kFSEventStreamEventFlagItemRemoved) {
+                        pr.modifType = PathResult::ModifType::DELETION;
+                        pr.newPath = rel;
+                    } else if (flags & kFSEventStreamEventFlagItemRenamed) {
+                        pr.modifType = PathResult::ModifType::RENAMED;
+                        pr.newPath = rel;  // oldPath not available with FSEvents
+                    } else if (
+                        flags &
+                        (kFSEventStreamEventFlagItemModified | kFSEventStreamEventFlagItemInodeMetaMod | kFSEventStreamEventFlagItemFinderInfoMod |
+                         kFSEventStreamEventFlagItemChangeOwner | kFSEventStreamEventFlagItemXattrMod)) {
+                        pr.modifType = PathResult::ModifType::MODIFICATION;
+                        pr.newPath = rel;
+                    } else {
+                        continue;
+                    }
+
+                    // Pattern filtering (DIR accepts all; FILE filters on newPath)
+                    for (const auto &pw : r.second) {
+                        if (auto p = pw.lock()) {
+                            if (p->getPhysicalType() == Pattern::PhysicalType::DIR) {
+                                local.push_back(pr);
+                            } else if (!pr.newPath.empty() && p->isPatternMatch(pr.newPath, false)) {
+                                local.push_back(pr);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!local.empty()) {
+                std::lock_guard<std::mutex> lock(self->m_qmtx);
+                for (const auto &pr : local) {
+                    self->m_queue.push_back(pr);
+                }
+            }
+        }
+
+        FSEventStreamRef m_stream{nullptr};
+        bool m_dirty{false};
+        std::unordered_map<std::string, WatchHandle> m_handles;
+
+        std::mutex m_qmtx;
+        std::vector<PathResult> m_queue;
+    };
+#endif  // APPLE_OS
+
+};  // class Watcher
+
+// =============================== Backend factory ===============================
+inline std::unique_ptr<Watcher::IBackend> Watcher::m_createBackend() {
+#if defined(WINDOWS_OS)
+    return std::unique_ptr<IBackend>(new BackendWindows());
 #elif defined(LINUX_OS)
-    void m_watchLinux() {
-        int fd = inotify_init1(IN_NONBLOCK);
-        if (fd < 0) {
-            std::cerr << "Error: Unable to initialize inotify.\n";
-            return;
-        }
-
-        int wd = inotify_add_watch(fd, m_filePathName.c_str(), IN_MODIFY);
-        if (wd < 0) {
-            std::cerr << "Error: Unable to add watch on " << m_filePathName << "\n";
-            close(fd);
-            return;
-        }
-
-        std::array<char, 4096> buffer;
-
-        while (m_running) {
-            int length = read(fd, buffer.data(), buffer.size());
-            if (length > 0 && m_callback) {
-                m_callback({m_filePathName});
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        }
-
-        inotify_rm_watch(fd, wd);
-        close(fd);
-    }
-
+    return std::unique_ptr<IBackend>(new BackendLinux());
 #elif defined(APPLE_OS)
-    static void
-    m_fileChangedCallback(ConstFSEventStreamRef, void *userData, size_t numEvents, void *eventPaths, const FSEventStreamEventFlags *, const FSEventStreamEventId *) {
-        FileWatcher *watcher = static_cast<FileWatcher *>(userData);
-        if (!watcher->m_running)
-            return;
-
-        char **paths = static_cast<char **>(eventPaths);
-        std::vector<std::string> changedFiles;
-        for (size_t i = 0; i < numEvents; ++i) {
-            std::string changedPath = paths[i];
-            if (changedPath == watcher->m_filePathName) {
-                changedFiles.push_back(changedPath);
-            }
-        }
-
-        if (!changedFiles.empty() && watcher->m_callback) {
-            watcher->m_callback(changedFiles);
-        }
-    }
-
-    void m_watchMacOS() {
-        std::string dir = getParentDir(m_filePathName);
-        CFStringRef path = CFStringCreateWithCString(NULL, dir.c_str(), kCFStringEncodingUTF8);
-        CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void **)&path, 1, NULL);
-
-        FSEventStreamContext context = {0, this, NULL, NULL, NULL};
-        FSEventStreamRef stream =
-            FSEventStreamCreate(NULL, &m_fileChangedCallback, &context, pathsToWatch, kFSEventStreamEventIdSinceNow, 0.5, kFSEventStreamCreateFlagNone);
-
-        if (!stream) {
-            std::cerr << "Error: Unable to create FSEventStream.\n";
-            CFRelease(path);
-            CFRelease(pathsToWatch);
-            return;
-        }
-
-        FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-        FSEventStreamStart(stream);
-
-        while (m_running) {
-            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.5, true);
-        }
-
-        FSEventStreamStop(stream);
-        FSEventStreamInvalidate(stream);
-        FSEventStreamRelease(stream);
-        CFRelease(path);
-        CFRelease(pathsToWatch);
-    }
+    return std::unique_ptr<IBackend>(new BackendMac());
+#else
+    return nullptr;
 #endif
-};
+}
+
 
 }  // namespace file
 }  // namespace ez
