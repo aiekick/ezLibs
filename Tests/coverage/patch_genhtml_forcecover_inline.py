@@ -4,7 +4,7 @@
 import sys, os, re, io
 
 if len(sys.argv) != 3:
-    print("usage: patch_genhtml_forcecover_inline.py coverage.utf8.txt coverage_lcov_dir", file=sys.stderr)
+    print("usage: patch_genhtml_forcecover_inline.py coverage_utf8.txt coverage_lcov_dir", file=sys.stderr)
     sys.exit(0)
 
 covtxt, htmldir = sys.argv[1], sys.argv[2]

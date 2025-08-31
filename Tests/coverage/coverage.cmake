@@ -45,7 +45,7 @@ endif()
 
 # --- Fichiers de sortie
 set(COVERAGE_TXT       "${OUT_DIR}/coverage.txt")
-set(COVERAGE_TXT_UTF8  "${OUT_DIR}/coverage.utf8.txt")
+set(COVERAGE_TXT_UTF8  "${OUT_DIR}/coverage_utf8.txt")
 set(REPORT_TXT         "${OUT_DIR}/report.txt")
 set(LCOV_INFO          "${OUT_DIR}/lcov.info")
 set(LCOV_HTML_DIR      "${OUT_DIR}/coverage_lcov")
