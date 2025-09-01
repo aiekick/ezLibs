@@ -142,7 +142,11 @@ private:
                 glGetShaderInfoLog(m_ShaderId, infoLen, nullptr, infoLog);
                 CheckGLErrors;
                 LogVarLightInfo("#### SHADER %s ####", vShaderName.c_str());
-                LogVarLightInfo("%s : %s", vLogTypes.c_str(), infoLog);
+                if (vLogTypes == "Errors") {
+                    LogVarLightError("%s : %s", vLogTypes.c_str(), infoLog);
+                } else if (vLogTypes == "Warnings") {
+                    LogVarLightWarning("%s : %s", vLogTypes.c_str(), infoLog);
+                }
                 delete[] infoLog;
             }
         }
