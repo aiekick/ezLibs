@@ -101,13 +101,6 @@ public:
         return add(ss.str());
     }
 
-    sha1 &add(const char *text) {
-        if (!text) {
-            return *this;
-        }
-        return add(text, static_cast<uint32_t>(strlen(text)));
-    }
-
     sha1 &finalize() {
         // hashed text ends with 0x80, some padding 0x00 and the length in bits
         m_addByteDontCountBits(0x80);
