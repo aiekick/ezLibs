@@ -103,6 +103,15 @@ public:
         }
         return false;
     }
+
+    ez::fvec2 worldToLocal(const ez::fvec2& vWorldPos) { 
+        return (vWorldPos - m_transform.origin) * m_transform.invScale;
+    }
+
+    ez::fvec2 localToWorld(const ez::fvec2& vCanvasPos) { 
+       return vCanvasPos * m_transform.scale + m_transform.origin; 
+    }
+
     bool startOffscreenRender() {
         if (m_isRenderingActive) {
             clearBuffers(m_clearColor);
@@ -218,6 +227,7 @@ private:
             m_transform = {};
             return;
         }
+        m_setScale(m_transform.scale);
         m_uniformTransform.uScale.x = (2.0f * m_transform.scale) / VW;
         m_uniformTransform.uOffset.x = (2.0f * m_transform.origin.x) / VW - 1.0f;
         // Y-down (framebuffer in top-left, classic UI)
