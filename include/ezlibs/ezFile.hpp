@@ -493,7 +493,7 @@ private:
     std::thread m_thread;
     std::atomic<bool> m_running{false};
 
-    struct Pattern;
+    class Pattern;
     using PatternPtr = std::shared_ptr<Pattern>;
     using PatternWeak = std::weak_ptr<Pattern>;
 
