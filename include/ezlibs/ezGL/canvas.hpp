@@ -104,11 +104,11 @@ public:
         return false;
     }
 
-    ez::fvec2 worldToLocal(const ez::fvec2& vWorldPos) { 
+    ez::fvec2 worldToLocal(const ez::fvec2& vWorldPos) const { 
         return (vWorldPos - m_transform.origin) * m_transform.invScale;
     }
 
-    ez::fvec2 localToWorld(const ez::fvec2& vCanvasPos) { 
+    ez::fvec2 localToWorld(const ez::fvec2& vCanvasPos) const { 
        return vCanvasPos * m_transform.scale + m_transform.origin; 
     }
 
@@ -168,9 +168,16 @@ public:
     }
 
     ez::fvec4& getBackgroundColorRef() { return m_clearColor; }
+    const ez::fvec4& getBackgroundColor() const { return m_clearColor; }
+    
     MouseDatas& getMouseDatasRef() { return m_mouseDatas; }
+    const MouseDatas& getMouseDatas() const { return m_mouseDatas; }
+    
     Transform& getTransfomRef() { return m_transform; }
+    const Transform& getTransfom() const { return m_transform; }
+
     UniformTransform& getUniformTransfomRef() { return m_uniformTransform; }
+    const UniformTransform& getUniformTransfom() const { return m_uniformTransform; }
 
 private:
     bool m_mouseActions(const MouseDatas& vMouseDatas) {

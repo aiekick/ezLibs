@@ -92,9 +92,9 @@ inline double unscaleWGS84Yaxis(double vLatDeg, double vRefDeg = 45.0) {
  *   "E001" -> +1
  *   "W112" -> -112
  */
-inline int32_t parseDemCoordinate(const std::string& str) {
-    const int value = std::stoi(str.substr(1));
-    char c = str.at(0);
+inline int16_t parseDemCoordinate(const std::string& vStr) {
+    const int16_t value = std::stoi(vStr.substr(1));
+    const char c = vStr.at(0);
     if (c == 'S' || c == 's' || c == 'W' || c == 'w') {
         return -value;
     }
@@ -106,38 +106,58 @@ inline int32_t parseDemCoordinate(const std::string& str) {
  * Expected format: N00E000 (7 chars total)
  *   - N|S followed by 2 digits
  *   - E|W followed by 3 digits
- * Returns true if valid, also fills vOutCx and vOutCy with longitude/latitude codes.
+ * Returns true if valid, also fills voLat and voLon with longitude/latitude codes.
  */
-inline bool checkDemFileName(const std::string& vFileName, std::string& vOutCx, std::string& vOutCy) {
+inline bool checkDemFileName(const std::string& vFileName, std::string& voLat, std::string& voLon) {
     if (vFileName.size() != 7U)
         return false;
     try {
         bool ret = true;
-        const auto& cy = vFileName.substr(0, 3);
-        const char ccy = cy.at(0);
-        if (ccy == 'S' || ccy == 's' || ccy == 'N' || ccy == 'n') {
-            const auto& cy_num = cy.substr(1);
-            if (!ez::isInteger(cy_num))
+        const auto& sLat = vFileName.substr(0, 3);
+        const char clat = sLat.at(0);
+        if (clat == 'S' || clat == 's' || clat == 'N' || clat == 'n') {
+            const auto& nLat = sLat.substr(1);
+            if (!ez::isInteger(nLat)) {
                 ret = false;
+            }
         } else {
             ret = false;
         }
-        const auto& cx = vFileName.substr(3);
-        const char ccx = cx.at(0);
-        if (ccx == 'E' || ccx == 'e' || ccx == 'W' || ccx == 'w') {
-            const auto& cx_num = cx.substr(1);
-            if (!ez::isInteger(cx_num))
+        const auto& sLon = vFileName.substr(3);
+        const char cLon = sLon.at(0);
+        if (cLon == 'E' || cLon == 'e' || cLon == 'W' || cLon == 'w') {
+            const auto& cx_num = sLon.substr(1);
+            if (!ez::isInteger(cx_num)) {
                 ret = false;
+            }
         } else {
             ret = false;
         }
         if (ret) {
-            vOutCx = cx;
-            vOutCy = cy;
+            voLat = sLat;
+            voLon = sLon;
         }
         return ret;
     } catch (std::exception& ex) {
         LogVarError("Error : %s", ex.what());
+    }
+    return false;
+}
+
+/*
+ * Check if a DEM filename is valid.
+ * Expected format: N00E000 (7 chars total)
+ *   - N|S followed by 2 digits
+ *   - E|W followed by 3 digits
+ * Returns true if valid, also fills voLat and voLon with longitude/latitude codes.
+ */
+inline bool checkDemFileName(const std::string& vFileName, int16_t& voLat, int16_t& voLon) {
+    std::string lat;
+    std::string lon;
+    if (checkDemFileName(vFileName, lat, lon)) {
+        voLat = parseDemCoordinate(lat);
+        voLon = parseDemCoordinate(lon);
+        return true;
     }
     return false;
 }
