@@ -186,9 +186,9 @@ struct PathInfos {
         }
     }
 
-    std::string GetFPNE() { return GetFPNE_WithPathNameExt(path, name, ext); }
+    std::string GetFPNE() const { return GetFPNE_WithPathNameExt(path, name, ext); }
 
-    std::string GetFPNE_WithPathNameExt(std::string vPath, const std::string &vName, const std::string &vExt) {
+    std::string GetFPNE_WithPathNameExt(std::string vPath, const std::string &vName, const std::string &vExt) const {
         if (vPath[0] == EZ_FILE_SLASH_TYPE[0]) {
 #ifdef WINDOWS_OS
             // if it happening on window this seem that this path msut be a relative path but with an error
@@ -199,24 +199,29 @@ struct PathInfos {
             vPath = "/" + vPath;  // make it absolute
 #endif
         }
+        std::string ext = vExt;
+        if (!ext.empty()) {
+            ext = '.' + ext;
+        }
 
-        if (vPath.empty())
-            return vName + "." + vExt;
+        if (vPath.empty()) {
+            return vName + ext;
+        }
 
-        return vPath + EZ_FILE_SLASH_TYPE + vName + "." + vExt;
+        return vPath + EZ_FILE_SLASH_TYPE + vName + ext;
     }
 
-    std::string GetFPNE_WithPath(const std::string &vPath) { return GetFPNE_WithPathNameExt(vPath, name, ext); }
+    std::string GetFPNE_WithPath(const std::string &vPath) const { return GetFPNE_WithPathNameExt(vPath, name, ext); }
 
-    std::string GetFPNE_WithPathName(const std::string &vPath, const std::string &vName) { return GetFPNE_WithPathNameExt(vPath, vName, ext); }
+    std::string GetFPNE_WithPathName(const std::string &vPath, const std::string &vName) const { return GetFPNE_WithPathNameExt(vPath, vName, ext); }
 
     std::string GetFPNE_WithPathExt(const std::string &vPath, const std::string &vExt) { return GetFPNE_WithPathNameExt(vPath, name, vExt); }
 
-    std::string GetFPNE_WithName(const std::string &vName) { return GetFPNE_WithPathNameExt(path, vName, ext); }
+    std::string GetFPNE_WithName(const std::string &vName) const { return GetFPNE_WithPathNameExt(path, vName, ext); }
 
-    std::string GetFPNE_WithNameExt(const std::string &vName, const std::string &vExt) { return GetFPNE_WithPathNameExt(path, vName, vExt); }
+    std::string GetFPNE_WithNameExt(const std::string &vName, const std::string &vExt) const { return GetFPNE_WithPathNameExt(path, vName, vExt); }
 
-    std::string GetFPNE_WithExt(const std::string &vExt) { return GetFPNE_WithPathNameExt(path, name, vExt); }
+    std::string GetFPNE_WithExt(const std::string &vExt) const { return GetFPNE_WithPathNameExt(path, name, vExt); }
 };
 
 inline PathInfos parsePathFileName(const std::string &vPathFileName) {

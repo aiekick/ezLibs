@@ -26,7 +26,7 @@ SOFTWARE.
 
 // ezGeo is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
-#include <cmath>>
+#include <cmath>
 #include <vector>
 #include <string>
 #include <cstdint>

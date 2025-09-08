@@ -54,7 +54,7 @@ public:
         int16_t lon{};
         float fLat{};
         float fLon{};
-        std::array<char, 16> date{};
+        std::array<char, 16> date{'0', '1', '/', '0', '1', '/', '1', '9', '7', '0', ' ', '0', '0', '/', '0', '0'};
         tile<int16_t> tile;
     };
 
@@ -93,15 +93,12 @@ public:
 
     bool save(std::vector<uint8_t>& voBytes) const {
         ez::BinBuf binBuf;
-        std::string date(m_datas.date.data(), m_datas.date.size());
-        if (date.empty()) {
-            date = "01/01/1970 00/00";
-        }
+        std::string date(m_datas.date.begin(), m_datas.date.end());
         binBuf.writeArrayBE(date.data(), date.size());
         binBuf.writeValueBE<uint32_t>(m_datas.resLat);
         binBuf.writeValueBE<uint32_t>(m_datas.resLon);
-        binBuf.writeValueBE<uint32_t>(m_datas.fLat);
-        binBuf.writeValueBE<uint32_t>(m_datas.fLon);
+        binBuf.writeValueBE<float>(m_datas.fLat);
+        binBuf.writeValueBE<float>(m_datas.fLon);
         binBuf.writeValueBE<uint32_t>(m_datas.nLats);
         binBuf.writeValueBE<uint32_t>(m_datas.nLons);
         const auto& tileDatas = m_datas.tile.getDatas();

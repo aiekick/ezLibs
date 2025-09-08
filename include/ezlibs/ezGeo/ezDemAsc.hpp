@@ -100,21 +100,21 @@ public:
     }
 
     bool save(std::string& voBuffer) const {
-        std::stringstream ss;
-        ss << "nrows " << m_datas.nLats << "\n";
-        ss << "ncols " << m_datas.nLons << "\n";
-        ss << "xllcorner " << m_datas.xllcorner << "\n";
-        ss << "yllcorner " << m_datas.yllcorner << "\n";
-        ss << "cellsize " << m_datas.cellsize << "\n";
-        ss << "NODATA_value " << m_datas.NODATA_value << std::endl;  // cause a flush
+        voBuffer.clear();
+        voBuffer.reserve(m_datas.nLats * m_datas.nLons * 4); // 4 letter from -500 to 9999
+        voBuffer += ez::str::toStr("nrows %u\n", m_datas.nLats);
+        voBuffer += ez::str::toStr("ncols %u\n", m_datas.nLons);
+        voBuffer += ez::str::toStr("xllcorner %.2f\n", m_datas.xllcorner);
+        voBuffer += ez::str::toStr("yllcorner %.2f\n", m_datas.yllcorner);
+        voBuffer += ez::str::toStr("cellsize %u\n", m_datas.cellsize);
+        voBuffer += ez::str::toStr("NODATA_value %i\n", m_datas.NODATA_value);
         auto& tileDatas = m_datas.tile.getDatas();
         for (const auto& row : tileDatas) {
             for (const auto& col : row) {
-                ss << col << " ";
+                voBuffer += std::to_string(col) + " ";
             }
-            ss << std::endl;  // cause a flush
+            voBuffer += '\n';
         }
-        voBuffer = ss.str();
         return true;
     }
 

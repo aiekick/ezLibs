@@ -23,5 +23,5 @@ int main(int argc, char** argv) {
         return TestTime(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestTime("TestEzTile_Base_NonZeroMin") ? 0 : 1;
+    return TestTime("TestEzGeo_CheckDemFileName_Valid_Upper") ? 0 : 1;
 }

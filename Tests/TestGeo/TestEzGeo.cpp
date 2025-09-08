@@ -105,31 +105,31 @@ bool TestEzGeo_ParseDemCoordinate() {
 }
 
 bool TestEzGeo_CheckDemFileName_Valid_Upper() {
-    std::string cx, cy;
-    CTEST_ASSERT(ez::geo::checkDemFileName("N48E002", cx, cy));
-    CTEST_ASSERT(cx == "E002");
-    CTEST_ASSERT(cy == "N48");
+    std::string lat, lon;
+    CTEST_ASSERT(ez::geo::checkDemFileName("N48E002", lat, lon));
+    CTEST_ASSERT(lat == "N48");
+    CTEST_ASSERT(lon == "E002");
     return true;
 }
 
 bool TestEzGeo_CheckDemFileName_Valid_Lower() {
-    std::string cx, cy;
-    CTEST_ASSERT(ez::geo::checkDemFileName("s01w112", cx, cy));
-    CTEST_ASSERT(cx == "w112");
-    CTEST_ASSERT(cy == "s01");
+    std::string lat, lon;
+    CTEST_ASSERT(ez::geo::checkDemFileName("s01w112", lat, lon));
+    CTEST_ASSERT(lat == "s01");
+    CTEST_ASSERT(lon == "w112");
     return true;
 }
 
 bool TestEzGeo_CheckDemFileName_Invalid_Length() {
-    std::string cx, cy;
-    CTEST_ASSERT(!ez::geo::checkDemFileName("N1E001", cx, cy));  // bad length
+    std::string lat, lon;
+    CTEST_ASSERT(!ez::geo::checkDemFileName("N1E001", lat, lon));  // bad length
     return true;
 }
 
 bool TestEzGeo_CheckDemFileName_Invalid_Prefix() {
-    std::string cx, cy;
-    CTEST_ASSERT(!ez::geo::checkDemFileName("X01E001", cx, cy));  // bad first letter
-    CTEST_ASSERT(!ez::geo::checkDemFileName("N01Q12", cx, cy));   // bad second block letter
+    std::string lat, lon;
+    CTEST_ASSERT(!ez::geo::checkDemFileName("X01E001", lat, lon));  // bad first letter
+    CTEST_ASSERT(!ez::geo::checkDemFileName("N01Q12", lat, lon));   // bad second block letter
     return true;
 }
 
