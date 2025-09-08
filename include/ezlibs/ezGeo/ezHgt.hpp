@@ -54,38 +54,36 @@ private:
 
 public:
     bool load(const std::string& vName, const std::vector<uint8_t> vBytes) {
-        if (vBytes.empty()) {
-#ifdef EZ_TOOLS_LOG
-            LogVarError(u8R"(Bytes are empty)");
-#endif
-            return false;
-        }
-        if (!checkDemFileName(vName, m_datas.latStr, m_datas.lonStr)) {
-#ifdef EZ_TOOLS_LOG
-            LogVarError(u8R"(Name "%s" have not the good format ex: N01E006)", vName.c_str());
-#endif
-            return false;
-        }
-        m_datas.lat = parseDemCoordinate(m_datas.latStr);
-        m_datas.lon = parseDemCoordinate(m_datas.lonStr);
-        const auto side = m_computeSizeFromBufferSize(vBytes.size());
-        const auto nLats = side;
-        const auto nLons = side;
-        ez::BinBuf binBuf;
-        binBuf.setDatas(vBytes);
-        size_t pos = 0;
-        auto& tileDatas = m_datas.tile.getDatasRef();
-        tileDatas.resize(nLats);
-        for (uint16_t row = 0; row < nLats; ++row) {
-            // read row
-            auto& matRow = tileDatas.at(row);
-            matRow.resize(nLons);
-            binBuf.readArrayBE<int16_t>(pos, matRow.data(), matRow.size());
+        if (vBytes.empty() && checkDemFileName(vName, m_datas.latStr, m_datas.lonStr)) {
+            m_datas.lat = parseDemCoordinate(m_datas.latStr);
+            m_datas.lon = parseDemCoordinate(m_datas.lonStr);
+            const auto side = m_computeSizeFromBufferSize(vBytes.size());
+            const auto nLats = side;
+            const auto nLons = side;
+            ez::BinBuf binBuf;
+            binBuf.setDatas(vBytes);
+            size_t pos = 0;
+            auto& tileDatas = m_datas.tile.getDatasRef();
+            tileDatas.resize(nLats);
+            for (uint16_t row = 0; row < nLats; ++row) {
+                // read row
+                auto& matRow = tileDatas.at(row);
+                matRow.resize(nLons);
+                binBuf.readArrayBE<int16_t>(pos, matRow.data(), matRow.size());
+            }
         }
         return m_datas.tile.check();
     }
 
-    bool save(const std::string& vFile) const { return false; }
+    bool save(std::vector<uint8_t>& voBytes) const {
+        ez::BinBuf binBuf;
+        const auto& tileDatas = m_datas.tile.getDatas();
+        for (const auto& row : tileDatas) {
+            binBuf.writeArrayBE<int16_t>(row.data(), row.size());
+        }
+        voBytes = binBuf.getDatas();    
+        return true; 
+    }
 
     bool isValid() const { return m_datas.tile.isValid(); }
     const Datas& getDatas() const { return m_datas; }
