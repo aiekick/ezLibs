@@ -46,7 +46,7 @@ public:
     struct Uniform;
     typedef std::map<GLenum, std::map<std::string, Uniform>> UniformPerShaderTypeContainer;
     typedef std::function<void(FBOPipeLinePtr, Uniform&)> UniformPreUploadFunctor;
-    typedef std::function<void(Uniform&)> UniformWidgetFunctor;
+    typedef std::function<bool(Uniform&)> UniformWidgetFunctor;
     struct Uniform {
         std::string name;
         float* datas_f = nullptr;  // float
@@ -480,6 +480,21 @@ public:
         }
     }
 #ifdef IMGUI_INCLUDE
+    bool drawUniformWidgetsLight() {
+        bool ret = false;
+        ImGui::PushID(m_ProgramName.c_str());
+        for (auto& shader_type : m_Uniforms) {
+            for (auto& uni : shader_type.second) {
+                if (uni.second.showed && uni.second.used) {
+                    if (uni.second.widget_functor != nullptr) {
+                       ret |= uni.second.widget_functor(uni.second);
+                    }
+                }
+            }
+        }
+        ImGui::PopID();
+        return ret;
+    }
     bool drawUniformWidgets(bool vShowCollapsingHeader = true) {
         bool ret = false;
         ImGui::PushID(m_ProgramName.c_str());
@@ -500,7 +515,7 @@ public:
                 for (auto& uni : shader_type.second) {
                     if (uni.second.showed && uni.second.used) {
                         if (uni.second.widget_functor != nullptr) {
-                            uni.second.widget_functor(uni.second);
+                            ret |= uni.second.widget_functor(uni.second);
                         } else {
                             if (uni.second.datas_f != nullptr) {
                                 for (GLuint i = 0; i < uni.second.elements; ++i) {
@@ -552,11 +567,13 @@ public:
                 case GL_TESS_CONTROL_SHADER: stage_name = "TESSCTRL"; break;
             }
             for (auto& uni : shader_type.second) {
-                uni.second.loc = glGetUniformLocation(m_ProgramId, uni.second.name.c_str());
-                CheckGLErrors;
-                uni.second.used = (uni.second.loc > -1);
-                if (uni.second.loc == -1) {
-                    LogVarInfo("Program \'%s\' Stage \'%s\' is not using the uniform \'%s\'", m_ProgramName.c_str(), stage_name, uni.second.name.c_str());
+                if (uni.second.buffer_ptr == nullptr) {  // BufferBlock are not classical uniforms so no widgets so no location detection needed
+                    uni.second.loc = glGetUniformLocation(m_ProgramId, uni.second.name.c_str());
+                    CheckGLErrors;
+                    uni.second.used = (uni.second.loc > -1);
+                    if (uni.second.loc == -1) {
+                        LogVarInfo("Program \'%s\' Stage \'%s\' is not using the uniform \'%s\'", m_ProgramName.c_str(), stage_name, uni.second.name.c_str());
+                    }
                 }
             }
         }

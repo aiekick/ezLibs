@@ -40,7 +40,7 @@ public:
         ez::fvec2 displayRect;
         ez::fvec2 mousePos;
         float mouseWheel{};
-        bool isLeftButtonDown{};
+        bool isPanButtonDown{};
     };
     struct Transform {
         ez::fvec2 origin;
@@ -188,7 +188,7 @@ private:
             m_applyZoomAtMouse(factor, vMouseDatas.mousePos);
             ret = true;
         }
-        if (vMouseDatas.isLeftButtonDown) {
+        if (vMouseDatas.isPanButtonDown) {
             const ez::fvec2 delta = vMouseDatas.mousePos - m_lastMousePos;
             m_isPanning = true;
             m_applyPanDrag(delta);
