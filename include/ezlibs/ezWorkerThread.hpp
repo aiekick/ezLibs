@@ -279,14 +279,24 @@ public:
                         ImGuiWindowFlags_NoDocking)) {
                 ImGui::Header(m_taskTitle.c_str());
                 ImGui::Separator();
-                m_drawPhase(vItemWidth, vItemAlign);
-                m_drawProgressBar(vItemWidth, vItemAlign);
+                m_drawDialogPhase(vItemWidth, vItemAlign);
+                m_drawDialogProgressBar(vItemWidth, vItemAlign);
                 ImGui::Separator();
                 if (ImGui::ContrastedButton("Stop")) {
                     cancel();
                 }
                 ImGui::EndPopup();
             }
+        }
+    }
+    void drawStatusBar() {
+        if (aWorking) {
+            ImGui::Text("%s", m_taskTitle.c_str());
+            m_drawStatusBarPhase();
+            m_drawStatusBarProgressBar();
+            if (ImGui::SmallContrastedButton("Stop")) {
+                cancel();
+            }        
         }
     }
 #endif
@@ -320,11 +330,11 @@ private:
         std::lock_guard<std::mutex> _{m_mutex};
         m_currentPhase = vPhase;
     }
-    void m_drawPhase(const float vItemWidth, const float vItemAlign) const {
+    void m_drawDialogPhase(const float vItemWidth, const float vItemAlign) const {
         std::lock_guard<std::mutex> _{m_mutex};
         if (!m_currentPhase.empty()) {
-        ImGui::DisplayAlignedWidget(vItemWidth, "Phase", vItemAlign, [this]() {  //
-            ImGui::Text("%s", m_currentPhase.c_str());
+            ImGui::DisplayAlignedWidget(vItemWidth, "Phase", vItemAlign, [this]() {  //
+                ImGui::Text("%s", m_currentPhase.c_str());
             });
         }
         if (!m_currentStepMessage.empty()) {
@@ -333,15 +343,33 @@ private:
             });
         }
     }
+    void m_drawStatusBarPhase() {
+        std::lock_guard<std::mutex> _{m_mutex};
+        if (!m_currentPhase.empty()) {
+            ImGui::Separator();
+            ImGui::Text("Phase %s", m_currentPhase.c_str());
+        }
+        if (!m_currentStepMessage.empty()) {
+            ImGui::Separator();
+            ImGui::TextWrapped("%s %s", m_currentStepHeader.c_str(), m_currentStepMessage.c_str());
+        }
+    }
 
-    // no mutex needed, sicne use atomic vars
-    void m_drawProgressBar(const float vItemWidth, const float vItemAlign) const {
+    // no mutex needed, since use atomic vars
+    void m_drawDialogProgressBar(const float vItemWidth, const float vItemAlign) const {
         ImGui::DisplayAlignedWidget(vItemWidth, "Progres", vItemAlign, [this]() {  //
             float progress = aProgress;                                            // attendu entre 0.0 et 1.0
             float elapsed_time = aGenerationTime;
             const auto txt = ez::str::toStr("%.3f s", elapsed_time);
             ImGui::ProgressBar(progress, ImVec2(300.0f, 0.0f), txt.c_str());
         });
+    }
+    void m_drawStatusBarProgressBar() {
+        float progress = aProgress;  // attendu entre 0.0 et 1.0
+        float elapsed_time = aGenerationTime;
+        const auto txt = ez::str::toStr("%.3f s", elapsed_time);
+        ImGui::Separator();
+        ImGui::ProgressBar(progress, ImVec2(300.0f, 0.0f), txt.c_str());
     }
 #endif
 };
