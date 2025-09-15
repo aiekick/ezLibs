@@ -34,7 +34,7 @@ SOFTWARE.
 namespace ez {
 
 template<typename T>
-class Mat4 {
+class mat4 {
     static_assert(std::is_arithmetic<T>::value, "Mat4 requires arithmetic T");
 public:
     static constexpr int Rows = 4;
@@ -42,12 +42,7 @@ public:
 
 private:
     // Column-major storage: m[col * Rows + row]
-    std::array<T, 16> m_data{
-        { T(0),T(0),T(0),T(0),
-          T(0),T(0),T(0),T(0),
-          T(0),T(0),T(0),T(0),
-          T(0),T(0),T(0),T(0) }
-    };
+    std::array<T, 16> m_data{};
 
     // Small vector helpers (3D)
     static std::array<T,3> v3_add(const std::array<T,3>& a, const std::array<T,3>& b) {
@@ -223,7 +218,7 @@ public:
 	/// Vulkan bias matrix to convert from OpenGL clip space
     /// - Flips Y
     /// - Remaps z from [-1,1] (GL) to [0,1] (Vulkan)
-    static Mat4 BiasVulkan() {
+    static Mat4 BiasVK() {
         Mat4 r = Mat4::Identity();
         r(1,1) = T(-1);     // flip Y
         r(2,2) = T(0.5);    // z scale
@@ -233,7 +228,7 @@ public:
 
 
     /// Perspective matrix for Opengl (expects fovY in radians)
-    static Mat4 PerspectiveOpengl(T vFovYRadians, T vAspect, T vNear, T vFar) {
+    static Mat4 PerspectiveGL(T vFovYRadians, T vAspect, T vNear, T vFar) {
         // Right-handed, OpenGL-style clip space
         const T f = T(1) / static_cast<T>(std::tan(static_cast<double>(vFovYRadians) * 0.5));
         Mat4 r;
@@ -246,14 +241,14 @@ public:
     }
 
     /// Perspective matrix for Vulkan (NDC z in [0,1] + Y flipped)
-    static Mat4 PerspectiveVulkan(T vFovYRadians, T vAspect, T vNear, T vFar) {
-        Mat4 projGL = PerspectiveOpengl(vFovYRadians, vAspect, vNear, vFar);
-        return BiasVulkan() * projGL;
+    static Mat4 PerspectiveVK(T vFovYRadians, T vAspect, T vNear, T vFar) {
+        Mat4 projGL = PerspectiveGL(vFovYRadians, vAspect, vNear, vFar);
+        return BiasVK() * projGL;
     }
 
     // --- Orthographic projections (OpenGL-style: z in [-1, 1]) ---
     // Off-center orthographic
-    static Mat4 OrthoOpengl(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
+    static Mat4 OrthoGL(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
         Mat4 r = Mat4::Zero();
         r(0, 0) = T(2) / (vRight - vLeft);
         r(1, 1) = T(2) / (vTop - vBottom);
@@ -266,25 +261,25 @@ public:
     }
 
     // Symmetric orthographic (helper)
-    static Mat4 OrthoSymmetricOpengl(T vWidth, T vHeight, T vNear, T vFar) {
+    static Mat4 OrthoSymmetricGL(T vWidth, T vHeight, T vNear, T vFar) {
         const T halfW = vWidth * T(0.5);
         const T halfH = vHeight * T(0.5);
         return Ortho(-halfW, +halfW, -halfH, +halfH, vNear, vFar);
     }
 
     // Vulkan orthographic (NDC z in [0,1] + Y flip)
-    static Mat4 OrthoVulkan(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
-        return BiasVulkan() * OrthoOpengl(vLeft, vRight, vBottom, vTop, vNear, vFar);
+    static Mat4 OrthoVK(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
+        return BiasVK() * OrthoGL(vLeft, vRight, vBottom, vTop, vNear, vFar);
     }
-    static Mat4 OrthoSymmetricVulkan(T vWidth, T vHeight, T vNear, T vFar) {
-        return OrthoVulkan(-vWidth * T(0.5), vWidth * T(0.5),
+    static Mat4 OrthoSymmetricVK(T vWidth, T vHeight, T vNear, T vFar) {
+        return OrthoVK(-vWidth * T(0.5), vWidth * T(0.5),
             -vHeight * T(0.5), vHeight * T(0.5),
             vNear, vFar);
     }
 
     // --- Perspective frustum projections (OpenGL-style: z in [-1, 1]) ---
     // Off-center perspective frustum (matches glFrustum semantics)
-    static Mat4 FrustumOpengl(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
+    static Mat4 FrustumGL(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
         Mat4 r = Mat4::Zero();
         r(0, 0) = (T(2) * vNear) / (vRight - vLeft);
         r(1, 1) = (T(2) * vNear) / (vTop - vBottom);
@@ -297,8 +292,8 @@ public:
     }
 
     // Vulkan frustum (NDC z in [0,1] + Y flip)
-    static Mat4 FrustumVulkan(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
-        return BiasVulkan() * FrustumOpengl(vLeft, vRight, vBottom, vTop, vNear, vFar);
+    static Mat4 FrustumVK(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
+        return BiasVK() * FrustumGL(vLeft, vRight, vBottom, vTop, vNear, vFar);
     }
 
     /// LookAt matrix (right-handed)
@@ -321,5 +316,8 @@ public:
         return r;
     }
 };
+
+typedef mat4<float> fmat4;
+typedef mat4<double> dmat4;
 
 } // namespace ez

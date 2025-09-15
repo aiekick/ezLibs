@@ -34,7 +34,7 @@ SOFTWARE.
 namespace ez {
 
 template<typename T>
-class Mat2 {
+class mat2 {
     static_assert(std::is_arithmetic<T>::value, "Mat2 requires arithmetic T");
 public:
     static constexpr int Rows = 2;
@@ -42,7 +42,7 @@ public:
 
 private:
     // Column-major storage: m[col * Rows + row]
-    std::array<T, 4> m_data{ { T(0), T(0), T(0), T(0) } };
+    std::array<T, 4> m_data{};
 
 public:
     /// Default: zero matrix
@@ -134,5 +134,8 @@ public:
         return inv;
     }
 };
+
+typedef mat2<float> fmat2;
+typedef mat2<double> dmat2;
 
 } // namespace ez

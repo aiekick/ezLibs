@@ -34,7 +34,7 @@ SOFTWARE.
 namespace ez {
 
 template<typename T>
-class Mat3 {
+class mat3 {
     static_assert(std::is_arithmetic<T>::value, "Mat3 requires arithmetic T");
 public:
     static constexpr int Rows = 3;
@@ -42,7 +42,7 @@ public:
 
 private:
     // Column-major storage: m[col * Rows + row]
-    std::array<T, 9> m_data{ { T(0),T(0),T(0), T(0),T(0),T(0), T(0),T(0),T(0) } };
+    std::array<T, 9> m_data{};
 
     static std::array<T,3> cross(const std::array<T,3>& a, const std::array<T,3>& b) {
         return {
@@ -165,5 +165,8 @@ public:
         return inv;
     }
 };
+
+typedef mat3<float> fmat3;
+typedef mat3<double> dmat3;
 
 } // namespace ez
