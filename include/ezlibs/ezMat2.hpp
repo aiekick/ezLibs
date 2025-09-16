@@ -35,7 +35,7 @@ namespace ez {
 
 template<typename T>
 class mat2 {
-    static_assert(std::is_arithmetic<T>::value, "Mat2 requires arithmetic T");
+    static_assert(std::is_arithmetic<T>::value, "mat2 requires arithmetic T");
 public:
     static constexpr int Rows = 2;
     static constexpr int Cols = 2;
@@ -46,29 +46,29 @@ private:
 
 public:
     /// Default: zero matrix
-    Mat2() = default;
+    mat2() = default;
 
     /// Diagonal constructor
-    explicit Mat2(T vDiagonal) {
+    explicit mat2(T vDiagonal) {
         m_data = { vDiagonal, T(0), T(0), vDiagonal };
     }
 
     /// From elements (column-major order): c0r0, c0r1, c1r0, c1r1
-    Mat2(T c0r0, T c0r1, T c1r0, T c1r1) {
+    mat2(T c0r0, T c0r1, T c1r0, T c1r1) {
         m_data = { c0r0, c0r1, c1r0, c1r1 };
     }
 
     /// From std::array in column-major order
-    explicit Mat2(const std::array<T, 4>& vData) : m_data(vData) {}
+    explicit mat2(const std::array<T, 4>& vData) : m_data(vData) {}
 
     /// Identity factory
-    static Mat2 Identity() {
-        return Mat2(T(1));
+    static mat2 Identity() {
+        return mat2(T(1));
     }
 
     /// Zero factory
-    static Mat2 Zero() {
-        return Mat2();
+    static mat2 Zero() {
+        return mat2();
     }
 
     /// Element access (row, col), 0-based
@@ -84,8 +84,8 @@ public:
     T* data() { return m_data.data(); }
 
     /// Matrix multiplication
-    Mat2 operator*(const Mat2& vOther) const {
-        Mat2 result = Zero();
+    mat2 operator*(const mat2& vOther) const {
+        mat2 result = Zero();
         for (int columnIndex = 0; columnIndex < Cols; ++columnIndex) {
             for (int rowIndex = 0; rowIndex < Rows; ++rowIndex) {
                 T sum = T(0);
@@ -107,8 +107,8 @@ public:
     }
 
     /// Transpose
-    Mat2 transpose() const {
-        return Mat2(
+    mat2 transpose() const {
+        return mat2(
             (*this)(0,0), (*this)(1,0),
             (*this)(0,1), (*this)(1,1)
         );
@@ -120,9 +120,9 @@ public:
     }
 
     /// Inverse (if det != 0)
-    Mat2 inverse(T vEpsilon = T(1e-12)) const {
+    mat2 inverse(T vEpsilon = T(1e-12)) const {
         T det = determinant();
-        Mat2 inv;
+        mat2 inv;
         if (std::fabs(static_cast<double>(det)) <= static_cast<double>(vEpsilon)) {
             return inv; // returns zero matrix if non-invertible
         }

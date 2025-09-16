@@ -99,7 +99,7 @@ namespace ez
 
         /**
          * @brief Déplace un point existant vers une nouvelle position.
-         *        Cette fonction effectue une remove + insert si le point existe.
+         *        Cette fonction layerue une remove + insert si le point existe.
          * @param oldPt Ancienne position du point.
          * @param newPt Nouvelle position du point.
          * @return true si le déplacement a réussi (point trouvé et bien réinséré),

@@ -55,25 +55,25 @@ public:  // methods
 
     // --- Core matrices ---
     // View matrix (right-handed)
-    Mat4<T> computeViewMatrix() const { return Mat4<T>::LookAt(m_position, m_target, m_up); }
+    mat4<T> computeViewMatrix() const { return mat4<T>::LookAt(m_position, m_target, m_up); }
 
     // Perspective (OpenGL clip space: z in [-1,1])
-    static Mat4<T> makeGLPerspective(T vFovYRadians, T vAspect, T vNear, T vFar) { return Mat4<T>::PerspectiveGL(vFovYRadians, vAspect, vNear, vFar); }
+    static mat4<T> makeGLPerspective(T vFovYRadians, T vAspect, T vNear, T vFar) { return mat4<T>::PerspectiveGL(vFovYRadians, vAspect, vNear, vFar); }
 
     // Perspective (Vulkan clip space: z in [0,1] + Y flip)
-    static Mat4<T> makeVKPerspective(T vFovYRadians, T vAspect, T vNear, T vFar) { return Mat4<T>::PerspectiveVK(vFovYRadians, vAspect, vNear, vFar); }
+    static mat4<T> makeVKPerspective(T vFovYRadians, T vAspect, T vNear, T vFar) { return mat4<T>::PerspectiveVK(vFovYRadians, vAspect, vNear, vFar); }
 
     // Orthographic (OpenGL)
-    static Mat4<T> makeGLOrtho(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) { return Mat4<T>::OrthoGL(vLeft, vRight, vBottom, vTop, vNear, vFar); }
+    static mat4<T> makeGLOrtho(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) { return mat4<T>::OrthoGL(vLeft, vRight, vBottom, vTop, vNear, vFar); }
 
     // Orthographic (Vulkan)
-    static Mat4<T> makeVKOrtho(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) { return Mat4<T>::OrthoVK(vLeft, vRight, vBottom, vTop, vNear, vFar); }
+    static mat4<T> makeVKOrtho(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) { return mat4<T>::OrthoVK(vLeft, vRight, vBottom, vTop, vNear, vFar); }
 
     // Frustum (OpenGL)
-    static Mat4<T> makeGLFrustum(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) { return Mat4<T>::FrustumGL(vLeft, vRight, vBottom, vTop, vNear, vFar); }
+    static mat4<T> makeGLFrustum(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) { return mat4<T>::FrustumGL(vLeft, vRight, vBottom, vTop, vNear, vFar); }
 
     // Frustum (Vulkan)
-    static Mat4<T> makeVKFrustum(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) { return Mat4<T>::FrustumVK(vLeft, vRight, vBottom, vTop, vNear, vFar); }
+    static mat4<T> makeVKFrustum(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) { return mat4<T>::FrustumVK(vLeft, vRight, vBottom, vTop, vNear, vFar); }
 };
 
 template <typename T>

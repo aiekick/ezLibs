@@ -35,7 +35,7 @@ namespace ez {
 
 template<typename T>
 class mat3 {
-    static_assert(std::is_arithmetic<T>::value, "Mat3 requires arithmetic T");
+    static_assert(std::is_arithmetic<T>::value, "mat3 requires arithmetic T");
 public:
     static constexpr int Rows = 3;
     static constexpr int Cols = 3;
@@ -63,17 +63,17 @@ private:
 
 public:
     /// Default: zero matrix
-    Mat3() = default;
+    mat3() = default;
 
     /// Diagonal constructor
-    explicit Mat3(T vDiagonal) {
+    explicit mat3(T vDiagonal) {
         m_data = { vDiagonal, T(0), T(0),
                    T(0), vDiagonal, T(0),
                    T(0), T(0), vDiagonal };
     }
 
     /// From elements (column-major)
-    Mat3(T c0r0, T c0r1, T c0r2,
+    mat3(T c0r0, T c0r1, T c0r2,
          T c1r0, T c1r1, T c1r2,
          T c2r0, T c2r1, T c2r2) {
         m_data = { c0r0, c0r1, c0r2,
@@ -81,10 +81,10 @@ public:
                    c2r0, c2r1, c2r2 };
     }
 
-    explicit Mat3(const std::array<T, 9>& vData) : m_data(vData) {}
+    explicit mat3(const std::array<T, 9>& vData) : m_data(vData) {}
 
-    static Mat3 Identity() { return Mat3(T(1)); }
-    static Mat3 Zero() { return Mat3(); }
+    static mat3 Identity() { return mat3(T(1)); }
+    static mat3 Zero() { return mat3(); }
 
     T& operator()(int vRowIndex, int vColumnIndex) {
         return m_data[static_cast<size_t>(vColumnIndex * Rows + vRowIndex)];
@@ -96,8 +96,8 @@ public:
     const T* data() const { return m_data.data(); }
     T* data() { return m_data.data(); }
 
-    Mat3 operator*(const Mat3& vOther) const {
-        Mat3 result = Zero();
+    mat3 operator*(const mat3& vOther) const {
+        mat3 result = Zero();
         for (int columnIndex = 0; columnIndex < Cols; ++columnIndex) {
             for (int rowIndex = 0; rowIndex < Rows; ++rowIndex) {
                 T sum = T(0);
@@ -119,8 +119,8 @@ public:
         };
     }
 
-    Mat3 transpose() const {
-        return Mat3(
+    mat3 transpose() const {
+        return mat3(
             (*this)(0,0), (*this)(1,0), (*this)(2,0),
             (*this)(0,1), (*this)(1,1), (*this)(2,1),
             (*this)(0,2), (*this)(1,2), (*this)(2,2)
@@ -134,8 +134,8 @@ public:
         return a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g);
     }
 
-    Mat3 inverse(T vEpsilon = T(1e-12)) const {
-        Mat3 inv;
+    mat3 inverse(T vEpsilon = T(1e-12)) const {
+        mat3 inv;
         T det = determinant();
         if (std::fabs(static_cast<double>(det)) <= static_cast<double>(vEpsilon)) {
             return inv; // zero matrix if non-invertible

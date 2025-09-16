@@ -35,7 +35,7 @@ namespace ez {
 
 template<typename T>
 class mat4 {
-    static_assert(std::is_arithmetic<T>::value, "Mat4 requires arithmetic T");
+    static_assert(std::is_arithmetic<T>::value, "mat4 requires arithmetic T");
 public:
     static constexpr int Rows = 4;
     static constexpr int Cols = 4;
@@ -72,10 +72,10 @@ private:
     }
 
 public:
-    Mat4() = default;
+    mat4() = default;
 
     /// Diagonal constructor
-    explicit Mat4(T vDiagonal) {
+    explicit mat4(T vDiagonal) {
         m_data = { vDiagonal, T(0), T(0), T(0),
                    T(0), vDiagonal, T(0), T(0),
                    T(0), T(0), vDiagonal, T(0),
@@ -83,7 +83,7 @@ public:
     }
 
     /// From elements (column-major)
-    Mat4(T c0r0, T c0r1, T c0r2, T c0r3,
+    mat4(T c0r0, T c0r1, T c0r2, T c0r3,
          T c1r0, T c1r1, T c1r2, T c1r3,
          T c2r0, T c2r1, T c2r2, T c2r3,
          T c3r0, T c3r1, T c3r2, T c3r3) {
@@ -93,10 +93,10 @@ public:
                    c3r0, c3r1, c3r2, c3r3 };
     }
 
-    explicit Mat4(const std::array<T, 16>& vData) : m_data(vData) {}
+    explicit mat4(const std::array<T, 16>& vData) : m_data(vData) {}
 
-    static Mat4 Identity() { return Mat4(T(1)); }
-    static Mat4 Zero() { return Mat4(); }
+    static mat4 Identity() { return mat4(T(1)); }
+    static mat4 Zero() { return mat4(); }
 
     T& operator()(int vRowIndex, int vColumnIndex) {
         return m_data[static_cast<size_t>(vColumnIndex * Rows + vRowIndex)];
@@ -108,8 +108,8 @@ public:
     const T* data() const { return m_data.data(); }
     T* data() { return m_data.data(); }
 
-    Mat4 operator*(const Mat4& vOther) const {
-        Mat4 result = Zero();
+    mat4 operator*(const mat4& vOther) const {
+        mat4 result = Zero();
         for (int columnIndex = 0; columnIndex < Cols; ++columnIndex) {
             for (int rowIndex = 0; rowIndex < Rows; ++rowIndex) {
                 T sum = T(0);
@@ -132,8 +132,8 @@ public:
         };
     }
 
-    Mat4 transpose() const {
-        return Mat4(
+    mat4 transpose() const {
+        return mat4(
             (*this)(0,0), (*this)(1,0), (*this)(2,0), (*this)(3,0),
             (*this)(0,1), (*this)(1,1), (*this)(2,1), (*this)(3,1),
             (*this)(0,2), (*this)(1,2), (*this)(2,2), (*this)(3,2),
@@ -166,7 +166,7 @@ public:
     }
 
     /// Inverse (returns zero matrix if non-invertible)
-    Mat4 inverse(T vEpsilon = T(1e-12)) const {
+    mat4 inverse(T vEpsilon = T(1e-12)) const {
         const T a00 = (*this)(0,0), a01 = (*this)(0,1), a02 = (*this)(0,2), a03 = (*this)(0,3);
         const T a10 = (*this)(1,0), a11 = (*this)(1,1), a12 = (*this)(1,2), a13 = (*this)(1,3);
         const T a20 = (*this)(2,0), a21 = (*this)(2,1), a22 = (*this)(2,2), a23 = (*this)(2,3);
@@ -187,11 +187,11 @@ public:
 
         const T det = b00*b11 - b01*b10 + b02*b09 + b03*b08 - b04*b07 + b05*b06;
         if (std::fabs(static_cast<double>(det)) <= static_cast<double>(vEpsilon)) {
-            return Mat4::Zero();
+            return mat4::Zero();
         }
         const T invDet = T(1) / det;
 
-        Mat4 inv;
+        mat4 inv;
         inv(0,0) = ( a11*b11 - a12*b10 + a13*b09) * invDet;
         inv(0,1) = (-a01*b11 + a02*b10 - a03*b09) * invDet;
         inv(0,2) = ( a31*b05 - a32*b04 + a33*b03) * invDet;
@@ -218,8 +218,8 @@ public:
 	/// Vulkan bias matrix to convert from OpenGL clip space
     /// - Flips Y
     /// - Remaps z from [-1,1] (GL) to [0,1] (Vulkan)
-    static Mat4 BiasVK() {
-        Mat4 r = Mat4::Identity();
+    static mat4 BiasVK() {
+        mat4 r = mat4::Identity();
         r(1,1) = T(-1);     // flip Y
         r(2,2) = T(0.5);    // z scale
         r(3,2) = T(0.5);    // z offset
@@ -228,10 +228,10 @@ public:
 
 
     /// Perspective matrix for Opengl (expects fovY in radians)
-    static Mat4 PerspectiveGL(T vFovYRadians, T vAspect, T vNear, T vFar) {
+    static mat4 PerspectiveGL(T vFovYRadians, T vAspect, T vNear, T vFar) {
         // Right-handed, OpenGL-style clip space
         const T f = T(1) / static_cast<T>(std::tan(static_cast<double>(vFovYRadians) * 0.5));
-        Mat4 r;
+        mat4 r;
         r(0, 0) = f / vAspect;
         r(1, 1) = f;
         r(2, 2) = (vFar + vNear) / (vNear - vFar);
@@ -241,15 +241,15 @@ public:
     }
 
     /// Perspective matrix for Vulkan (NDC z in [0,1] + Y flipped)
-    static Mat4 PerspectiveVK(T vFovYRadians, T vAspect, T vNear, T vFar) {
-        Mat4 projGL = PerspectiveGL(vFovYRadians, vAspect, vNear, vFar);
+    static mat4 PerspectiveVK(T vFovYRadians, T vAspect, T vNear, T vFar) {
+        mat4 projGL = PerspectiveGL(vFovYRadians, vAspect, vNear, vFar);
         return BiasVK() * projGL;
     }
 
     // --- Orthographic projections (OpenGL-style: z in [-1, 1]) ---
     // Off-center orthographic
-    static Mat4 OrthoGL(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
-        Mat4 r = Mat4::Zero();
+    static mat4 OrthoGL(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
+        mat4 r = mat4::Zero();
         r(0, 0) = T(2) / (vRight - vLeft);
         r(1, 1) = T(2) / (vTop - vBottom);
         r(2, 2) = T(-2) / (vFar - vNear);
@@ -261,17 +261,17 @@ public:
     }
 
     // Symmetric orthographic (helper)
-    static Mat4 OrthoSymmetricGL(T vWidth, T vHeight, T vNear, T vFar) {
+    static mat4 OrthoSymmetricGL(T vWidth, T vHeight, T vNear, T vFar) {
         const T halfW = vWidth * T(0.5);
         const T halfH = vHeight * T(0.5);
         return Ortho(-halfW, +halfW, -halfH, +halfH, vNear, vFar);
     }
 
     // Vulkan orthographic (NDC z in [0,1] + Y flip)
-    static Mat4 OrthoVK(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
+    static mat4 OrthoVK(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
         return BiasVK() * OrthoGL(vLeft, vRight, vBottom, vTop, vNear, vFar);
     }
-    static Mat4 OrthoSymmetricVK(T vWidth, T vHeight, T vNear, T vFar) {
+    static mat4 OrthoSymmetricVK(T vWidth, T vHeight, T vNear, T vFar) {
         return OrthoVK(-vWidth * T(0.5), vWidth * T(0.5),
             -vHeight * T(0.5), vHeight * T(0.5),
             vNear, vFar);
@@ -279,8 +279,8 @@ public:
 
     // --- Perspective frustum projections (OpenGL-style: z in [-1, 1]) ---
     // Off-center perspective frustum (matches glFrustum semantics)
-    static Mat4 FrustumGL(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
-        Mat4 r = Mat4::Zero();
+    static mat4 FrustumGL(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
+        mat4 r = mat4::Zero();
         r(0, 0) = (T(2) * vNear) / (vRight - vLeft);
         r(1, 1) = (T(2) * vNear) / (vTop - vBottom);
         r(0, 2) = (vRight + vLeft) / (vRight - vLeft);
@@ -292,19 +292,19 @@ public:
     }
 
     // Vulkan frustum (NDC z in [0,1] + Y flip)
-    static Mat4 FrustumVK(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
+    static mat4 FrustumVK(T vLeft, T vRight, T vBottom, T vTop, T vNear, T vFar) {
         return BiasVK() * FrustumGL(vLeft, vRight, vBottom, vTop, vNear, vFar);
     }
 
     /// LookAt matrix (right-handed)
-    static Mat4 LookAt(const std::array<T,3>& vEye,
+    static mat4 LookAt(const std::array<T,3>& vEye,
                        const std::array<T,3>& vCenter,
                        const std::array<T,3>& vUp) {
         const std::array<T,3> forward = v3_normalize(v3_sub(vCenter, vEye));
         const std::array<T,3> side = v3_normalize(v3_cross(forward, vUp));
         const std::array<T,3> up = v3_cross(side, forward);
 
-        Mat4 r = Mat4::Identity();
+        mat4 r = mat4::Identity();
         r(0,0) = side[0];   r(1,0) = side[1];   r(2,0) = side[2];
         r(0,1) = up[0];     r(1,1) = up[1];     r(2,1) = up[2];
         r(0,2) = -forward[0]; r(1,2) = -forward[1]; r(2,2) = -forward[2];
