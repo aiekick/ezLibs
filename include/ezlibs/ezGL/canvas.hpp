@@ -34,6 +34,34 @@ SOFTWARE.
 namespace ez {
 namespace gl {
 
+/* Base Canvas Vertex shader :
+#version 430
+layout(location = 0) in vec2 aPosition; // -1..+1 (quad fullscreen)
+
+uniform vec2 uScale;   // NDC scale
+uniform vec2 uOffset;  // NDC offset (centre du quad)
+uniform vec4 uColor;
+
+out vec4 vertColor;
+
+void main() {
+    gl_Position = vec4(aPosition * uScale + uOffset, 0.0, 1.0);
+    vertColor = uColor;
+}
+*/
+
+/* Base Canvas Fragment shader :
+#version 430
+
+layout(location = 0) out vec4 fragColor;
+
+in vec4 vertColor;
+
+void main(void) {
+    fragColor = vertColor;
+}
+*/
+
 class Canvas {
 public:
     struct MouseDatas {
