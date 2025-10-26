@@ -47,7 +47,7 @@ set_target_properties(ezBuildInc PROPERTIES FOLDER 3rdparty/tools)
 
 function(StageBuildInc)
 	add_custom_command(
-		TARGET ${PROJECT}
+		TARGET ${PROJECT} PRE_BUILD
 		COMMAND ezBuildInc ezLibs $<$<CONFIG:Debug>:${EZ_LIBS_INCLUDE_DIR}/ezlibs.hpp> -ff ${EZ_LIBS_INCLUDE_DIR}/../Tests/res/big.flf
 	)
 endfunction(StageBuildInc)

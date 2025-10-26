@@ -56,6 +56,10 @@ public:
     const std::unordered_map<TKey, size_t>& getDico() const { return m_dico; }
     std::vector<TValue>& getArray() { return m_array; }
     const std::vector<TValue>& getArray() const { return m_array; }
+    TValue& front() { return m_array.front(); }
+    const TValue& front() const { return m_array.front(); }
+    TValue& back() { return m_array.front(); }
+    const TValue& back() const { return m_array.back(); }
     typename std::vector<TValue>::iterator begin() { return m_array.begin(); }
     typename std::vector<TValue>::const_iterator begin() const { return m_array.begin(); }
     typename std::vector<TValue>::iterator end() { return m_array.end(); }
