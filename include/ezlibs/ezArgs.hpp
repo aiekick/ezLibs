@@ -108,7 +108,7 @@ private:
                     ss << arg;
                 }
                 if (!m_help_var_name.empty()) {
-                    ss << " " << m_help_var_name;
+                    ss << m_delimiter << m_help_var_name;
                 }
             }
             auto ret = ss.str();
@@ -122,7 +122,7 @@ private:
     class PositionalArgument final : public Argument {
         friend class Args;
     public:
-        PositionalArgument &help(const std::string &vHelp, const std::string &vVarName = {}) { return Argument::help<PositionalArgument>(vHelp, vVarName); }
+        PositionalArgument &help(const std::string &vHelp, const std::string &vVarName) { return Argument::help<PositionalArgument>(vHelp, vVarName); }
         PositionalArgument &def(const std::string &vDefValue) { return Argument::def<PositionalArgument>(vDefValue); }
         PositionalArgument &type(const std::string &vType) { return Argument::type<PositionalArgument>(vType); }
         PositionalArgument &delimiter(char vDelimiter) { return Argument::delimiter<PositionalArgument>(vDelimiter); }  
@@ -133,7 +133,7 @@ private:
     private:
         bool m_required = false;
     public:
-        OptionalArgument &help(const std::string &vHelp, const std::string &vVarName = {}) { return Argument::help<OptionalArgument>(vHelp, vVarName); }
+        OptionalArgument &help(const std::string &vHelp, const std::string &vVarName) { return Argument::help<OptionalArgument>(vHelp, vVarName); }
         OptionalArgument &def(const std::string &vDefValue) { return Argument::def<OptionalArgument>(vDefValue); }
         OptionalArgument &type(const std::string &vType) { return Argument::type<OptionalArgument>(vType); }
         OptionalArgument &delimiter(char vDelimiter) { return Argument::delimiter<OptionalArgument>(vDelimiter); }
@@ -160,7 +160,7 @@ public:
         if (vName.empty()) {
             throw std::runtime_error("Name cant be empty");
         }
-        m_addOptional(m_HelpArgument, "-h/--help").help("Show the usage");
+        m_addOptional(m_HelpArgument, "-h/--help").help("Show the usage", {});
     }
 
     Args &addHeader(const std::string &vHeader) {
@@ -258,7 +258,7 @@ public:
             // print help
             if (m_HelpArgument.m_full_args.find(arg) != m_HelpArgument.m_full_args.end()) {
                 printHelp();
-                return m_errors.empty();
+                return false; // interrupt parsing
             }
 
             // check optionals
@@ -399,7 +399,7 @@ private:
             vStream << o;
         }
         if (!vOptionalArgument.m_help_var_name.empty()) {
-            vStream << " " << vOptionalArgument.m_help_var_name;
+            vStream << vOptionalArgument.m_delimiter << vOptionalArgument.m_help_var_name;
         }
         vStream << "]";
     }
@@ -413,13 +413,13 @@ private:
     std::string m_getCmdLineHelp() const {
         std::stringstream ss;
         ss << " Usage : " << m_AppName;
-        m_getCmdLineOptional(m_HelpArgument, ss);        
+        m_getCmdLineOptional(m_HelpArgument, ss);
         for (const auto &arg : m_Optionals) {
             m_getCmdLineOptional(arg, ss);
         }
         for (const auto &arg : m_Positionals) {
             m_getCmdLinePositional(arg, ss);
-        }
+        }      
         return ss.str();
     }
 
