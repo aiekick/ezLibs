@@ -123,9 +123,7 @@ private:
         friend class Args;
     public:
         PositionalArgument &help(const std::string &vHelp, const std::string &vVarName) { return Argument::help<PositionalArgument>(vHelp, vVarName); }
-        PositionalArgument &def(const std::string &vDefValue) { return Argument::def<PositionalArgument>(vDefValue); }
         PositionalArgument &type(const std::string &vType) { return Argument::type<PositionalArgument>(vType); }
-        PositionalArgument &delimiter(char vDelimiter) { return Argument::delimiter<PositionalArgument>(vDelimiter); }  
     };
 
     class OptionalArgument final : public Argument {
@@ -248,7 +246,18 @@ public:
         return ss.str();
     }
 
-    void printHelp() const { std::cout << getHelp() << std::endl; }
+    void printHelp() const {
+        std::cout << getHelp() << std::endl;
+    }
+
+    void printErrors(const std::string& vIndent) const {
+        if (m_errors.empty()) {
+            return;
+        }
+        for (const auto &error : m_errors) {
+            std::cout << vIndent << error << std::endl;
+        }
+    }
 
     bool parse(const int32_t vArgc, char **vArgv, const int32_t vStartIdx = 1U) {
         size_t positional_idx = 0;
