@@ -156,10 +156,10 @@ public:
         auto fbo_ptr = mp_fboPipeline->getFrontFBO().lock();
         if (fbo_ptr != nullptr) {
             fbo_ptr->blitOnScreen(
-                m_displayRect.x,  //
-                m_displayRect.y,  //
-                m_displayRect.z,  //
-                m_displayRect.w,  //
+                static_cast<GLint>(m_displayRect.x),  //
+                static_cast<GLint>(m_displayRect.y),  //
+                static_cast<GLint>(m_displayRect.z),  //
+                static_cast<GLint>(m_displayRect.w),  //
                 0,
                 GL_COLOR_BUFFER_BIT,
                 GL_NEAREST);

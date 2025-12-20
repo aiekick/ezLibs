@@ -71,10 +71,11 @@ public:
         const GLenum vPixelFormat,
         const std::string vWrap,
         const std::string vFilter,
-        const bool vEnableMipMap) {
+        const bool vEnableMipMap,
+        const std::array<GLenum, 4> vSwizzle = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA}) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
-        if (!res->initFromBuffer(vBuffer, vSx, vSy, vInternalFormat, vFormat, vPixelFormat, vWrap, vFilter, vEnableMipMap)) {
+        if (!res->initFromBuffer(vBuffer, vSx, vSy, vInternalFormat, vFormat, vPixelFormat, vWrap, vFilter, vEnableMipMap, vSwizzle)) {
             res.reset();
         }
         return res;
@@ -88,10 +89,11 @@ public:
         const GLenum vPixelFormat,
         const std::string vWrap,
         const std::string vFilter,
-        const bool vEnableMipMap) {
+        const bool vEnableMipMap,
+        const std::array<GLenum, 4> vSwizzle = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA}) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
-        if (!res->initFromBuffer(vBuffer, vSx, vSy, vChannelsCount, vPixelFormat, vWrap, vFilter, vEnableMipMap)) {
+        if (!res->initFromBuffer(vBuffer, vSx, vSy, vChannelsCount, vPixelFormat, vWrap, vFilter, vEnableMipMap, vSwizzle)) {
             res.reset();
         }
         return res;
@@ -159,7 +161,8 @@ public:
         const GLenum vPixelFormat,
         const std::string vWrap,
         const std::string vFilter,
-        const bool vEnableMipMap) {
+        const bool vEnableMipMap,
+        const std::array<GLenum, 4> vSwizzle) {
         assert(vBuffer != nullptr);
         assert(vSx > 0);
         assert(vSy > 0);
@@ -169,6 +172,7 @@ public:
         CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D, m_TexId);
         CheckGLErrors;
+        m_setSwizzle(vSwizzle);
         m_InternalFormat = vInternalFormat;
         m_Format = vFormat;
         m_PixelFormat = vPixelFormat;
@@ -193,7 +197,8 @@ public:
         const GLenum vPixelFormat,
         const std::string vWrap,
         const std::string vFilter,
-        const bool vEnableMipMap) {
+        const bool vEnableMipMap,
+        const std::array<GLenum, 4> vSwizzle) {
         assert(vBuffer != nullptr);
         assert(vSx > 0);
         assert(vSy > 0);
@@ -204,6 +209,7 @@ public:
         CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D, m_TexId);
         CheckGLErrors;
+        m_setSwizzle(vSwizzle);
         m_setFormat(vPixelFormat, vChannelsCount);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
         glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, vBuffer);
@@ -224,7 +230,8 @@ public:
         const bool vInvertY,
         const std::string vWrap,
         const std::string vFilter,
-        const bool vEnableMipMap) {
+        const bool vEnableMipMap,
+        const std::array<GLenum, 4> vSwizzle) {
         assert(!vFilePathName.empty());
         stbi_set_flip_vertically_on_load(vInvertY);
         auto w = 0;
@@ -250,6 +257,7 @@ public:
             CheckGLErrors;
             glBindTexture(GL_TEXTURE_2D, m_TexId);
             CheckGLErrors;
+            m_setSwizzle(vSwizzle);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             CheckGLErrors;
             m_setFormat(GL_UNSIGNED_BYTE, chans);
@@ -297,6 +305,10 @@ public:
         CheckGLErrors;
     }
     bool check() { return (glIsTexture(m_TexId) == GL_TRUE); }
+    template <typename TTYPE>
+    TTYPE getTexId() const {
+        return static_cast<TTYPE>(m_TexId);
+    }
     GLuint getTexId() const { return m_TexId; }
     std::array<GLsizei, 2U> getSize() const { return {m_Width, m_Height}; }
 
@@ -344,8 +356,14 @@ public:
 #endif//STB_IMAGE_WRITER_INCLUDE
 
 private:
+    void m_setSwizzle(std::array<GLenum, 4> vSwizzle) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, vSwizzle[0]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, vSwizzle[1]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, vSwizzle[2]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, vSwizzle[3]);
+    }
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
-    void m_setParameters(const std::string vWrap, const std::string vFilter, const bool vEnableMipMap) {
+    void m_setParameters(const std::string& vWrap, const std::string& vFilter, const bool vEnableMipMap) {
         if (vWrap == "repeat") {
             m_WrapS = GL_REPEAT;
             m_WrapT = GL_REPEAT;

@@ -289,7 +289,7 @@ public:
 #ifdef PROFILER_SCOPED
                         PROFILER_SCOPED("Opengl", "glViewport");
 #endif
-                        glViewport(vPos.x, vPos.y, m_Size[0], m_Size[1]);
+                        glViewport(static_cast<GLint>(vPos.x), static_cast<GLint>(vPos.y), m_Size[0], m_Size[1]);
                     }
                     quad_ptr->render(GL_TRIANGLES);
                     m_ProgramPtr->unuse();
