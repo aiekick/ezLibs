@@ -61,7 +61,7 @@ private:
     FBOPipeLinePtr m_FBOPipeLinePtr = nullptr;
     ShaderAutoPtr m_FragShaderPtr = nullptr;
     ProgramAutoPtr m_ProgramPtr = nullptr;
-    std::array<GLuint, 2U> m_Size;
+    std::array<GLuint, 2U> m_Size{};
     bool m_UseMipMapping = false;
     bool m_MultiPass = false;
     GLuint m_RenderIterations = 1U;
