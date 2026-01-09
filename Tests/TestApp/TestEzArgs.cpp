@@ -25,11 +25,26 @@
 
 bool TestEzArgs_parsing() {
     try {
-        std::vector<char*> arr{"--no-help", "-h"};
+        std::vector<char*> arr{"--no-help", "-t"};
         ez::Args args("Test");
         args.addHeader("=========== test tool ===========").addFooter("=========== Thats all folks ===========");
         args.addOptional("--no-help");
         CTEST_ASSERT(args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U));
+        CTEST_ASSERT(args.isPresent("--no-help"));
+        CTEST_ASSERT(args.isPresent("no-help"));
+    } catch (std::exception&) {
+        return false;
+    }
+    return true;
+}
+
+bool TestEzArgs_parsing_help() {
+    try {
+        std::vector<char*> arr{"--no-help", "-h"};
+        ez::Args args("Test");
+        args.addHeader("=========== test tool ===========").addFooter("=========== Thats all folks ===========");
+        args.addOptional("--no-help");
+        CTEST_ASSERT(!args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U)); // print help
         CTEST_ASSERT(args.isPresent("--no-help"));
         CTEST_ASSERT(args.isPresent("no-help"));
     } catch (std::exception&) {
@@ -143,11 +158,11 @@ bool TestEzArgs_optional_groupeds() {
         std::vector<char*> arr{"cvzf", "sample.txt", "-ff=mode2"};
         ez::Args args("Test");
         args.addHeader("=========== test tool ===========").addFooter("=========== Thats all folks ===========").addDescription("Just a test");
-        args.addOptional("c").help("Create");
-        args.addOptional("v").help("Verbose");
-        args.addOptional("z").help("gzip");
-        args.addOptional("f").help("file").delimiter(' ');
-        args.addOptional("-ff").help("file mode").delimiter('=');
+        args.addOptional("c").help("Create", "<c>");
+        args.addOptional("v").help("Verbose", "<v>");
+        args.addOptional("z").help("gzip", "<z>");
+        args.addOptional("f").help("file", "<f>").delimiter(' ');
+        args.addOptional("-ff").help("file mode", "<ff>").delimiter('=');
         if (!args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U)) {
             return false;
         }
@@ -217,9 +232,9 @@ bool TestEzArgs_positional() {
     try {
         std::vector<char*> arr{"file1.txt", "file2.xml", "file3.csv"};
         ez::Args args("Test");
-        args.addPositional("file1").help("file 1");
-        args.addPositional("file2").help("file 2");
-        args.addPositional("file3").help("file 3");
+        args.addPositional("file1").help("file 1", "<file 1>");
+        args.addPositional("file2").help("file 2", "<file 2>");
+        args.addPositional("file3").help("file 3", "<file 3>");
         if (!args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U)) {
             return false;
         }
@@ -251,11 +266,11 @@ bool TestEzArgs_positional_optional() {
     try {
         std::vector<char*> arr{"TestApp", "-cvzf", "project.tar.gz"};
         ez::Args args("Test");
-        args.addPositional("project").help("project");
-        args.addOptional("c").help("compress");
-        args.addOptional("v").help("verbose");
-        args.addOptional("z").help("gzip");
-        args.addOptional("f").help("file").delimiter(' ');
+        args.addPositional("project").help("project", "<project>");
+        args.addOptional("c").help("compress", "<compress>");
+        args.addOptional("v").help("verbose", "<verbose>");
+        args.addOptional("z").help("gzip", "<gzip>");
+        args.addOptional("f").help("file", "<file>").delimiter(' ');
         args.addOptional("G");
         if (!args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U)) {
             return false;
@@ -312,6 +327,7 @@ bool TestEzArgs_positional_optional() {
 
 bool TestEzArgs(const std::string& vTest) {
     IfTestExist(TestEzArgs_parsing);
+    else IfTestExist(TestEzArgs_parsing_help);
     else IfTestExist(TestEzArgs_optional_delimiters);
     else IfTestExist(TestEzArgs_optional_delimiters_empties);
     else IfTestExist(TestEzArgs_optional_groupeds);

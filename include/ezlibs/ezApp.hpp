@@ -84,7 +84,7 @@ SOFTWARE.
 #define SLASH_CHAR "/"
 #endif
 
-#include "ezStr.hpp" // ez::str::replaceString
+#include "ezStr.hpp"  // ez::str::replaceString
 
 #include <map>
 #include <vector>
@@ -101,12 +101,14 @@ private:
 
 public:
     App() = default;
-    App(int32_t /*vArgc*/, char** vArgv) {
+    App(int32_t /*vArgc*/, char** vArgv, bool vSetCurrentDir = true) {
 #ifdef _MSC_VER
         SetConsoleOutputCP(CP_UTF8);
 #endif
         setAppPath(vArgv[0]);
-        setCurDirectory(getAppPath());
+        if (vSetCurrentDir) {
+            setCurDirectory(getAppPath());
+        }
     }
 
     void setAppPath(const std::string& vPath) {
@@ -174,7 +176,7 @@ private:
 #if defined(APPLE_OS)
     static std::string m_getMacOsAppPath() {
         Dl_info module_info;
-        if (dladdr((void*)getCurDirectory, &module_info)) { // use of getCurDirectory who is a static function
+        if (dladdr((void*)getCurDirectory, &module_info)) {  // use of getCurDirectory who is a static function
             return std::string(module_info.dli_fname);
         }
         return "";

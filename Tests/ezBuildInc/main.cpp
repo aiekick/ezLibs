@@ -27,14 +27,14 @@ SOFTWARE.
 #include <ezlibs/ezFigFont.hpp>
 #include <ezlibs/ezBuildInc.hpp>
 
-int main(int vArgc, char* vArgv[]) { 
+int main(int vArgc, char* vArgv[]) {
     ez::App app(vArgc, vArgv);
     ez::Args args("BuidInc");
-    args.addPositional("project").help("prefix of the build id");
-    args.addPositional("file").help("file of the build id");
-    args.addOptional("--label").help("label of the project").delimiter(' ');
-    args.addOptional("-ff/--figfont").help("FigFont file; will add a FigFont based label").delimiter(' ');
-    args.addOptional("--no-help").help("will not print the help if the required arguments are not set");
+    args.addPositional("project").help("prefix of the build id", "<project_name>");
+    args.addPositional("file").help("file of the build id", "<file_path_name>");
+    args.addOptional("--label").help("label of the project", "<label>").delimiter(' ');
+    args.addOptional("-ff/--figfont").help("FigFont file; will add a FigFont based label", "<figFont_file>").delimiter(' ');
+    args.addOptional("--no-help").help("will not print the help if the required arguments are not set", {});
     if (args.parse(vArgc, vArgv)) {
         std::string project = args.getValue<std::string>("project");
         std::string label = args.getValue<std::string>("label");
@@ -42,17 +42,20 @@ int main(int vArgc, char* vArgv[]) {
             label = project;
         }
         std::string figFontFile = args.getValue<std::string>("figfont");
-        std::string file = args.getValue<std::string>("file"); 
+        std::string file = args.getValue<std::string>("file");
         if (!file.empty()) {
             ez::BuildInc builder(file);
             builder.setProject(project).setLabel(label).setFigFontFile(figFontFile);
             builder.incBuildNumber().write().printInfos();
+        } else {
+            if (!args.isPresent("no-help")) {
+                args.printHelp();
+            }
         }
-        else {
-			if (!args.isPresent("no-help")) {
-				args.printHelp();
-			}
-        }
+    } else {
+        args.printErrors(" - ");
+        std::cout << "See Help : \n";
+        args.printHelp();
     }
     return 0;
 }

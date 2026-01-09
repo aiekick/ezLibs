@@ -824,7 +824,7 @@ private:
         // ---- Your exact functions (content preserved, only owner passed when needed) ----
         void completePathResult(PathResult &voResult, const FILE_NOTIFY_INFORMATION *vpNotify, Watcher &owner) {
             const auto chFile = owner.m_removeAppPath(ez::str::utf8Encode(std::wstring(vpNotify->FileName, vpNotify->FileNameLength / sizeof(WCHAR))));
-            const char *mode = " ";
+            //const char *mode = " ";
             switch (vpNotify->Action) {
                 case FILE_ACTION_ADDED: {
                     voResult.modifType = PathResult::ModifType::CREATION;
@@ -897,16 +897,16 @@ private:
 #ifdef _DEBUG
             switch (wr) {
                 case WAIT_ABANDONED: {
-                    LogVarLightInfo("WAIT_ABANDONED");
+                    LogVarLightInfo("%s", "WAIT_ABANDONED");
                 } break;
                 case WAIT_OBJECT_0: {
-                    // LogVarLightInfo("WAIT_OBJECT_0");
+                    // LogVarLightInfo("%s", "WAIT_OBJECT_0");
                 } break;
                 case WAIT_TIMEOUT: {
-                    //   LogVarLightInfo("WAIT_TIMEOUT");
+                    //   LogVarLightInfo("%s", "WAIT_TIMEOUT");
                 } break;
                 case WAIT_FAILED: {
-                    LogVarLightInfo("WAIT_FAILED");
+                    LogVarLightInfo("%s", "WAIT_FAILED");
                 } break;
             }
 #endif
@@ -1001,7 +1001,7 @@ private:
             (void)owner;
             m_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
             if (m_fd < 0) {
-                LogVarError("Error: Unable to initialize inotify.");
+                LogVarError("%s", "Error: Unable to initialize inotify.");
                 return false;
             }
             return true;

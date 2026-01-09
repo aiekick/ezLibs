@@ -8,6 +8,7 @@
 #include <TestEzSha.h>
 #include <TestEzSqlite.h>
 #include <TestEzScreen.h>
+#include <TestEzTemplater.h>
 #ifdef TESTING_WIP
 #include <TestEzQrCode.h>
 #endif
@@ -27,6 +28,7 @@ bool TestMisc(const std::string& vTest) {
     else IfTestCollectionExist(TestEzSha);
     else IfTestCollectionExist(TestEzSqlite);
     else IfTestCollectionExist(TestEzScreen);
+    else IfTestCollectionExist(TestEzTemplater);
 #ifdef TESTING_WIP
     else IfTestCollectionExist(TestEzQrCode);
 #endif
