@@ -9,6 +9,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#ifdef EZ_STR
+#include "ezStr.hpp"
+#endif
+
 /*
 This class can create file from a template syntax :
 ex :
@@ -103,7 +107,11 @@ public:
         return *this;
     }
 
+#ifdef EZ_STR
+    std::string getUsedTagInfos(const std::string& vPrefix, bool vOneLineOnly = false) {
+#else
     std::string getUsedTagInfos(const std::string& vPrefix) {
+#endif
         std::string ret;
         std::map<std::string, std::string> ordered_map;
         for(const auto& tag : m_tagValues) {
@@ -113,12 +121,22 @@ public:
             if (!ret.empty()) {
                 ret += '\n';
             }
-            ret += vPrefix + " [[" + tag.first + "]] => '";
-            // multiline value ?
-            if (tag.second.find("\n") != std::string::npos) {
-                ret += '\n';
+#ifdef EZ_STR
+            if (vOneLineOnly) {
+                std::string oneLineStr{tag.second};
+                ez::str::replaceString(oneLineStr, "\n", "\\n");
+                ret += vPrefix + " [[" + tag.first + "]] => '" + oneLineStr + "'";
+            } else {
+#endif
+                ret += vPrefix + " [[" + tag.first + "]] => '";
+                // multiline value ?
+                if (tag.second.find("\n") != std::string::npos) {
+                    ret += '\n';
+                }
+                ret += tag.second + "'";
+#ifdef EZ_STR
             }
-            ret += tag.second + "'";
+#endif
         }
         return ret;
     }
