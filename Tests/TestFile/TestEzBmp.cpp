@@ -25,11 +25,11 @@ bool TestEzBmp_Writer() {
             switch (colorIndex) {
                 case 0:
                 case 6: {
-                    bmp.setPixel(x, y, 255, 0, 0);
+                    bmp.setPixel(x, y, 255, 0, 0);  // int
                 } break;
                 case 1:
                 case 5: {
-                    bmp.setPixel(x, y, 0, 255, 0);
+                    bmp.setPixel(x, y, 0.0f, 1.0f, 0.0f);  // float
                 } break;
                 case 2:
                 case 4: {
@@ -42,7 +42,10 @@ bool TestEzBmp_Writer() {
             }
         }
     }
+    bmp.setPixel(0, 0, -1.0f, 2.0f, -1.0f);  // float
+    bmp.setPixel(0, 0, -100, 540, -100);     // float
     bmp.write(RESULTS_PATH "/test.bmp");
+    bmp.clear();
     return true;
 }
 
