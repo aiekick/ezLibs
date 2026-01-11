@@ -1,3 +1,4 @@
+#include <ezlibs/ezStr.hpp>
 #include <ezlibs/ezTemplater.hpp>
 #include <ezlibs/ezCTest.hpp>
 #include <string>
@@ -21,14 +22,16 @@ bool TestEzTemplater_SimpleTag() {
     ez::Templater tpl;
     CTEST_ASSERT(tpl.loadFromString("Hello [[TOTO]]"));
     tpl.useTag("TOTO", "World");
-    CTEST_ASSERT(tpl.saveToString() == "Hello World");
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result == "Hello World");
     return true;
 }
 
 bool TestEzTemplater_MissingTagIsIgnored() {
     ez::Templater tpl;
     CTEST_ASSERT(tpl.loadFromString("Hello [[TOTO]]"));
-    CTEST_ASSERT(tpl.saveToString() == "Hello ");
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result == "Hello ");
     return true;
 }
 
@@ -36,8 +39,11 @@ bool TestEzTemplater_DisabledTag() {
     ez::Templater tpl;
     CTEST_ASSERT(tpl.loadFromString("Hello [[TOTO]]"));
     tpl.useTag("TOTO", "World");
+    auto result = tpl.saveToString();
+    CTEST_ASSERT(result == "Hello World");
     tpl.unuseTag("TOTO");
-    CTEST_ASSERT(tpl.saveToString() == "Hello ");
+    result = tpl.saveToString();
+    CTEST_ASSERT(result == "Hello ");
     return true;
 }
 
@@ -51,9 +57,8 @@ if (X) {
 ]]
 )"));
     tpl.useTag("COND");
-    const std::string result = tpl.saveToString();
-    CTEST_ASSERT(result.find("if (X)") != std::string::npos);
-    CTEST_ASSERT(result.find("doSomething();") != std::string::npos);
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result == "\nif (X) {\n    doSomething();\n}\n");
     return true;
 }
 
@@ -67,7 +72,8 @@ if (X) {
 ]]
 )"));
     tpl.unuseTag("COND");
-    CTEST_ASSERT(tpl.saveToString().find("doSomething") == std::string::npos);
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result == "\n");
     return true;
 }
 
@@ -83,10 +89,8 @@ A2
 ]]
 )"));
     tpl.useTag("A").useTag("B");
-    const std::string result = tpl.saveToString();
-    CTEST_ASSERT(result.find("A1") != std::string::npos);
-    CTEST_ASSERT(result.find("B1") != std::string::npos);
-    CTEST_ASSERT(result.find("A2") != std::string::npos);
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result == "\nA1\nB1\nA2\n");
     return true;
 }
 
@@ -96,9 +100,8 @@ bool TestEzTemplater_IndentPreservedForMultilineValue() {
     [[TOTO]]
 )"));
     tpl.useTag("TOTO", "line1\nline2");
-    const std::string result = tpl.saveToString();
-    CTEST_ASSERT(result.find("    line1") != std::string::npos);
-    CTEST_ASSERT(result.find("    line2") != std::string::npos);
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result == "\n    line1\n    line2\n");
     return true;
 }
 
@@ -115,6 +118,104 @@ bool TestEzTemplater_SyntaxError_UnclosedBlock() {
     CTEST_ASSERT(tpl.saveToString().empty());
     return true;
 }
+
+bool TestEzTemplater_GetUsedTagInfos_Basic() {
+    ez::Templater tpl;
+    tpl.useTag("TOTO", "value1");
+    tpl.useTag("TATA", "value2");
+    auto infos = tpl.getUsedTagInfos(">>", false);
+    CTEST_ASSERT(infos == ">> [[TATA]] => 'value2'\n>> [[TOTO]] => 'value1'");
+    infos = tpl.getUsedTagInfos(">>", true);
+    CTEST_ASSERT(infos == ">> [[TATA]] => 'value2'\n>> [[TOTO]] => 'value1'");
+    return true;
+}
+
+bool TestEzTemplater_GetUsedTagInfos_MultilineValue() {
+    ez::Templater tpl;
+    tpl.useTag("MULTI", "line1\nline2");
+    auto infos = tpl.getUsedTagInfos("--", false);
+    CTEST_ASSERT(infos == "-- [[MULTI]] => '\nline1\nline2'");
+    infos = tpl.getUsedTagInfos("--", true);
+    CTEST_ASSERT(infos == "-- [[MULTI]] => 'line1\\nline2'");
+    return true;
+}
+
+bool TestEzTemplater_LoadFromFile() {
+    const auto filePath = "TestEzTemplater_LoadFromFile.txt";
+    std::ofstream out(filePath);
+    out << "Value = [[X]]";
+    out.close();
+    ez::Templater tpl;
+    CTEST_ASSERT(tpl.loadFromFile(filePath));
+    tpl.useTag("X", "42");
+    CTEST_ASSERT(tpl.saveToString() == "Value = 42");
+    return true;
+}
+
+bool TestEzTemplater_SaveToFile() {
+    ez::Templater tpl;
+    tpl.loadFromString("Hello [[NAME]]");
+    tpl.useTag("NAME", "World");
+    const auto filePath = "TestEzTemplater_SaveToFile.txt";
+    CTEST_ASSERT(tpl.saveToFile(filePath));
+    std::ifstream in(filePath);
+    CTEST_ASSERT(in.good());
+    std::string content;
+    std::getline(in, content);
+    CTEST_ASSERT(content == "Hello World");
+    return true;
+}
+
+bool TestEzTemplater_Exception_CloseBeforeOpen() {
+    ez::Templater tpl;
+    CTEST_ASSERT(tpl.loadFromString("abc ]] def"));
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result.empty());
+    return true;
+}
+
+bool TestEzTemplater_Exception_MissingCloseSimpleTag() {
+    ez::Templater tpl;
+    CTEST_ASSERT(tpl.loadFromString("abc [[TOTO"));
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result.empty());
+    return true;
+}
+
+bool TestEzTemplater_Exception_UnclosedMultilineBlock() {
+    ez::Templater tpl;
+    CTEST_ASSERT(tpl.loadFromString(R"(
+[[TOTO
+line1
+line2
+)"));
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result.empty());
+    return true;
+}
+
+bool TestEzTemplater_Exception_UnclosedNestedBlock() {
+    ez::Templater tpl;
+    CTEST_ASSERT(tpl.loadFromString(R"(
+[[A
+text
+[[B
+nested
+]]
+)"));
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result.empty());
+    return true;
+}
+
+bool TestEzTemplater_Exception_StrayClosingTag() {
+    ez::Templater tpl;
+    CTEST_ASSERT(tpl.loadFromString("ok\n]]\nok"));
+    const auto result = tpl.saveToString();
+    CTEST_ASSERT(result.empty());
+    return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -134,6 +235,15 @@ bool TestEzTemplater(const std::string& vTest) {
     else IfTestExist(TestEzTemplater_IndentPreservedForMultilineValue);
     else IfTestExist(TestEzTemplater_SyntaxError_UnmatchedClose);
     else IfTestExist(TestEzTemplater_SyntaxError_UnclosedBlock);
+    else IfTestExist(TestEzTemplater_GetUsedTagInfos_Basic);
+    else IfTestExist(TestEzTemplater_GetUsedTagInfos_MultilineValue);
+    else IfTestExist(TestEzTemplater_LoadFromFile);
+    else IfTestExist(TestEzTemplater_SaveToFile);
+    else IfTestExist(TestEzTemplater_Exception_CloseBeforeOpen);
+    else IfTestExist(TestEzTemplater_Exception_MissingCloseSimpleTag);
+    else IfTestExist(TestEzTemplater_Exception_UnclosedMultilineBlock);
+    else IfTestExist(TestEzTemplater_Exception_UnclosedNestedBlock);
+    else IfTestExist(TestEzTemplater_Exception_StrayClosingTag);
     return false;
 }
 

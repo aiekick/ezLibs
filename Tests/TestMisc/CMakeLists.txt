@@ -22,6 +22,7 @@ file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezSha.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezTemplater.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/wip/derived/ezQrCode.hpp)
 source_group(TREE ${EZ_LIBS_INCLUDE_DIR}/ezlibs PREFIX Libs FILES ${EZ_LIBS_SOURCE})
@@ -167,3 +168,12 @@ AddTest("TestEzTemplater_NestedBlocks")
 AddTest("TestEzTemplater_IndentPreservedForMultilineValue")
 AddTest("TestEzTemplater_SyntaxError_UnmatchedClose")
 AddTest("TestEzTemplater_SyntaxError_UnclosedBlock")
+AddTest("TestEzTemplater_GetUsedTagInfos_Basic")
+AddTest("TestEzTemplater_GetUsedTagInfos_MultilineValue")
+AddTest("TestEzTemplater_SaveToFile")
+AddTest("TestEzTemplater_LoadFromFile")
+AddTest("TestEzTemplater_Exception_CloseBeforeOpen")
+AddTest("TestEzTemplater_Exception_MissingCloseSimpleTag")
+AddTest("TestEzTemplater_Exception_UnclosedMultilineBlock")
+AddTest("TestEzTemplater_Exception_UnclosedNestedBlock")
+AddTest("TestEzTemplater_Exception_StrayClosingTag")

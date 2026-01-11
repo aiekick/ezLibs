@@ -45,5 +45,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzScreen_FloorNb_Scalar_Float") ? 0 : 1;
+    return TestMisc("TestEzTemplater_MissingTagIsIgnored") ? 0 : 1;
 }
