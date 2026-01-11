@@ -153,3 +153,17 @@ AddTest("TestEzScreen_ComputeFitToContent")
 if (TESTING_WIP)
 	AddTest("TestEzQrCodeBase")
 endif()
+
+##########################################################
+##### TESTS EzTemplater ##################################
+##########################################################
+
+AddTest("TestEzTemplater_SimpleTag")
+AddTest("TestEzTemplater_MissingTagIsIgnored")
+AddTest("TestEzTemplater_DisabledTag")
+AddTest("TestEzTemplater_MultiLineBlockEnabled")
+AddTest("TestEzTemplater_MultiLineBlockDisabled")
+AddTest("TestEzTemplater_NestedBlocks")
+AddTest("TestEzTemplater_IndentPreservedForMultilineValue")
+AddTest("TestEzTemplater_SyntaxError_UnmatchedClose")
+AddTest("TestEzTemplater_SyntaxError_UnclosedBlock")

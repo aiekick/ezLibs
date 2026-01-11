@@ -56,8 +56,8 @@ target_include_directories(${PROJECT} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glad/include
 )
 
-set_target_properties(glad PROPERTIES FOLDER Tests/Opengl)
-set_target_properties(${PROJECT} PROPERTIES FOLDER Tests/Opengl)
+set_target_properties(glad PROPERTIES FOLDER 3rdparty)
+set_target_properties(${PROJECT} PROPERTIES FOLDER Tests)
 
 target_compile_definitions(${PROJECT} PRIVATE 
 	-DOPENGL_LOADER="${GLAD_INCLUDE_DIR}/glad/glad.h"
