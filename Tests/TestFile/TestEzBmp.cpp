@@ -42,7 +42,11 @@ bool TestEzBmp_Writer() {
             }
         }
     }
+    // negative coord
+    bmp.setPixel(-1, -1, -1.0f, 2.0f, -1.0f);  // float
+    // out of bound color
     bmp.setPixel(0, 0, -1.0f, 2.0f, -1.0f);  // float
+    // out of bound color
     bmp.setPixel(0, 0, -100, 540, -100);     // float
     bmp.write(RESULTS_PATH "/test.bmp");
     bmp.clear();
