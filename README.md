@@ -20,79 +20,68 @@ you just need to include the libs in your project and use it. thats all.
 
 Some libs are in inter dependencies, so you may need to include the EzLibs dir in your building system
 
-# Available Libs categories :
-
-# App :
+# Available Libs :
 
 |Lib|Doc|Tested|Status|Description|
 |-|-|-|-|-|
-|[EzApp](doc/EzApp.md)|:no_entry:|:no_entry:|:construction:|App Manipulation, Current working dir|
-|[EzArgs](doc/EzArgs.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Command Options parsing|
-
-# Comp :
-
-|Lib|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzLzw](doc/EzMLzw.md)|:no_entry:|:heavy_check_mark:|:heavy_check_mark:|Compress/Decompress LZW|
-
-# File :
-
-|Lib|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzFile](doc/EzFile.md)|:no_entry:|:no_entry:|:construction:|File Manipulation|
-
-|Data|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzIni](doc/EzIni.md)|:no_entry:|:no_entry:|:construction:|Ini File Reader/Writer|
-|[EzLog](doc/EzLog.md)|:no_entry:|:no_entry:|:construction:|Log File Writer|
-|[EzXmlConfig](doc/EzXmlConfig.md)|:no_entry:|:heavy_check_mark:|:heavy_check_mark:|xml config File Reader/Writer|
-
-|2D Img|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzBmp](doc/EzBmp.md)|:no_entry:|:construction:|:construction:|Bitmap Writer|
-|[EzGif](doc/EzGif.md)|:no_entry:|:construction:|:construction:|Gif Writer|
-|[EzPng](doc/EzPng.md)|:no_entry:|:no_entry:|:construction:|Png Writer|
-
-|3D Model|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzVdbWriter](doc/EzVdbWriter.md)|:no_entry:|:construction:|:heavy_check_mark:|OpenVdb partial file format writer|
-|[EzVoxWriter](doc/EzVoxWriter.md)|:no_entry:|:construction:|:heavy_check_mark:|Magicavoxel partial file format writer|
-
-# Math :
-
-|Lib|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzExpr](doc/EzExpr.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Math expression parsing and computing|
-|[EzMath](doc/EzMath.md)|:no_entry:|:heavy_check_mark:|:construction:|Math methods|
-|[EzVec2](doc/EzVec2.md)|:no_entry:|:heavy_check_mark:|:heavy_check_mark:|Vec2 Manipulation|
-|[EzVec3](doc/EzVec3.md)|:no_entry:|:heavy_check_mark:|:heavy_check_mark:|Vec3 Manipulation|
-|[EzVec4](doc/EzVec4.md)|:no_entry:|:heavy_check_mark:|:heavy_check_mark:|Vec4 Manipulation|
-|[EzQuat](doc/EzQuat.md)|:no_entry:|:no_entry:|:construction:|Quaternion Manipulation|
-|[EzPlane](doc/EzPlane.md)|:no_entry:|:no_entry:|:construction:|3D Plane Manipulation|
-|[EzAABB](doc/EzAABB.md)|:no_entry:|:no_entry:|:construction:|2D AABB Manipulation|
-|[EzAABBCCC](doc/EzAABBCCC.md)|:no_entry:|:no_entry:|:construction:|3D AABBCC Manipulation|
-|[EzVariant](doc/EzVariant.md)|:no_entry:|:no_entry:|:construction:|Variant/Conversion for EzLIbs compatible types|
-
-# Misc :
-
-|Lib|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzGraph](doc/EzGraph.md)|:no_entry:|:heavy_check_mark:|:heavy_check_mark:|Internal Node Graph System|
-|[EzStr](doc/EzStr.md)|:no_entry:|:construction:|:construction:|String Manipulation|
-|[EzXml](doc/EzXml.md)|:no_entry:|:heavy_check_mark:|:heavy_check_mark:|xml Parsing|
-
-# Opengl :
-
-|Lib|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzGL](doc/EzGL.md)|:no_entry:|:construction:|:construction:|Opengl manipulation|
-
-# Time :
-
-|Lib|Doc|Tested|Status|Description|
-|-|-|-|-|-|
-|[EzTime](doc/EzTime.md)|:no_entry:|:no_entry:|:construction:|Time manipulation|
-|[EzCron](doc/EzCron.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Crontab parsing and time execution|
+|[ezAABB](doc/ezAABB.md)|:construction:|:no_entry:|:construction:|2D AABB Manipulation|
+|[ezAABBCC](doc/ezAABBCC.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|3D AABBCC Manipulation|
+|[ezActions](doc/ezActions.md)|:construction:|:no_entry:|:construction:|ezActions|
+|[ezApp](doc/ezApp.md)|:construction:|:no_entry:|:construction:|App Manipulation, Current working dir|
+|[ezArgs](doc/ezArgs.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Command Options parsing|
+|[ezBinBuf](doc/ezBinBuf.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezBinBuf|
+|[ezBmp](doc/ezBmp.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Bitmap WriterzBmp|
+|[ezBuildInc](doc/ezBuildInc.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezBuildInc|
+|[ezClass](doc/ezClass.md)|:construction:|:no_entry:|:construction:|ezClass|
+|[ezCmdProc](doc/ezCmdProc.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezCmdProc|
+|[ezCnt](doc/ezCnt.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Spetials Containers|
+|[ezCron](doc/ezCron.md)|:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|Crontab parsing and time execution|
+|[ezCsv](doc/ezCsv.md)|:construction:|:no_entry:|:construction:|Csv manipulation|
+|[ezCTest](doc/ezCTest.md)|:construction:|:no_entry:|:construction:|ezCTest|
+|[ezDate](doc/ezDate.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezDate|
+|[ezEmbed](doc/ezEmbed.md)|:construction:|:no_entry:|:construction:|ezEmbed|
+|[ezExpr](doc/ezExpr.md)|:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|Math expression parsing and computing|
+|[ezFdGraph](doc/ezFdGraph.md)|:construction:|:no_entry:|:construction:|ezFdGraph|
+|[ezFigFont](doc/ezFigFont.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezFigFont|
+|[ezFile](doc/ezFile.md)|:construction:|:construction:|:construction:|File Manipulation|
+|[ezFmt](doc/ezFmt.md)|:construction:|:no_entry:|:construction:|ezFmt|
+|[ezGraph](doc/ezGraph.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Internal Node Graph System|
+|[ezImGui](doc/ezImGui.md)|:construction:|:no_entry:|:construction:|ezImGui|
+|[ezIni](doc/ezIni.md)|:construction:|:no_entry:|:construction:|Ini File Reader/Writer|
+|[ezLog](doc/ezLog.md)|:construction:|:construction:|:construction:|Log File Writer|
+|[ezMat2](doc/ezMat2.md)|:construction:|:no_entry:|:construction:|Mat2 manipulation|
+|[ezMat3](doc/ezMat3.md)|:construction:|:no_entry:|:construction:|Mat3 manipulation|
+|[ezMat4](doc/ezMat4.md)|:construction:|:no_entry:|:construction:|Mat4 manipulation|
+|[ezMath](doc/ezMath.md)|:construction:|:no_entry:|:construction:|Math methods|
+|[ezNamedPipe](doc/ezNamedPipe.md)|:construction:|:construction:|:construction:|ezNamedPipe|
+|[ezNet](doc/ezNet.md)|:construction:|:no_entry:|:construction:|ezNet|
+|[ezGL](doc/ezGL.md)|:construction:|:heavy_check_mark:|:construction:|Opengl manipulation|
+|[ezGeo](doc/ezGeo.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Geo manipulation|
+|[ezOS](doc/ezOS.md)|:construction:|:no_entry:|:construction:|ezOS|
+|[ezPlane](doc/ezPlane.md)|:construction:|:no_entry:|:construction:|3D Plane Manipulation|
+|[ezPlugin](doc/ezPlugin.md)|:construction:|:no_entry:|:construction:|ezPlugin|
+|[ezQuadTree](doc/ezQuadTree.md)|:construction:|:no_entry:|:construction:|ezQuadTree|
+|[ezQuat](doc/ezQuat.md)|:construction:|:no_entry:|:construction:|Quaternion Manipulation|
+|[ezScreen](doc/ezScreen.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezScreen|
+|[ezSerial](doc/ezSerial.md)|:construction:|:no_entry:|:construction:|ezSerial|
+|[ezSha](doc/ezSha.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezSha|
+|[ezSingleton](doc/ezSingleton.md)|:construction:|:no_entry:|:construction:|ezSingleton|
+|[ezSqlite](doc/ezSqlite.md)|:construction:|:construction:|:construction:|ezSqlite|
+|[ezStackString](doc/ezStackString.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezStackString|
+|[ezStr](doc/ezStr.md)|:construction:|:no_entry:|:construction:|String Manipulation|
+|[ezTemplater](doc/ezTemplater.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezTemplater|
+|[ezTile](doc/ezTile.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Geo Tile manipulation|
+|[ezTime](doc/ezTime.md)|:construction:|:no_entry:|:construction:|Time manipulation|
+|[ezTools](doc/ezTools.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|ezTools|
+|[ezVariant](doc/ezVariant.md)|:construction:|:no_entry:|:construction:|Variant/Conversion for EzLIbs compatible types|
+|[ezVdbWriter](doc/ezVdbWriter.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|OpenVdb partial file format writer|
+|[ezVec2](doc/ezVec2.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Vec2 Manipulation|
+|[ezVec3](doc/ezVec3.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Vec3 Manipulation|
+|[ezVec4](doc/ezVec4.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Vec4 Manipulation|
+|[ezVoxWriter](doc/ezVoxWriter.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|Magicavoxel partial file format writer|
+|[ezWorkerThread](doc/ezWorkerThread.md)|:construction:|:no_entry:|:construction:|ezWorkerThread|
+|[ezXml](doc/ezXml.md)|:construction:|:heavy_check_mark:|:heavy_check_mark:|xml Parsing|
+|[ezXmlConfig](doc/ezXmlConfig.md)|:construction:|:no_entry:|:construction:|xml config File Reader/Writer|
 
 # License
 
