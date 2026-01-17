@@ -88,9 +88,7 @@
         {
             "name": "base",
             "hidden": true,
-            "environment": {
-                "CMAKE_BUILD_PARALLEL_LEVEL": "12"
-            }
+            "jobs": 8
         },
         {
             "name": "windows-msvc",
@@ -115,15 +113,13 @@
         {
             "name": "base",
             "hidden": true,
-            "environment": {
-                "CTEST_PARALLEL_LEVEL": "12"
-            },
             "output": {
                 "outputOnFailure": true
             },
             "execution": {
                 "noTestsAction": "error",
-                "stopOnFailure": true
+                "stopOnFailure": true,
+                "jobs": 12
             }
         },
         {

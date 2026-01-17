@@ -42,3 +42,4 @@
 /.vscode
 /TestResults
 /*.gcov
+/test.log
