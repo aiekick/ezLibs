@@ -66,7 +66,9 @@ SOFTWARE.
 #ifdef APPLE_OS
 #include <CoreServices/CoreServices.h>
 #else
+#ifndef __EMSCRIPTEN__
 #include <sys/inotify.h>
+#endif
 #endif
 #endif
 
@@ -467,6 +469,8 @@ inline std::vector<std::string> getDrives() {
     return res;
 }
 
+#ifndef EMSCRIPTEN_OS
+
 class Watcher {
 public:
     struct PathResult {
@@ -590,7 +594,7 @@ private:
 
     std::unique_ptr<IBackend> m_backend;
 
-    static void m_logPathResult(const PathResult& vPathResult) {
+    static void m_logPathResult(const PathResult &vPathResult) {
 #ifdef _DEBUG
         const char *mode = " ";
         switch (vPathResult.modifType) {
@@ -756,7 +760,6 @@ private:
         std::atomic<bool> m_isDirty{false};
 
     public:
-
         bool onStart(Watcher &owner) override {
             (void)owner;
             m_isDirty = true;
@@ -824,7 +827,7 @@ private:
         // ---- Your exact functions (content preserved, only owner passed when needed) ----
         void completePathResult(PathResult &voResult, const FILE_NOTIFY_INFORMATION *vpNotify, Watcher &owner) {
             const auto chFile = owner.m_removeAppPath(ez::str::utf8Encode(std::wstring(vpNotify->FileName, vpNotify->FileNameLength / sizeof(WCHAR))));
-            //const char *mode = " ";
+            // const char *mode = " ";
             switch (vpNotify->Action) {
                 case FILE_ACTION_ADDED: {
                     voResult.modifType = PathResult::ModifType::CREATION;
@@ -984,7 +987,6 @@ private:
 
     // =============================== Backend Linux ===============================
 #if defined(LINUX_OS)
-#include <sys/inotify.h>
 #include <unistd.h>
 #include <limits.h>
 #include <errno.h>
@@ -1335,6 +1337,7 @@ inline std::unique_ptr<Watcher::IBackend> Watcher::m_createBackend() {
 #endif
 }
 
+#endif  // ndef EMSCRIPTEN_OS
 
 }  // namespace file
 }  // namespace ez

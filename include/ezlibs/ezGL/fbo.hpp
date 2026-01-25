@@ -26,7 +26,6 @@ SOFTWARE.
 
 // ezGL is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
-
 #include "ezGL.hpp"
 #include <array>
 #include <vector>

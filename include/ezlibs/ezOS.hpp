@@ -31,10 +31,12 @@ SOFTWARE.
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define WINDOWS_OS
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
+#define EMSCRIPTEN_OS
+#endif
 #define LINUX_OS
 #define UNIX_OS
 #else
 #define APPLE_OS
 #define UNIX_OS
 #endif
-
