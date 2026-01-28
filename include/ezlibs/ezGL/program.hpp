@@ -26,7 +26,6 @@ SOFTWARE.
 
 // ezGL is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
-
 #include <vector>
 #include <memory>
 #include <string>
@@ -49,22 +48,22 @@ public:
     typedef std::function<bool(Uniform&)> UniformWidgetFunctor;
     struct Uniform {
         std::string name;
-        float* datas_f = nullptr;  // float
-        int32_t* datas_i = nullptr;  // int
-        uint32_t* datas_u = nullptr;  // uint
-        bool* datas_b = nullptr;  // bool
-        uint32_t* data_s2d = nullptr;  // sampler2D
+        float* datas_f = nullptr;         // float
+        int32_t* datas_i = nullptr;       // int
+        uint32_t* datas_u = nullptr;      // uint
+        bool* datas_b = nullptr;          // bool
+        uint32_t* data_s2d = nullptr;     // sampler2D
         uint32_t* data_s2darr = nullptr;  // sampler2DArray
-        int32_t matrix_size = 0;  // matrixSize 2,3,4
+        int32_t matrix_size = 0;          // matrixSize 2,3,4
         GLint loc = -1;
         GLuint channels = 0U;
         GLuint elements = 0U;
-        bool canbeDirty = false; // to uplaod when needed and not each frames
-        bool dirty = false; // need a new upload
+        bool canbeDirty = false;  // to uplaod when needed and not each frames
+        bool dirty = false;       // need a new upload
         bool used = false;
         bool showed = false;
         BufferBlock** buffer_ptr = nullptr;  // a buffer block ex: UBO /SSBO
-        int32_t bufferBinding = -1;  // the binding point in the sahder of the buffer block
+        int32_t bufferBinding = -1;          // the binding point in the sahder of the buffer block
         UniformWidgetFunctor widget_functor = nullptr;
     };
 
@@ -324,7 +323,7 @@ public:
         uni.name = vUniformName;
         uni.data_s2darr = vSampler2DArrayPtr;
         uni.channels = 0;
-        uni.showed = false; // no way to display a texture 2d array
+        uni.showed = false;  // no way to display a texture 2d array
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr = nullptr) {
@@ -487,7 +486,7 @@ public:
             for (auto& uni : shader_type.second) {
                 if (uni.second.showed && uni.second.used) {
                     if (uni.second.widget_functor != nullptr) {
-                       ret |= uni.second.widget_functor(uni.second);
+                        ret |= uni.second.widget_functor(uni.second);
                     }
                 }
             }
@@ -536,7 +535,7 @@ public:
                                     }
                                 }
                             } else if (uni.second.data_s2d != 0U) {
-                                ImGui::Text(uni.second.name.c_str());
+                                ImGui::Text("%s", uni.second.name.c_str());
                                 ImGui::Indent();
                                 ImGui::Image((ImTextureID)uni.second.data_s2d, ImVec2(64.0f, 64.0f));
                                 ImGui::Unindent();

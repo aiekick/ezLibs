@@ -142,7 +142,7 @@ inline fvec2 screenToWorld_centered(
     const fvec2& viewportSize,
     const fvec2& worldCenter,
     float sPx,
-    bool yDown  // true si Y écran descend
+    bool yDown  // true si Y ecran descend
 ) {
     const float VW = viewportSize.x, VH = viewportSize.y;
     const float dx = mousePx.x - 0.5f * VW;
@@ -165,7 +165,7 @@ inline void centeredZoom(
     const float VW = viewportSize.x, VH = viewportSize.y;
     const float sPx_before = zoom * sFitPx;
 
-    // delta écran (centre -> souris), signé selon Y-up/Y-down
+    // delta ecran (centre -> souris), signe selon Y-up/Y-down
     const float dx = mousePx.x - 0.5f * VW;
     const float dy = yDown ? (mousePx.y - 0.5f * VH) : (0.5f * VH - mousePx.y);
 
@@ -191,7 +191,7 @@ inline void zoomedTranslation(
         return;
     const float sPx = zoom * sFitPx;
 
-    // déplacer le centre à l'opposé du drag (comme une carte)
+    // deplacer le centre a l'oppose du drag (comme une carte)
     const float dx = dragPx.x;
     const float dy = yDown ? dragPx.y : -dragPx.y;
 
@@ -209,7 +209,7 @@ inline float computeFitScalePx(const fvec2& worldMin, const fvec2& worldMax, con
 }
 
 // Fit "contain" d'un AABB monde dans un framebuffer en pixels.
-// Mapping utilisé : screen = world * scale + originPx
+// Mapping utilise : screen = world * scale + originPx
 inline void computeFitToContent(
     const ez::fvec2& vWorldMin,
     const ez::fvec2& vWorldMax,
