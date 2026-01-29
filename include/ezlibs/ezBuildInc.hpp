@@ -32,12 +32,14 @@ SOFTWARE.
 #include <sstream>
 #include <iostream>
 
-// you msut include ezFigFont.hpp before this include 
+#include "ezFmt.hpp"
+
+// you msut include ezFigFont.hpp before this include
 // if you want to enable the FigFont Label Generation
 
 namespace ez {
 
-/* File Format 
+/* File Format
 #pragma once
 
 #define Project_Label "project"
@@ -51,6 +53,8 @@ namespace ez {
 class BuildInc {
 private:
     bool m_lastWriteStatus = false;
+    bool m_lastWriteJsFileStatus = false;
+    std::string m_JsFilePath;
     std::string m_buildFileHeader;
     std::string m_project;
     std::string m_label;
@@ -60,9 +64,10 @@ private:
 #ifdef EZ_FIG_FONT
     class FigFontGenerator {
         friend class BuildInc;
+
     private:
         ez::FigFont m_generator;
-        bool m_useLabel = true;  // will use the label or not for the FigFont label
+        bool m_useLabel = true;         // will use the label or not for the FigFont label
         bool m_useBuildNumber = false;  // will use the buildNumber or not for the FigFont label
     public:
         bool isValid() { return m_generator.isValid(); }
@@ -88,9 +93,9 @@ public:
         if (docFile.is_open()) {
             std::stringstream strStream;
             strStream << docFile.rdbuf();
-             content =  strStream.str();
+            content = strStream.str();
             docFile.close();
-        } 
+        }
         if (!content.empty()) {
             size_t startLine = 0;
             size_t endLine = content.find('\n', startLine);
@@ -110,7 +115,7 @@ public:
                         m_buildNumber = m_toNumber(value);
                     }
                 }
-                startLine = endLine+1;
+                startLine = endLine + 1;
                 endLine = content.find('\n', startLine);
             }
         }
@@ -127,36 +132,26 @@ public:
         return ss.str();
     }
     std::string getInfos() {
-        std::stringstream project, build_id, file, infos;
-        std::string project_str, build_id_str, file_str;
-        build_id << "Build Id : " << getBuildIdStr() << " / " << getBuildIdInt();
-        build_id_str = build_id.str();
-        size_t row_len = build_id_str.size();
-        if (m_lastWriteStatus) {
-            file << "In file : " << m_buildFileHeader;
-        } else {
-            file << "failed to write to : " << m_buildFileHeader;
-        }
-        file_str = file.str();
-        if (row_len < file_str.size()) {
-            row_len = file_str.size();
-        }
+        ez::TableFormatter tbl({"Desc", "Result"});
         if (!m_project.empty()) {
-            project << "Project : " << m_project;
-            project_str = project.str();
-            if (row_len < project_str.size()) {
-                row_len = project_str.size();
+            tbl.addRow({"Project", m_project});
+        }
+        tbl.addRow({"Build Id", getBuildIdStr() + " / " + getBuildIdInt()});
+        if (m_lastWriteStatus) {
+            tbl.addRow({"In C/C++ file", m_buildFileHeader});
+        } else {
+            tbl.addRow({"failed to write to", m_buildFileHeader});
+        }
+        if (!m_JsFilePath.empty()) {
+            if (m_lastWriteJsFileStatus) {
+                tbl.addRow({"In JS file", m_JsFilePath});
+            } else {
+                tbl.addRow({"failed to write to", m_JsFilePath});
             }
         }
-        auto spliter = std::string(row_len + 6, '-');  // +6 for '-- ' and ' --'
-        infos << spliter << std::endl;
-        if (!m_project.empty()) {
-            infos << "-- " << project_str << std::string(row_len - project_str.size(), ' ') << " --" << std::endl;
-        }
-        infos << "-- " << build_id_str << std::string(row_len - build_id_str.size(), ' ') << " --" << std::endl;
-        infos << "-- " << file_str << std::string(row_len - file_str.size(), ' ') << " --" << std::endl;
-        infos << spliter << std::endl;
-        return infos.str();
+        std::stringstream ss;
+        tbl.print("", ss);
+        return ss.str();
     }
     BuildInc& printInfos() {
         std::cout << getInfos();
@@ -191,6 +186,10 @@ public:
         ++m_buildNumber;
         return *this;
     }
+    BuildInc& setJsFilePath(const std::string& vJsFilePath) {
+        m_JsFilePath = vJsFilePath;
+        return *this;
+    }
 #ifdef EZ_FIG_FONT
     FigFontGenerator& setFigFontFile(const std::string& vFigFontFile) {
         m_figFontGenerator.m_generator.load(vFigFontFile);
@@ -199,38 +198,59 @@ public:
 #endif  // EZ_FIG_FONT
     BuildInc& write() {
         m_lastWriteStatus = false;
-        std::stringstream content;
-        content << "#pragma once" << std::endl;
-        content << std::endl;
-        content << "#define " << m_project << "_Label \"" << m_label << "\"" << std::endl;
-        content << "#define " << m_project << "_BuildNumber " << m_buildNumber << std::endl;
-        content << "#define " << m_project << "_MinorNumber " << m_minorNumber << std::endl;
-        content << "#define " << m_project << "_MajorNumber " << m_majorNumber << std::endl;
-        content << "#define " << m_project << "_BuildId \"" << getBuildIdStr() << "\"" << std::endl;
-        content << "#define " << m_project << "_BuildIdNum " << getBuildIdInt() << std::endl;
-#ifdef EZ_FIG_FONT
-        if (m_figFontGenerator.isValid()) {
-            std::stringstream version;
-            if (m_figFontGenerator.m_useLabel) {
-                version << m_label << " ";
-            }
-            version << "v" << m_majorNumber << "." << m_minorNumber;
-            if (m_figFontGenerator.m_useBuildNumber) {
-                version << "." << m_buildNumber;
-            }
-            content << "#define " << m_project << "_FigFontLabel u8R\"(" << m_figFontGenerator.m_generator.printString(version.str()) << ")\"" << std::endl;
-        }
-#endif  // EZ_FIG_FONT
         std::ofstream configFileWriter(m_buildFileHeader, std::ios::out);
         if (!configFileWriter.bad()) {
+            std::stringstream content;
+            content << "#pragma once" << std::endl;
+            content << std::endl;
+            content << "#define " << m_project << "_Label \"" << m_label << "\"" << std::endl;
+            content << "#define " << m_project << "_BuildNumber " << m_buildNumber << std::endl;
+            content << "#define " << m_project << "_MinorNumber " << m_minorNumber << std::endl;
+            content << "#define " << m_project << "_MajorNumber " << m_majorNumber << std::endl;
+            content << "#define " << m_project << "_BuildId \"" << getBuildIdStr() << "\"" << std::endl;
+            content << "#define " << m_project << "_BuildIdNum " << getBuildIdInt() << std::endl;
+#ifdef EZ_FIG_FONT
+            if (m_figFontGenerator.isValid()) {
+                std::stringstream version;
+                if (m_figFontGenerator.m_useLabel) {
+                    version << m_label << " ";
+                }
+                version << "v" << m_majorNumber << "." << m_minorNumber;
+                if (m_figFontGenerator.m_useBuildNumber) {
+                    version << "." << m_buildNumber;
+                }
+                content << "#define " << m_project << "_FigFontLabel u8R\"(" << m_figFontGenerator.m_generator.printString(version.str()) << ")\"" << std::endl;
+            }
+#endif  // EZ_FIG_FONT
             configFileWriter << content.str();
             configFileWriter.close();
             m_lastWriteStatus = true;
         }
+        m_writeJsFile();  // if m_JsFilePath not empty
         return *this;
     }
 
 private:
+    BuildInc& m_writeJsFile() {
+        m_lastWriteJsFileStatus = false;
+        if (!m_JsFilePath.empty()) {
+            std::ofstream configFileWriter(m_JsFilePath, std::ios::out);
+            if (!configFileWriter.bad()) {
+                std::stringstream content;
+                content << std::endl;
+                content << "const " << m_project << "_Label = \"" << m_label << "\";" << std::endl;
+                content << "const " << m_project << "_BuildNumber = " << m_buildNumber << ";" << std::endl;
+                content << "const " << m_project << "_MinorNumber = " << m_minorNumber << ";" << std::endl;
+                content << "const " << m_project << "_MajorNumber = " << m_majorNumber << ";" << std::endl;
+                content << "const " << m_project << "_BuildId = \"" << getBuildIdStr() << "\";" << std::endl;
+                content << "const " << m_project << "_BuildIdNum = " << getBuildIdInt() << ";" << std::endl;
+                configFileWriter << content.str();
+                configFileWriter.close();
+                m_lastWriteJsFileStatus = true;
+            }
+        }
+        return *this;
+    }
     // will parse a line '#define [PROJECT]_[KEY] [VALUE]'
     // return true is succeed, false if the format is not recognized
     bool m_parseDefine(const std::string& vRowContent, std::string& vOutProject, std::string& vOutKey, std::string& vOutValue) {
@@ -255,7 +275,7 @@ private:
         return false;
     }
     int32_t m_toNumber(const std::string& vNum) {
-        int32_t ret = 0; // 0 is the default value
+        int32_t ret = 0;  // 0 is the default value
         try {
             ret = std::stoi(vNum);
         } catch (...) {

@@ -28,6 +28,10 @@ SOFTWARE.
 
 #include <vector>
 #include <string>
+#include <iomanip>
+#include <cassert>
+#include <sstream>
+#include <iostream>
 
 namespace ez {
 
@@ -55,32 +59,47 @@ public:
 	}
 	
     void print(const std::string &vOffset, std::ostream &vOs = std::cout) const {
-		vOs << vOffset << "| ";
-		for (size_t i = 0; i < m_headers.size(); ++i) {  // header
-			vOs << std::left << std::setw(m_colWidths[i]) << m_headers[i];
-			if (i < (m_headers.size() - 1)) {
-				vOs << " | ";
-			}
-		}
-		vOs << " |\n" << vOffset << "+-";
-		for (size_t i = 0; i < m_headers.size(); ++i) {  // Separators
-			vOs << std::string(m_colWidths[i], '-');
-			if (i < (m_headers.size() - 1)) {
-				vOs << "-+-";
-			}
-		}
-		vOs << "-+\n";
-		for (const auto &row : m_rows) {  // rows
-			vOs << vOffset << "| ";
-			for (size_t i = 0; i < row.size(); ++i) {
-				vOs << std::left << std::setw(m_colWidths[i]) << row[i];
-				if (i < (row.size() - 1)) {
-					vOs << " | ";
-				}
-			}
-			vOs << " |\n";
-		}
-	}
+        vOs << vOffset << "+-";
+        for (size_t i = 0; i < m_headers.size(); ++i) {  // Separators
+            vOs << std::string(m_colWidths[i], '-');
+            if (i < (m_headers.size() - 1)) {
+                vOs << "-+-";
+            }
+        }
+        vOs << "-+\n" << vOffset << "| ";
+        for (size_t i = 0; i < m_headers.size(); ++i) {  // header
+            vOs << std::left << std::setw(m_colWidths[i]) << m_headers[i];
+            if (i < (m_headers.size() - 1)) {
+                vOs << " | ";
+            }
+        }
+        vOs << " |\n" << vOffset << "+-";
+        for (size_t i = 0; i < m_headers.size(); ++i) {  // Separators
+            vOs << std::string(m_colWidths[i], '-');
+            if (i < (m_headers.size() - 1)) {
+                vOs << "-+-";
+            }
+        }
+        vOs << "-+\n";
+        for (const auto &row : m_rows) {  // rows
+            vOs << vOffset << "| ";
+            for (size_t i = 0; i < row.size(); ++i) {
+                vOs << std::left << std::setw(m_colWidths[i]) << row[i];
+                if (i < (row.size() - 1)) {
+                    vOs << " | ";
+                }
+            }
+            vOs << " |\n";
+        }
+        vOs << vOffset << "+-";
+        for (size_t i = 0; i < m_headers.size(); ++i) {  // Separators
+            vOs << std::string(m_colWidths[i], '-');
+            if (i < (m_headers.size() - 1)) {
+                vOs << "-+-";
+            }
+        }
+        vOs << "-+\n";
+    }
 
 private:
     Row m_headers;

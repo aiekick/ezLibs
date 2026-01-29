@@ -35,6 +35,7 @@ int main(int vArgc, char* vArgv[]) {
     args.addOptional("--label").help("label of the project", "<label>").delimiter(' ');
     args.addOptional("-ff/--figfont").help("FigFont file; will add a FigFont based label", "<figFont_file>").delimiter(' ');
     args.addOptional("--no-help").help("will not print the help if the required arguments are not set", {});
+    args.addOptional("--jsfile").help("Will generate also a javascript version file", "<js_file_path>").delimiter(' ');
     if (args.parse(vArgc, vArgv)) {
         std::string project = args.getValue<std::string>("project");
         std::string label = args.getValue<std::string>("label");
@@ -43,9 +44,10 @@ int main(int vArgc, char* vArgv[]) {
         }
         std::string figFontFile = args.getValue<std::string>("figfont");
         std::string file = args.getValue<std::string>("file");
+        std::string jsfile = args.getValue<std::string>("jsfile");
         if (!file.empty()) {
             ez::BuildInc builder(file);
-            builder.setProject(project).setLabel(label).setFigFontFile(figFontFile);
+            builder.setProject(project).setLabel(label).setJsFilePath(jsfile).setFigFontFile(figFontFile);
             builder.incBuildNumber().write().printInfos();
         } else {
             if (!args.isPresent("no-help")) {
