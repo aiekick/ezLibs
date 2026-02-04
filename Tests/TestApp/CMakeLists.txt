@@ -40,6 +40,7 @@ StageBuildInc()
 ##########################################################
 
 AddTest("TestEzArgs_parsing")
+AddTest("TestEzArgs_unknown_option")
 AddTest("TestEzArgs_parsing_help")
 AddTest("TestEzArgs_optional_delimiters")
 AddTest("TestEzArgs_optional_delimiters_empties")

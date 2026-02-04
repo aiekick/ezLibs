@@ -25,13 +25,28 @@
 
 bool TestEzArgs_parsing() {
     try {
-        std::vector<char*> arr{"--no-help", "-t"};
+        std::vector<char*> arr{"--no-help"};
         ez::Args args("Test");
         args.addHeader("=========== test tool ===========").addFooter("=========== Thats all folks ===========");
         args.addOptional("--no-help");
         CTEST_ASSERT(args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U));
         CTEST_ASSERT(args.isPresent("--no-help"));
         CTEST_ASSERT(args.isPresent("no-help"));
+    } catch (std::exception&) {
+        return false;
+    }
+    return true;
+}
+
+bool TestEzArgs_unknown_option() {
+    try {
+        std::vector<char*> arr{"--no-help", "-t"};
+        ez::Args args("Test");
+        args.addHeader("=========== test tool ===========").addFooter("=========== Thats all folks ===========");
+        args.addOptional("--no-help");
+        CTEST_ASSERT(!args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U));
+        CTEST_ASSERT(args.getErrors().size() == 1U);
+        CTEST_ASSERT(args.getErrors().front() == "Error : Unknown argument: t");
     } catch (std::exception&) {
         return false;
     }
@@ -212,6 +227,11 @@ bool TestEzArgs_optional_required() {
     try {
         std::vector<char*> arr{"cvzf", "sample.txt", "-ff=mode2"};
         ez::Args args("Test");
+        args.addOptional("c").delimiter(' ');
+        args.addOptional("v").delimiter(' ');
+        args.addOptional("z").delimiter(' ');
+        args.addOptional("f").delimiter(' ');
+        args.addOptional("-ff").delimiter('=');
         args.addOptional("G").required(true);        
         if (args.parse(static_cast<int32_t>(arr.size()), arr.data(), 0U)) {
             return false;
@@ -327,6 +347,7 @@ bool TestEzArgs_positional_optional() {
 
 bool TestEzArgs(const std::string& vTest) {
     IfTestExist(TestEzArgs_parsing);
+    else IfTestExist(TestEzArgs_unknown_option);
     else IfTestExist(TestEzArgs_parsing_help);
     else IfTestExist(TestEzArgs_optional_delimiters);
     else IfTestExist(TestEzArgs_optional_delimiters_empties);
