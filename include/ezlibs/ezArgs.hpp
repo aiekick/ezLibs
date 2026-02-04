@@ -35,9 +35,9 @@ SOFTWARE.
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
+#include <limits>
 
 #include "ezStr.hpp"
-
 #include "ezLog.hpp"
 
 namespace ez {
@@ -46,17 +46,24 @@ class Args {
 private:
     class Argument {
         friend class Args;
+
     protected:
         std::vector<std::string> m_base_args;  // base args
-        std::set<std::string> m_full_args;  // full args
+        std::set<std::string> m_full_args;     // full args
         char one_char_arg = 0;
         std::string m_help_text;
         std::string m_help_var_name;
         std::string m_type;
-        char m_delimiter = 0;  // delimiter used for arguments : toto a, toto=a, toto:a, etc...
+        char m_delimiter = 0;       // delimiter used for arguments : toto a, toto=a, toto:a, etc...
         bool m_is_present = false;  // found during parsing
-        bool m_has_value = false;  // found during parsing
-        std::string m_value;  // value
+        bool m_has_value = false;   // found during parsing
+        std::string m_value;        // value
+
+        // Array support
+        bool m_is_array = false;
+        size_t m_array_min_count = 0;                                   // minimum number of elements (0 = no minimum)
+        size_t m_array_max_count = std::numeric_limits<size_t>::max();  // maximum number of elements
+        std::vector<std::string> m_array_values;                        // array values
 
     public:
         Argument() = default;
@@ -86,6 +93,30 @@ private:
             return *static_cast<TRETURN_TYPE *>(this);
         }
 
+        template <typename TRETURN_TYPE>
+        TRETURN_TYPE &array(size_t vCount) {
+            m_is_array = true;
+            m_array_min_count = vCount;
+            m_array_max_count = vCount;
+            return *static_cast<TRETURN_TYPE *>(this);
+        }
+
+        template <typename TRETURN_TYPE>
+        TRETURN_TYPE &array(size_t vMinCount, size_t vMaxCount) {
+            m_is_array = true;
+            m_array_min_count = vMinCount;
+            m_array_max_count = vMaxCount;
+            return *static_cast<TRETURN_TYPE *>(this);
+        }
+
+        template <typename TRETURN_TYPE>
+        TRETURN_TYPE &arrayUnlimited() {
+            m_is_array = true;
+            m_array_min_count = 0;
+            m_array_max_count = std::numeric_limits<size_t>::max();
+            return *static_cast<TRETURN_TYPE *>(this);
+        }
+
     private:
         typedef std::pair<std::string, std::string> HelpCnt;
 
@@ -98,6 +129,19 @@ private:
                     token = *(m_base_args.begin());
                 }
                 ss << "  " << token;
+                if (m_is_array) {
+                    if (m_array_min_count == m_array_max_count) {
+                        ss << " (x" << m_array_min_count << ")";
+                    } else if (m_array_max_count == std::numeric_limits<size_t>::max()) {
+                        if (m_array_min_count > 0) {
+                            ss << " (min " << m_array_min_count << ")";
+                        } else {
+                            ss << " (unlimited)";
+                        }
+                    } else {
+                        ss << " (" << m_array_min_count << "-" << m_array_max_count << ")";
+                    }
+                }
             } else {
                 size_t idx = 0;
                 ss << "  ";
@@ -109,6 +153,19 @@ private:
                 }
                 if (!m_help_var_name.empty()) {
                     ss << m_delimiter << m_help_var_name;
+                    if (m_is_array) {
+                        if (m_array_min_count == m_array_max_count) {
+                            ss << " ... (x" << m_array_min_count << ")";
+                        } else if (m_array_max_count == std::numeric_limits<size_t>::max()) {
+                            if (m_array_min_count > 0) {
+                                ss << " ... (min " << m_array_min_count << ")";
+                            } else {
+                                ss << " ... (unlimited)";
+                            }
+                        } else {
+                            ss << " ... (" << m_array_min_count << "-" << m_array_max_count << ")";
+                        }
+                    }
                 }
             }
             auto ret = ss.str();
@@ -121,15 +178,21 @@ private:
 
     class PositionalArgument final : public Argument {
         friend class Args;
+
     public:
         PositionalArgument &help(const std::string &vHelp, const std::string &vVarName) { return Argument::help<PositionalArgument>(vHelp, vVarName); }
         PositionalArgument &type(const std::string &vType) { return Argument::type<PositionalArgument>(vType); }
+        PositionalArgument &array(size_t vCount) { return Argument::array<PositionalArgument>(vCount); }
+        PositionalArgument &array(size_t vMinCount, size_t vMaxCount) { return Argument::array<PositionalArgument>(vMinCount, vMaxCount); }
+        PositionalArgument &arrayUnlimited() { return Argument::arrayUnlimited<PositionalArgument>(); }
     };
 
     class OptionalArgument final : public Argument {
         friend class Args;
+
     private:
         bool m_required = false;
+
     public:
         OptionalArgument &help(const std::string &vHelp, const std::string &vVarName) { return Argument::help<OptionalArgument>(vHelp, vVarName); }
         OptionalArgument &def(const std::string &vDefValue) { return Argument::def<OptionalArgument>(vDefValue); }
@@ -139,6 +202,9 @@ private:
             m_required = vValue;
             return *this;
         }
+        OptionalArgument &array(size_t vCount) { return Argument::array<OptionalArgument>(vCount); }
+        OptionalArgument &array(size_t vMinCount, size_t vMaxCount) { return Argument::array<OptionalArgument>(vMinCount, vMaxCount); }
+        OptionalArgument &arrayUnlimited() { return Argument::arrayUnlimited<OptionalArgument>(); }
     };
 
 private:
@@ -217,6 +283,15 @@ public:
         return false;
     }
 
+    // is token an array
+    bool isArray(const std::string &vKey) {
+        auto *ptr = m_getArgumentPtr(vKey, true);
+        if (ptr != nullptr) {
+            return ptr->m_is_array;
+        }
+        return false;
+    }
+
     template <typename T>
     T getValue(const std::string &vKey, bool vNoExcept = false) const {
         auto *ptr = m_getArgumentPtr(vKey, vNoExcept);
@@ -224,6 +299,47 @@ public:
             return m_convertString<T>(ptr->m_value);
         }
         return {};
+    }
+
+    // Get array values as vector of strings
+    std::vector<std::string> getArrayValues(const std::string &vKey, bool vNoExcept = false) const {
+        auto *ptr = m_getArgumentPtr(vKey, vNoExcept);
+        if (ptr != nullptr) {
+            if (!ptr->m_is_array) {
+                if (!vNoExcept) {
+                    throw std::runtime_error("Argument is not an array");
+                }
+                return {};
+            }
+            return ptr->m_array_values;
+        }
+        return {};
+    }
+
+    // Get array values with type conversion
+    template <typename T>
+    std::vector<T> getArrayValues(const std::string &vKey, bool vNoExcept = false) const {
+        auto *ptr = m_getArgumentPtr(vKey, vNoExcept);
+        std::vector<T> result;
+        if (ptr != nullptr) {
+            if (!ptr->m_is_array) {
+                if (!vNoExcept) {
+                    throw std::runtime_error("Argument is not an array");
+                }
+                return result;
+            }
+            result.reserve(ptr->m_array_values.size());
+            for (const auto &val : ptr->m_array_values) {
+                try {
+                    result.push_back(m_convertString<T>(val));
+                } catch (const std::exception &e) {
+                    if (!vNoExcept) {
+                        throw;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     std::string getHelp(  //
@@ -246,11 +362,9 @@ public:
         return ss.str();
     }
 
-    void printHelp() const {
-        std::cout << getHelp() << std::endl;
-    }
+    void printHelp() const { std::cout << getHelp() << std::endl; }
 
-    void printErrors(const std::string& vIndent) const {
+    void printErrors(const std::string &vIndent) const {
         if (m_errors.empty()) {
             return;
         }
@@ -267,7 +381,7 @@ public:
             // print help
             if (m_HelpArgument.m_full_args.find(arg) != m_HelpArgument.m_full_args.end()) {
                 printHelp();
-                return false; // interrupt parsing
+                return false;  // interrupt parsing
             }
 
             // check optionals
@@ -275,6 +389,8 @@ public:
             std::string value;
             bool is_optional = false;
             bool check_for_value = false;
+            OptionalArgument *current_optional = nullptr;
+
             for (auto &arg_ref : m_Optionals) {
                 check_for_value = false;
                 if (arg_ref.m_delimiter != 0) {
@@ -299,6 +415,7 @@ public:
                     if (p != std::string::npos) {
                         arg_ref.m_is_present = true;
                         is_optional = true;
+                        current_optional = &arg_ref;
                         if (p == (token.size() - 1)) {
                             check_for_value = true;
                         }
@@ -306,22 +423,54 @@ public:
                 } else if (arg_ref.m_full_args.find(token) != arg_ref.m_full_args.end()) {
                     arg_ref.m_is_present = true;
                     is_optional = true;
+                    current_optional = &arg_ref;
                     check_for_value = true;
                 }
-                if (check_for_value) {
-                    if (arg_ref.m_delimiter == ' ') {
-                        if ((idx + 1) < vArgc) {
-                            auto *existingArg = m_getArgumentPtr(vArgv[idx + 1], true);
+
+                if (check_for_value && current_optional != nullptr) {
+                    if (current_optional->m_is_array) {
+                        // Array handling
+                        size_t count = 0;
+                        if (current_optional->m_delimiter == ' ') {
+                            // Space-separated array values
+                            while ((idx + 1) < vArgc && count < current_optional->m_array_max_count) {
+                                auto *existingArg = m_getArgumentPtr(vArgv[idx + 1], true);
+                                if (!existingArg) {
+                                    current_optional->m_array_values.push_back(vArgv[++idx]);
+                                    ++count;
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else if (current_optional->m_delimiter != 0) {
+                            // Delimiter-separated (add the first value already parsed)
+                            auto *existingArg = m_getArgumentPtr(value, true);
                             if (!existingArg) {
-                                arg_ref.m_value = vArgv[++idx];
-                                arg_ref.m_has_value = true;
+                                current_optional->m_array_values.push_back(value);
+                                ++count;
                             }
                         }
-                    } else if (arg_ref.m_delimiter != 0) {
-                        auto *existingArg = m_getArgumentPtr(value, true);
-                        if (!existingArg) {
-                            arg_ref.m_value = value;
-                            arg_ref.m_has_value = true;
+
+                        if (count > 0) {
+                            current_optional->m_has_value = true;
+                            current_optional->m_value = current_optional->m_array_values[0];  // For backward compatibility
+                        }
+                    } else {
+                        // Non-array handling (original code)
+                        if (current_optional->m_delimiter == ' ') {
+                            if ((idx + 1) < vArgc) {
+                                auto *existingArg = m_getArgumentPtr(vArgv[idx + 1], true);
+                                if (!existingArg) {
+                                    current_optional->m_value = vArgv[++idx];
+                                    current_optional->m_has_value = true;
+                                }
+                            }
+                        } else if (current_optional->m_delimiter != 0) {
+                            auto *existingArg = m_getArgumentPtr(value, true);
+                            if (!existingArg) {
+                                current_optional->m_value = value;
+                                current_optional->m_has_value = true;
+                            }
                         }
                     }
                 }
@@ -332,26 +481,92 @@ public:
                 if (positional_idx < m_Positionals.size()) {
                     auto &positional = m_Positionals.at(positional_idx);
                     positional.m_is_present = true;
-                    positional.m_value = arg;
-                    positional.m_has_value = true;
+
+                    if (positional.m_is_array) {
+                        // Array positional
+                        positional.m_array_values.push_back(arg);
+                        size_t count = 1;
+
+                        // Continue collecting array values
+                        while ((idx + 1) < vArgc && count < positional.m_array_max_count) {
+                            std::string next_arg = m_trim(vArgv[idx + 1]);
+
+                            // Check if next arg is an optional
+                            bool is_next_optional = false;
+                            for (const auto &opt : m_Optionals) {
+                                if (opt.m_full_args.find(next_arg) != opt.m_full_args.end() ||
+                                    (opt.one_char_arg != 0 && next_arg.find(opt.one_char_arg) != std::string::npos)) {
+                                    is_next_optional = true;
+                                    break;
+                                }
+                            }
+
+                            if (is_next_optional) {
+                                break;
+                            }
+
+                            // Check if we've reached the next positional's expected position
+                            if (positional_idx + 1 < m_Positionals.size() && !m_Positionals[positional_idx + 1].m_is_array && count >= positional.m_array_min_count) {
+                                break;
+                            }
+
+                            positional.m_array_values.push_back(vArgv[++idx]);
+                            ++count;
+                        }
+
+                        positional.m_has_value = true;
+                        positional.m_value = positional.m_array_values[0];  // For backward compatibility
+                    } else {
+                        // Non-array positional (original code)
+                        positional.m_value = arg;
+                        positional.m_has_value = true;
+                    }
+
                     ++positional_idx;
                 }
             }
         }
 
-        // check if required fields are not not seen during parsing
+        // check if required fields are not seen during parsing
         for (const auto &pos : m_Positionals) {
             // not seen during parsing
             if (!pos.m_is_present) {
                 // its normally impossible than m_base_args can be empty
                 m_addError("Positional <" + pos.m_base_args.at(0) + "> not present");
+            } else if (pos.m_is_array) {
+                // Check array count constraints
+                size_t count = pos.m_array_values.size();
+                if (count < pos.m_array_min_count) {
+                    m_addError(
+                        "Positional array <" + pos.m_base_args.at(0) + "> expects at least " + std::to_string(pos.m_array_min_count) + " values, got " +
+                        std::to_string(count));
+                }
+                if (count > pos.m_array_max_count) {
+                    m_addError(
+                        "Positional array <" + pos.m_base_args.at(0) + "> expects at most " + std::to_string(pos.m_array_max_count) + " values, got " +
+                        std::to_string(count));
+                }
             }
         }
+
         for (const auto &opt : m_Optionals) {
             // required but not seen during parsing
             if (opt.m_required && !opt.m_is_present) {
                 // its normally impossible than m_base_args can be empty
                 m_addError("Optional <" + opt.m_base_args.at(0) + "> not present");
+            } else if (opt.m_is_present && opt.m_is_array) {
+                // Check array count constraints
+                size_t count = opt.m_array_values.size();
+                if (count < opt.m_array_min_count) {
+                    m_addError(
+                        "Optional array <" + opt.m_base_args.at(0) + "> expects at least " + std::to_string(opt.m_array_min_count) + " values, got " +
+                        std::to_string(count));
+                }
+                if (count > opt.m_array_max_count) {
+                    m_addError(
+                        "Optional array <" + opt.m_base_args.at(0) + "> expects at most " + std::to_string(opt.m_array_max_count) + " values, got " +
+                        std::to_string(count));
+                }
             }
         }
 
@@ -379,6 +594,10 @@ private:
             throw std::runtime_error("Argument not found");
         }
         return ret;
+    }
+
+    Argument *m_getArgumentPtr(const std::string &vKey, bool vNoExcept = false) {
+        return const_cast<Argument *>(static_cast<const Args *>(this)->m_getArgumentPtr(vKey, vNoExcept));
     }
 
     OptionalArgument &m_addOptional(OptionalArgument &vInOutArgument, const std::string &vKey) {
@@ -409,16 +628,24 @@ private:
         }
         if (!vOptionalArgument.m_help_var_name.empty()) {
             vStream << vOptionalArgument.m_delimiter << vOptionalArgument.m_help_var_name;
+            if (vOptionalArgument.m_is_array) {
+                vStream << " ...";
+            }
         }
         vStream << "]";
     }
+
     void m_getCmdLinePositional(const PositionalArgument &vPositionalArgument, std::stringstream &vStream) const {
         std::string token = vPositionalArgument.m_help_var_name;
         if (token.empty()) {
             token = *(vPositionalArgument.m_base_args.begin());
         }
         vStream << " " << token;
+        if (vPositionalArgument.m_is_array) {
+            vStream << " ...";
+        }
     }
+
     std::string m_getCmdLineHelp() const {
         std::stringstream ss;
         ss << " Usage : " << m_AppName;
@@ -428,7 +655,7 @@ private:
         }
         for (const auto &arg : m_Positionals) {
             m_getCmdLinePositional(arg, ss);
-        }      
+        }
         return ss.str();
     }
 
