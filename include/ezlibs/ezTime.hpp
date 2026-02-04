@@ -248,7 +248,7 @@ double measureOperationUs(TLAMBDA vLambda, size_t vCountOperations = 1) {
 }
 
 // will wait the condition to be true with a timeout and a step for inc time until ok or timeout
-static bool waitUntil(const std::function<bool(void)>& vCond, uint32_t vTimeoutMs, uint32_t vStepMs = 50) {
+inline bool waitUntil(const std::function<bool(void)>& vCond, uint32_t vTimeoutMs, uint32_t vStepMs = 50) {
     using clock = std::chrono::steady_clock;
     auto start = clock::now();
     while (!vCond()) {
