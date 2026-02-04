@@ -538,6 +538,13 @@ inline std::vector<std::string> extractWildcardsFromPattern(const std::string& v
     return res;
 }
 
+inline bool endsWith(const std::string& vStr, const std::string& vSuffix) {
+    if (vSuffix.size() > vStr.size()) {
+        return false;
+    }
+    return (vStr.compare(vStr.size() - vSuffix.size(), vSuffix.size(), vSuffix) == 0);
+}
+
 }  // namespace str
 }  // namespace ez
 

@@ -120,6 +120,22 @@ private:
     private:
         typedef std::pair<std::string, std::string> HelpCnt;
 
+        void m_getHelpArray(std::stringstream &vSs, const std::string &vPrefix) const {
+            if (m_is_array) {
+                if (m_array_min_count == m_array_max_count) {
+                    vSs << " " << vPrefix << " (x " << m_array_min_count << ") ";
+                } else if (m_array_max_count == std::numeric_limits<size_t>::max()) {
+                    if (m_array_min_count > 0) {
+                        vSs << " " << vPrefix << " (min " << m_array_min_count << ")";
+                    } else {
+                        vSs << " " << vPrefix << " (unlimited)";
+                    }
+                } else {
+                    vSs << " " << vPrefix << " (" << m_array_min_count << "-" << m_array_max_count << ")";
+                }
+            }
+        }
+
         HelpCnt m_getHelp(bool vPositional, size_t &vInOutFirstColSize) const {
             HelpCnt res;
             std::stringstream ss;
@@ -129,19 +145,7 @@ private:
                     token = *(m_base_args.begin());
                 }
                 ss << "  " << token;
-                if (m_is_array) {
-                    if (m_array_min_count == m_array_max_count) {
-                        ss << " (x" << m_array_min_count << ")";
-                    } else if (m_array_max_count == std::numeric_limits<size_t>::max()) {
-                        if (m_array_min_count > 0) {
-                            ss << " (min " << m_array_min_count << ")";
-                        } else {
-                            ss << " (unlimited)";
-                        }
-                    } else {
-                        ss << " (" << m_array_min_count << "-" << m_array_max_count << ")";
-                    }
-                }
+                m_getHelpArray(ss, {});
             } else {
                 size_t idx = 0;
                 ss << "  ";
@@ -153,19 +157,7 @@ private:
                 }
                 if (!m_help_var_name.empty()) {
                     ss << m_delimiter << m_help_var_name;
-                    if (m_is_array) {
-                        if (m_array_min_count == m_array_max_count) {
-                            ss << " ... (x" << m_array_min_count << ")";
-                        } else if (m_array_max_count == std::numeric_limits<size_t>::max()) {
-                            if (m_array_min_count > 0) {
-                                ss << " ... (min " << m_array_min_count << ")";
-                            } else {
-                                ss << " ... (unlimited)";
-                            }
-                        } else {
-                            ss << " ... (" << m_array_min_count << "-" << m_array_max_count << ")";
-                        }
-                    }
+                    m_getHelpArray(ss, "...");
                 }
             }
             auto ret = ss.str();
@@ -266,7 +258,7 @@ public:
     }
 
     // is token present
-    bool isPresent(const std::string &vKey) {
+    bool isPresent(const std::string &vKey) const {
         auto *ptr = m_getArgumentPtr(vKey, true);
         if (ptr != nullptr) {
             return ptr->m_is_present;
@@ -275,7 +267,7 @@ public:
     }
 
     // is token have value
-    bool hasValue(const std::string &vKey) {
+    bool hasValue(const std::string &vKey) const {
         auto *ptr = m_getArgumentPtr(vKey, true);
         if (ptr != nullptr) {
             return ptr->m_has_value;
@@ -284,7 +276,7 @@ public:
     }
 
     // is token an array
-    bool isArray(const std::string &vKey) {
+    bool isArray(const std::string &vKey) const {
         auto *ptr = m_getArgumentPtr(vKey, true);
         if (ptr != nullptr) {
             return ptr->m_is_array;
@@ -342,27 +334,31 @@ public:
         return result;
     }
 
-    std::string getHelp(  //
-        const std::string &vPositionalHeader = "Positionnal arguments",
-        const std::string &vOptionalHeader = "Optional arguments") const {
-        std::string token;
-        std::stringstream ss;
+    void getHelp(  //
+        std::ostream &vOs,
+        const std::string &vPositionalHeader,
+        const std::string &vOptionalHeader) const {
         if (!m_HelpHeader.empty()) {
-            ss << m_HelpHeader << std::endl << std::endl;
+            vOs << m_HelpHeader << std::endl << std::endl;
         }
-        ss << m_getCmdLineHelp();
-        ss << std::endl;
+        vOs << m_getCmdLineHelp();
+        vOs << std::endl;
         if (!m_HelpDescription.empty()) {
-            ss << std::endl << " " << m_HelpDescription << std::endl;
+            vOs << std::endl << " " << m_HelpDescription << std::endl;
         }
-        ss << m_getHelpDetails(vPositionalHeader, vOptionalHeader);
+        vOs << m_getHelpDetails(vPositionalHeader, vOptionalHeader);
         if (!m_HelpFooter.empty()) {
-            ss << std::endl << m_HelpFooter << std::endl;
+            vOs << std::endl << m_HelpFooter << std::endl;
         }
-        return ss.str();
     }
 
-    void printHelp() const { std::cout << getHelp() << std::endl; }
+    void printHelp(
+        std::ostream &vOs = std::cout,
+        const std::string &vPositionalHeader = "Positionnal arguments",
+        const std::string &vOptionalHeader = "Optional arguments") const {
+        getHelp(vOs, vPositionalHeader, vOptionalHeader);
+        vOs << std::endl;
+    }
 
     void printErrors(const std::string &vIndent) const {
         if (m_errors.empty()) {
