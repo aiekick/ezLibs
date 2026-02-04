@@ -276,6 +276,7 @@ public:
 #ifdef EZ_TOOLS_LOG
             LogVarError(u8R"(tile: data matrix is empty)");
 #endif
+            m_valid = false;
             return false;
         }
 
@@ -291,6 +292,7 @@ public:
 #ifdef EZ_TOOLS_LOG
                 LogVarError(u8R"(tile: a row is empty)");
 #endif
+                m_valid = false;
                 return false;
             }
             if (m_nLons == 0u) {
@@ -299,6 +301,7 @@ public:
 #ifdef EZ_TOOLS_LOG
                 LogVarError(u8R"(tile: non-rectangular matrix (row sizes differ))");
 #endif
+                m_valid = false;
                 return false;
             }
             for (const auto& v : row) {
@@ -312,6 +315,7 @@ public:
         m_max.x.offsetDeg(static_cast<int32_t>(m_nLats));
         m_max.y.offsetDeg(static_cast<int32_t>(m_nLons));
 
+        m_valid = true;
         return true;
     }
 };

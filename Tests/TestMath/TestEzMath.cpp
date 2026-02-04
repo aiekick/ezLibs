@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzMathRoundN() {
+bool TestEzMath_RoundN() {
     if (ez::round_n(1.23456, 2) != "1.23")  // double
         return false;
     if (ez::round_n(1.23456f, 2) != "1.23")  // float
@@ -50,7 +50,7 @@ bool TestEzMathRoundN() {
     return true;
 }
 
-bool TestEzMathFloatIsValid() {
+bool TestEzMath_FloatIsValid() {
     if (!ez::floatIsValid(1.0f))
         return false;
     if (!ez::floatIsValid(0.0f))
@@ -65,7 +65,7 @@ bool TestEzMathFloatIsValid() {
 }
 
 template <typename T>
-bool TestEzMathIsDifferent() {
+bool TestEzMath_IsDifferent() {
     if (!ez::isDifferent<T>(-5, 5))
         return false;
     if (!ez::isDifferent<T>(0, 5))
@@ -80,7 +80,7 @@ bool TestEzMathIsDifferent() {
 }
 
 template <>
-bool TestEzMathIsDifferent<uint32_t>() {
+bool TestEzMath_IsDifferent<uint32_t>() {
     if (!ez::isDifferent<uint32_t>(0, 5))
         return false;
     if (ez::isDifferent<uint32_t>(-0, 0))
@@ -93,7 +93,7 @@ bool TestEzMathIsDifferent<uint32_t>() {
 }
 
 template <>
-bool TestEzMathIsDifferent<uint64_t>() {
+bool TestEzMath_IsDifferent<uint64_t>() {
     if (!ez::isDifferent<uint64_t>(0, 5))
         return false;
     if (ez::isDifferent<uint64_t>(-0, 0))
@@ -106,7 +106,7 @@ bool TestEzMathIsDifferent<uint64_t>() {
 }
 
 template <>
-bool TestEzMathIsDifferent<float>() {
+bool TestEzMath_IsDifferent<float>() {
     if (!ez::isDifferent<float>(-5.0f, 5.0f))
         return false;
     if (!ez::isDifferent<float>(0.0f, 5.0f))
@@ -121,7 +121,7 @@ bool TestEzMathIsDifferent<float>() {
 }
 
 template <>
-bool TestEzMathIsDifferent<double>() {
+bool TestEzMath_IsDifferent<double>() {
     if (!ez::isDifferent<double>(-5.0, 5.0))
         return false;
     if (!ez::isDifferent<double>(0.0, 5.0))
@@ -136,7 +136,7 @@ bool TestEzMathIsDifferent<double>() {
 }
 
 template <typename T>
-bool TestEzMathIsEqual() {
+bool TestEzMath_IsEqual() {
     if (ez::isEqual<T>(0, 5))
         return false;
     if (!ez::isEqual<T>(-0, 0))
@@ -149,7 +149,7 @@ bool TestEzMathIsEqual() {
 }
 
 template <int32_t>
-bool TestEzMathIsEqual() {
+bool TestEzMath_IsEqual() {
     if (!ez::isEqual<int32_t>(-5, -5))
         return false;
     if (ez::isEqual<int32_t>(0, 5))
@@ -164,7 +164,7 @@ bool TestEzMathIsEqual() {
 }
 
 template <int64_t>
-bool TestEzMathIsEqual() {
+bool TestEzMath_IsEqual() {
     if (!ez::isEqual<int64_t>(-5, -5))
         return false;
     if (ez::isEqual<int64_t>(0, 5))
@@ -179,7 +179,7 @@ bool TestEzMathIsEqual() {
 }
 
 template <>
-bool TestEzMathIsEqual<float>() {
+bool TestEzMath_IsEqual<float>() {
     if (!ez::isEqual<float>(-5.0f, -5.0f))
         return false;
     if (ez::isEqual<float>(0.0f, 5.0f))
@@ -194,7 +194,7 @@ bool TestEzMathIsEqual<float>() {
 }
 
 template <>
-bool TestEzMathIsEqual<double>() {
+bool TestEzMath_IsEqual<double>() {
     if (!ez::isEqual<double>(-5, -5))
         return false;
     if (ez::isEqual<double>(0, 5))
@@ -209,7 +209,7 @@ bool TestEzMathIsEqual<double>() {
 }
 
 template <typename T>
-bool TestEzMathRound() {
+bool TestEzMath_Round() {
     if (ez::isDifferent(ez::round<T>(0.5), static_cast<T>(1.0)))
         return false;
     if (ez::isDifferent(ez::round<T>(0.0), static_cast<T>(0.0)))
@@ -220,7 +220,7 @@ bool TestEzMathRound() {
 }
 
 template <typename T>
-bool TestEzMathFloor() {
+bool TestEzMath_Floor() {
     if (ez::isDifferent(ez::floor<T>(0.5), static_cast<T>(0.0)))
         return false;
     if (ez::isDifferent(ez::floor<T>(0.0), static_cast<T>(0.0)))
@@ -231,7 +231,7 @@ bool TestEzMathFloor() {
 }
 
 template <typename T>
-bool TestEzMathCeil() {
+bool TestEzMath_Ceil() {
     if (ez::isDifferent(ez::ceil<T>(0.5), static_cast<T>(1.0)))
         return false;
     if (ez::isDifferent(ez::ceil<T>(0.0), static_cast<T>(0.0)))
@@ -242,7 +242,7 @@ bool TestEzMathCeil() {
 }
 
 template <typename T>
-bool TestEzMathFract() {
+bool TestEzMath_Fract() {
     if (ez::isDifferent(ez::fract<T>(0.5), static_cast<T>(0.5)))
         return false;
     if (ez::isDifferent(ez::fract<T>(1.2), static_cast<T>(0.2)))
@@ -253,7 +253,7 @@ bool TestEzMathFract() {
 }
 
 template <typename T>
-bool TestEzMathCos() {
+bool TestEzMath_Cos() {
     if (ez::isDifferent(ez::cos<T>(0.0), static_cast<T>(1.0)))
         return false;
     if (ez::isDifferent(ez::cos<T>(M_PI / 2.0), static_cast<T>(0.0)))
@@ -262,7 +262,7 @@ bool TestEzMathCos() {
 }
 
 template <typename T>
-bool TestEzMathAcos() {
+bool TestEzMath_Acos() {
     if (ez::isDifferent(ez::acos<T>(1.0), static_cast<T>(0.0)))
         return false;
     if (ez::isDifferent(ez::acos<T>(0.0), static_cast<T>(M_PI / 2.0)))
@@ -271,7 +271,7 @@ bool TestEzMathAcos() {
 }
 
 template <typename T>
-bool TestEzMathSin() {
+bool TestEzMath_Sin() {
     if (ez::isDifferent(ez::sin<T>(0.0), static_cast<T>(0.0)))
         return false;
     if (ez::isDifferent(ez::sin<T>(M_PI / 2.0), static_cast<T>(1.0)))
@@ -280,7 +280,7 @@ bool TestEzMathSin() {
 }
 
 template <typename T>
-bool TestEzMathAsin() {
+bool TestEzMath_Asin() {
     if (ez::isDifferent(ez::asin<T>(0.0), static_cast<T>(0.0)))
         return false;
     if (ez::isDifferent(ez::asin<T>(1.0), static_cast<T>(M_PI / 2.0)))
@@ -289,14 +289,14 @@ bool TestEzMathAsin() {
 }
 
 template <typename T>
-bool TestEzMathTan() {
+bool TestEzMath_Tan() {
     if (ez::isDifferent(ez::tan<T>(0.0), static_cast<T>(0.0)))
         return false;
     return true;
 }
 
 template <typename T>
-bool TestEzMathAtan() {
+bool TestEzMath_Atan() {
     if (ez::isDifferent(ez::atan<T>(0.0), static_cast<T>(0.0)))
         return false;
     if (ez::isDifferent(ez::atan<T>(1.0), static_cast<T>(M_PI / 4.0)))
@@ -305,7 +305,7 @@ bool TestEzMathAtan() {
 }
 
 template <typename T>
-bool TestEzMathMini() {
+bool TestEzMath_Mini() {
     if (ez::mini<T>(1, 2) != 1)
         return false;
     if (ez::mini<T>(2, 1) != 1)
@@ -314,7 +314,7 @@ bool TestEzMathMini() {
 }
 
 template <typename T>
-bool TestEzMathMaxi() {
+bool TestEzMath_Maxi() {
     if (ez::maxi<T>(1, 2) != 2)
         return false;
     if (ez::maxi<T>(2, 1) != 2)
@@ -323,7 +323,7 @@ bool TestEzMathMaxi() {
 }
 
 template <typename T>
-bool TestEzMathClamp() {
+bool TestEzMath_Clamp() {
     if (ez::clamp<T>(-1, 0, 1) != 0)
         return false;
     if (ez::clamp<T>(2, 0, 1) != 1)
@@ -334,7 +334,7 @@ bool TestEzMathClamp() {
 }
 
 template <>
-bool TestEzMathClamp<int64_t>() {
+bool TestEzMath_Clamp<int64_t>() {
     if (ez::clamp<int64_t>(-1, 0, 1) != 0)
         return false;
     if (ez::clamp<int64_t>(2, 0, 1) != 1)
@@ -343,7 +343,7 @@ bool TestEzMathClamp<int64_t>() {
 }
 
 template <>
-bool TestEzMathClamp<float>() {
+bool TestEzMath_Clamp<float>() {
     if (ez::clamp<float>(-1.0f, 0.0f, 1.0f) != 0.0f)
         return false;
     if (ez::clamp<float>(2.0f, 0.0f, 1.0f) != 1.0f)
@@ -354,7 +354,7 @@ bool TestEzMathClamp<float>() {
 }
 
 template <>
-bool TestEzMathClamp<double>() {
+bool TestEzMath_Clamp<double>() {
     if (ez::clamp<double>(-1.0, 0.0, 1.0) != 0.0)
         return false;
     if (ez::clamp<double>(2.0, 0.0, 1.0) != 1.0)
@@ -366,7 +366,7 @@ bool TestEzMathClamp<double>() {
 
 // Specialisation for int32_t, only positive values
 template <>
-bool TestEzMathClamp<int32_t>() {
+bool TestEzMath_Clamp<int32_t>() {
     if (ez::clamp<int32_t>(-1, 0, 1) != 0)
         return false;
     if (ez::clamp<int32_t>(-2, -5, 5) != -2)
@@ -378,7 +378,7 @@ bool TestEzMathClamp<int32_t>() {
 
 // Specialisation for uint32_t, only positive values
 template <>
-bool TestEzMathClamp<uint32_t>() {
+bool TestEzMath_Clamp<uint32_t>() {
     if (ez::clamp<uint32_t>(2, 0, 10) != 2)
         return false;
     if (ez::clamp<uint32_t>(2, 0, 1) != 1)
@@ -390,7 +390,7 @@ bool TestEzMathClamp<uint32_t>() {
 
 // Specialisation for uint64_t, only positive values
 template <>
-bool TestEzMathClamp<uint64_t>() {
+bool TestEzMath_Clamp<uint64_t>() {
     if (ez::clamp<uint64_t>(2, 0, 10) != 2)
         return false;
     if (ez::clamp<uint64_t>(2, 0, 1) != 1)
@@ -400,7 +400,7 @@ bool TestEzMathClamp<uint64_t>() {
     return true;
 }
 template <typename T>
-bool TestEzMathAbs() {
+bool TestEzMath_Abs() {
     if (ez::abs<T>(-1) != 1)
         return false;
     if (ez::abs<T>(1) != 1)
@@ -409,7 +409,7 @@ bool TestEzMathAbs() {
 }
 
 template <typename T>
-bool TestEzMathSign() {
+bool TestEzMath_Sign() {
     if (ez::sign<T>(-1) != -1)
         return false;
     if (ez::sign<T>(1) != 1)
@@ -418,7 +418,7 @@ bool TestEzMathSign() {
 }
 
 template <typename T>
-bool TestEzMathStep() {
+bool TestEzMath_Step() {
     if (ez::step<T>(0.5, 0.4) != 0)
         return false;
     if (ez::step<T>(0.5, 0.6) != 1)
@@ -427,7 +427,7 @@ bool TestEzMathStep() {
 }
 
 template <typename T>
-bool TestEzMathMod() {
+bool TestEzMath_Mod() {
     if (ez::isDifferent(ez::mod<T>(5.5, 2.0), static_cast<T>(1.5)))
         return false;
     if (ez::isDifferent(ez::mod<T>(4.0, 2.0), static_cast<T>(0.0)))
@@ -436,14 +436,14 @@ bool TestEzMathMod() {
 }
 
 template <typename T>
-bool TestEzMathInvMix() {
+bool TestEzMath_InvMix() {
     if (ez::isDifferent(ez::invMix<T>(1, 2, 1.5), static_cast<T>(0.5)))
         return false;
     return true;
 }
 
 template <typename T>
-bool TestEzMathLerp() {
+bool TestEzMath_Lerp() {
     if (ez::isDifferent(ez::lerp<T>(0, 1, 0.5), static_cast<T>(0.5)))
         return false;
     if (ez::isDifferent(ez::lerp<T>(1, 2, 0.5), static_cast<T>(1.5)))
@@ -452,7 +452,7 @@ bool TestEzMathLerp() {
 }
 
 template <typename T>
-bool TestEzMathEerp() {
+bool TestEzMath_Eerp() {
     if (ez::isDifferent(ez::eerp<T>(0, 2, 0.5), static_cast<T>(0)))
         return false;
     if (ez::isDifferent(ez::eerp<T>(1, 2, 0.5), ez::sqrt<T>(2.0)))
@@ -461,7 +461,7 @@ bool TestEzMathEerp() {
 }
 
 template <typename T>
-bool TestEzMathMix() {
+bool TestEzMath_Mix() {
     if (ez::isDifferent(ez::mix<T>(0, 1, 0.5), static_cast<T>(0.5)))
         return false;
     if (ez::isDifferent(ez::mix<T>(1, 2, 0.5), static_cast<T>(1.5)))
@@ -478,102 +478,102 @@ bool TestEzMathMix() {
     return v()
 
 bool TestEzMath(const std::string& vTest) {
-    IfTestExist(TestEzMathRoundN);
+    IfTestExist(TestEzMath_RoundN);
 
-    else IfTestExist(TestEzMathFloatIsValid);
+    else IfTestExist(TestEzMath_FloatIsValid);
 
-    else IfTestExist(TestEzMathIsDifferent<float>);
-    else IfTestExist(TestEzMathIsDifferent<double>);
-    else IfTestExist(TestEzMathIsDifferent<int32_t>);
-    else IfTestExist(TestEzMathIsDifferent<uint32_t>);
-    else IfTestExist(TestEzMathIsDifferent<int64_t>);
-    else IfTestExist(TestEzMathIsDifferent<uint64_t>);
+    else IfTestExist(TestEzMath_IsDifferent<float>);
+    else IfTestExist(TestEzMath_IsDifferent<double>);
+    else IfTestExist(TestEzMath_IsDifferent<int32_t>);
+    else IfTestExist(TestEzMath_IsDifferent<uint32_t>);
+    else IfTestExist(TestEzMath_IsDifferent<int64_t>);
+    else IfTestExist(TestEzMath_IsDifferent<uint64_t>);
 
-    else IfTestExist(TestEzMathIsEqual<float>);
-    else IfTestExist(TestEzMathIsEqual<double>);
-    else IfTestExist(TestEzMathIsEqual<int32_t>);
-    else IfTestExist(TestEzMathIsEqual<uint32_t>);
-    else IfTestExist(TestEzMathIsEqual<int64_t>);
-    else IfTestExist(TestEzMathIsEqual<uint64_t>);
+    else IfTestExist(TestEzMath_IsEqual<float>);
+    else IfTestExist(TestEzMath_IsEqual<double>);
+    else IfTestExist(TestEzMath_IsEqual<int32_t>);
+    else IfTestExist(TestEzMath_IsEqual<uint32_t>);
+    else IfTestExist(TestEzMath_IsEqual<int64_t>);
+    else IfTestExist(TestEzMath_IsEqual<uint64_t>);
 
-    else IfTestExist(TestEzMathRound<float>);
-    else IfTestExist(TestEzMathRound<double>);
+    else IfTestExist(TestEzMath_Round<float>);
+    else IfTestExist(TestEzMath_Round<double>);
 
-    else IfTestExist(TestEzMathFloor<float>);
-    else IfTestExist(TestEzMathFloor<double>);
+    else IfTestExist(TestEzMath_Floor<float>);
+    else IfTestExist(TestEzMath_Floor<double>);
 
-    else IfTestExist(TestEzMathCeil<float>);
-    else IfTestExist(TestEzMathCeil<double>);
+    else IfTestExist(TestEzMath_Ceil<float>);
+    else IfTestExist(TestEzMath_Ceil<double>);
 
-    else IfTestExist(TestEzMathFract<float>);
-    else IfTestExist(TestEzMathFract<double>);
+    else IfTestExist(TestEzMath_Fract<float>);
+    else IfTestExist(TestEzMath_Fract<double>);
 
-    else IfTestExist(TestEzMathCos<float>);
-    else IfTestExist(TestEzMathCos<double>);
+    else IfTestExist(TestEzMath_Cos<float>);
+    else IfTestExist(TestEzMath_Cos<double>);
 
-    else IfTestExist(TestEzMathAcos<float>);
-    else IfTestExist(TestEzMathAcos<double>);
+    else IfTestExist(TestEzMath_Acos<float>);
+    else IfTestExist(TestEzMath_Acos<double>);
 
-    else IfTestExist(TestEzMathSin<float>);
-    else IfTestExist(TestEzMathSin<double>);
+    else IfTestExist(TestEzMath_Sin<float>);
+    else IfTestExist(TestEzMath_Sin<double>);
 
-    else IfTestExist(TestEzMathAsin<float>);
-    else IfTestExist(TestEzMathAsin<double>);
+    else IfTestExist(TestEzMath_Asin<float>);
+    else IfTestExist(TestEzMath_Asin<double>);
 
-    else IfTestExist(TestEzMathTan<float>);
-    else IfTestExist(TestEzMathTan<double>);
+    else IfTestExist(TestEzMath_Tan<float>);
+    else IfTestExist(TestEzMath_Tan<double>);
 
-    else IfTestExist(TestEzMathAtan<float>);
-    else IfTestExist(TestEzMathAtan<double>);
+    else IfTestExist(TestEzMath_Atan<float>);
+    else IfTestExist(TestEzMath_Atan<double>);
 
-    else IfTestExist(TestEzMathMini<float>);
-    else IfTestExist(TestEzMathMini<double>);
-    else IfTestExist(TestEzMathMini<int32_t>);
-    else IfTestExist(TestEzMathMini<uint32_t>);
-    else IfTestExist(TestEzMathMini<int64_t>);
-    else IfTestExist(TestEzMathMini<uint64_t>);
+    else IfTestExist(TestEzMath_Mini<float>);
+    else IfTestExist(TestEzMath_Mini<double>);
+    else IfTestExist(TestEzMath_Mini<int32_t>);
+    else IfTestExist(TestEzMath_Mini<uint32_t>);
+    else IfTestExist(TestEzMath_Mini<int64_t>);
+    else IfTestExist(TestEzMath_Mini<uint64_t>);
 
-    else IfTestExist(TestEzMathMaxi<float>);
-    else IfTestExist(TestEzMathMaxi<double>);
-    else IfTestExist(TestEzMathMaxi<int32_t>);
-    else IfTestExist(TestEzMathMaxi<uint32_t>);
-    else IfTestExist(TestEzMathMaxi<int64_t>);
-    else IfTestExist(TestEzMathMaxi<uint64_t>);
+    else IfTestExist(TestEzMath_Maxi<float>);
+    else IfTestExist(TestEzMath_Maxi<double>);
+    else IfTestExist(TestEzMath_Maxi<int32_t>);
+    else IfTestExist(TestEzMath_Maxi<uint32_t>);
+    else IfTestExist(TestEzMath_Maxi<int64_t>);
+    else IfTestExist(TestEzMath_Maxi<uint64_t>);
 
-    else IfTestExist(TestEzMathClamp<float>);
-    else IfTestExist(TestEzMathClamp<double>);
-    else IfTestExist(TestEzMathClamp<int32_t>);
-    else IfTestExist(TestEzMathClamp<uint32_t>);
-    else IfTestExist(TestEzMathClamp<int64_t>);
-    else IfTestExist(TestEzMathClamp<uint64_t>);
+    else IfTestExist(TestEzMath_Clamp<float>);
+    else IfTestExist(TestEzMath_Clamp<double>);
+    else IfTestExist(TestEzMath_Clamp<int32_t>);
+    else IfTestExist(TestEzMath_Clamp<uint32_t>);
+    else IfTestExist(TestEzMath_Clamp<int64_t>);
+    else IfTestExist(TestEzMath_Clamp<uint64_t>);
 
-    else IfTestExist(TestEzMathAbs<float>);
-    else IfTestExist(TestEzMathAbs<double>);
-    else IfTestExist(TestEzMathAbs<int32_t>);
-    else IfTestExist(TestEzMathAbs<int64_t>);
+    else IfTestExist(TestEzMath_Abs<float>);
+    else IfTestExist(TestEzMath_Abs<double>);
+    else IfTestExist(TestEzMath_Abs<int32_t>);
+    else IfTestExist(TestEzMath_Abs<int64_t>);
 
-    else IfTestExist(TestEzMathSign<float>);
-    else IfTestExist(TestEzMathSign<double>);
-    else IfTestExist(TestEzMathSign<int32_t>);
-    else IfTestExist(TestEzMathSign<int64_t>);
+    else IfTestExist(TestEzMath_Sign<float>);
+    else IfTestExist(TestEzMath_Sign<double>);
+    else IfTestExist(TestEzMath_Sign<int32_t>);
+    else IfTestExist(TestEzMath_Sign<int64_t>);
 
-    else IfTestExist(TestEzMathStep<float>);
-    else IfTestExist(TestEzMathStep<double>);
+    else IfTestExist(TestEzMath_Step<float>);
+    else IfTestExist(TestEzMath_Step<double>);
 
-    else IfTestExist(TestEzMathMod<float>);
-    else IfTestExist(TestEzMathMod<double>);
+    else IfTestExist(TestEzMath_Mod<float>);
+    else IfTestExist(TestEzMath_Mod<double>);
 
-    else IfTestExist(TestEzMathLerp<float>);
-    else IfTestExist(TestEzMathLerp<double>);
+    else IfTestExist(TestEzMath_Lerp<float>);
+    else IfTestExist(TestEzMath_Lerp<double>);
 
-    else IfTestExist(TestEzMathEerp<float>);
-    else IfTestExist(TestEzMathEerp<double>);
+    else IfTestExist(TestEzMath_Eerp<float>);
+    else IfTestExist(TestEzMath_Eerp<double>);
 
-    else IfTestExist(TestEzMathMix<float>);
-    else IfTestExist(TestEzMathMix<double>);
+    else IfTestExist(TestEzMath_Mix<float>);
+    else IfTestExist(TestEzMath_Mix<double>);
 
-    else IfTestExist(TestEzMathInvMix<float>);
-    else IfTestExist(TestEzMathInvMix<double>);
+    else IfTestExist(TestEzMath_InvMix<float>);
+    else IfTestExist(TestEzMath_InvMix<double>);
 
     return false;
 }

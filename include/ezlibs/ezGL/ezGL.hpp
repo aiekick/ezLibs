@@ -61,11 +61,20 @@ SOFTWARE.
 
 #include <string>
 
+#ifdef _TESTING_
+#define ASSERT_THROW(cond, msg) \
+    if (!(cond))                \
+    throw std::runtime_error(msg)
+#else
+#define ASSERT_THROW(cond, msg) \
+    assert((cond) && msg)
+#endif
+
 namespace ez {
 namespace gl {
 
 static inline void checkGLErrors(const char* vFile, const char* vFunc, const int& vLine) {
-#ifdef _DEBUG
+#ifndef NDEBUG
     const GLenum err(glGetError());
     if (err != GL_NO_ERROR) {
         std::string error;
@@ -115,4 +124,4 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
 #include "quadVfx.hpp"
 #include "quadVfxauto.hpp"
 #include "canvas.hpp"
-#include "bufferBlock.hpp"
+#include "compVfx.hpp"

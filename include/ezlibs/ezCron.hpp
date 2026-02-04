@@ -197,7 +197,7 @@ public:
     }
 
     std::string getSupportedFormat() const {
-        return u8R"(
+        return R"(
 Supported Crontab format
  mm hh dd MM DD    
  mm : the minutes from 0 to 59

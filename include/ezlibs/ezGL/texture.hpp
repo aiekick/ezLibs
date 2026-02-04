@@ -26,7 +26,6 @@ SOFTWARE.
 
 // ezGL is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
-
 #include "ezGL.hpp"
 
 #ifdef STB_IMAGE_READER_INCLUDE
@@ -35,10 +34,11 @@ SOFTWARE.
 
 #ifdef STB_IMAGE_WRITER_INCLUDE
 #include STB_IMAGE_WRITER_INCLUDE
-#endif // STB_IMAGE_WRITER_INCLUDE
+#endif  // STB_IMAGE_WRITER_INCLUDE
 
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <array>
@@ -56,9 +56,7 @@ public:
     static TexturePtr createEmpty(const GLsizei vSx, const GLsizei vSy, const std::string vWrap, const std::string vFilter, const bool vEnableMipMap) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
-        if (!res->initEmpty(vSx, vSy, vWrap, vFilter, vEnableMipMap)) {
-            res.reset();
-        }
+        if (!res->initEmpty(vSx, vSy, vWrap, vFilter, vEnableMipMap)) { res.reset(); }
         return res;
     }
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
@@ -75,9 +73,7 @@ public:
         const std::array<GLenum, 4> vSwizzle = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA}) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
-        if (!res->initFromBuffer(vBuffer, vSx, vSy, vInternalFormat, vFormat, vPixelFormat, vWrap, vFilter, vEnableMipMap, vSwizzle)) {
-            res.reset();
-        }
+        if (!res->initFromBuffer(vBuffer, vSx, vSy, vInternalFormat, vFormat, vPixelFormat, vWrap, vFilter, vEnableMipMap, vSwizzle)) { res.reset(); }
         return res;
     }
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
@@ -93,9 +89,7 @@ public:
         const std::array<GLenum, 4> vSwizzle = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA}) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
-        if (!res->initFromBuffer(vBuffer, vSx, vSy, vChannelsCount, vPixelFormat, vWrap, vFilter, vEnableMipMap, vSwizzle)) {
-            res.reset();
-        }
+        if (!res->initFromBuffer(vBuffer, vSx, vSy, vChannelsCount, vPixelFormat, vWrap, vFilter, vEnableMipMap, vSwizzle)) { res.reset(); }
         return res;
     }
 #ifdef STB_IMAGE_READER_INCLUDE
@@ -103,9 +97,7 @@ public:
     static TexturePtr createFromFile(const std::string& vFilePathName, bool vInvertY, std::string vWrap, std::string vFilter, bool vEnableMipMap) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
-        if (!res->initFromFile(vFilePathName, vInvertY, vWrap, vFilter, vEnableMipMap)) {
-            res.reset();
-        }
+        if (!res->initFromFile(vFilePathName, vInvertY, vWrap, vFilter, vEnableMipMap)) { res.reset(); }
         return res;
     }
 #endif  // STB_IMAGE_READER_INCLUDE
@@ -117,6 +109,7 @@ private:
     GLsizei m_Width = 0U;
     GLsizei m_Height = 0U;
     GLuint m_ChannelsCount = 0U;
+    GLuint m_BytesPerPixel = 0U;
     GLenum m_Format = GL_RGBA;
     GLenum m_InternalFormat = GL_RGBA32F;
     GLenum m_PixelFormat = GL_FLOAT;
@@ -128,9 +121,10 @@ private:
 public:
     Texture() = default;
     ~Texture() { unit(); }
+
     bool initEmpty(const GLsizei vSx, const GLsizei vSy, const std::string vWrap, const std::string vFilter, const bool vEnableMipMap) {
-        assert(vSx > 0);
-        assert(vSy > 0);
+        ASSERT_THROW(vSx > 0, "");
+        ASSERT_THROW(vSy > 0, "");
         m_Width = vSx;
         m_Height = vSy;
         m_EnableMipMap = vEnableMipMap;
@@ -139,8 +133,8 @@ public:
         glBindTexture(GL_TEXTURE_2D, m_TexId);
         CheckGLErrors;
         m_setFormat(GL_FLOAT, 4);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
-        glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, vSx, vSy, 0, m_Format, GL_FLOAT, nullptr);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, vSx, vSy, 0, m_Format, m_PixelFormat, nullptr);
         CheckGLErrors;
         glFinish();
         CheckGLErrors;
@@ -151,6 +145,7 @@ public:
         CheckGLErrors;
         return check();
     }
+
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
     bool initFromBuffer(
         const uint8_t* vBuffer,
@@ -163,9 +158,9 @@ public:
         const std::string vFilter,
         const bool vEnableMipMap,
         const std::array<GLenum, 4> vSwizzle) {
-        assert(vBuffer != nullptr);
-        assert(vSx > 0);
-        assert(vSy > 0);
+        ASSERT_THROW(vBuffer != nullptr, "");
+        ASSERT_THROW(vSx > 0, "");
+        ASSERT_THROW(vSy > 0, "");
         m_Width = vSx;
         m_Height = vSy;
         glGenTextures(1, &m_TexId);
@@ -176,7 +171,9 @@ public:
         m_InternalFormat = vInternalFormat;
         m_Format = vFormat;
         m_PixelFormat = vPixelFormat;
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+        m_ChannelsCount = m_channelsCountFromFormat(vFormat);
+        m_BytesPerPixel = m_bytesPerChannelFromType(vPixelFormat) * m_ChannelsCount;
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, vBuffer);
         CheckGLErrors;
         glFinish();
@@ -188,6 +185,7 @@ public:
         CheckGLErrors;
         return check();
     }
+
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
     bool initFromBuffer(
         const uint8_t* vBuffer,
@@ -199,10 +197,10 @@ public:
         const std::string vFilter,
         const bool vEnableMipMap,
         const std::array<GLenum, 4> vSwizzle) {
-        assert(vBuffer != nullptr);
-        assert(vSx > 0);
-        assert(vSy > 0);
-        assert(vChannelsCount > 0);
+        ASSERT_THROW(vBuffer != nullptr, "");
+        ASSERT_THROW(vSx > 0, "");
+        ASSERT_THROW(vSy > 0, "");
+        ASSERT_THROW(vChannelsCount > 0, "");
         m_Width = vSx;
         m_Height = vSy;
         glGenTextures(1, &m_TexId);
@@ -211,7 +209,7 @@ public:
         CheckGLErrors;
         m_setSwizzle(vSwizzle);
         m_setFormat(vPixelFormat, vChannelsCount);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, vBuffer);
         CheckGLErrors;
         glFinish();
@@ -223,6 +221,7 @@ public:
         CheckGLErrors;
         return check();
     }
+
 #ifdef STB_IMAGE_READER_INCLUDE
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
     bool initFromFile(
@@ -231,8 +230,8 @@ public:
         const std::string vWrap,
         const std::string vFilter,
         const bool vEnableMipMap,
-        const std::array<GLenum, 4> vSwizzle) {
-        assert(!vFilePathName.empty());
+        const std::array<GLenum, 4> vSwizzle = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA}) {
+        ASSERT_THROW(!vFilePathName.empty(), "");
         stbi_set_flip_vertically_on_load(vInvertY);
         auto w = 0;
         auto h = 0;
@@ -258,10 +257,8 @@ public:
             glBindTexture(GL_TEXTURE_2D, m_TexId);
             CheckGLErrors;
             m_setSwizzle(vSwizzle);
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            CheckGLErrors;
             m_setFormat(GL_UNSIGNED_BYTE, chans);
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, buffer);
             CheckGLErrors;
             glFinish();
@@ -272,10 +269,11 @@ public:
             glBindTexture(GL_TEXTURE_2D, 0);
             CheckGLErrors;
             stbi_image_free(buffer);
-        } 
+        }
         return check();
     }
-#endif // STB_IMAGE_READER_INCLUDE
+#endif  // STB_IMAGE_READER_INCLUDE
+
     void updateMipMaping() {
         if (m_EnableMipMap) {
 #ifdef PROFILER_SCOPED
@@ -287,73 +285,180 @@ public:
             CheckGLErrors;
         }
     }
+
     bool resize(const GLsizei& vSx, const GLsizei& vSy) {
         if (m_TexId > 0U) {
             glBindTexture(GL_TEXTURE_2D, m_TexId);
             CheckGLErrors;
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, vSx, vSy, 0, GL_RGBA, GL_FLOAT, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, vSx, vSy, 0, m_Format, m_PixelFormat, nullptr);
             CheckGLErrors;
             glFinish();
+            m_Width = vSx;
+            m_Height = vSy;
             glBindTexture(GL_TEXTURE_2D, 0);
             CheckGLErrors;
             return true;
         }
         return false;
     }
+
     void unit() {
         glDeleteTextures(1, &m_TexId);
         CheckGLErrors;
     }
+
     bool check() { return (glIsTexture(m_TexId) == GL_TRUE); }
+    bool isValid() const { return (glIsTexture(m_TexId) == GL_TRUE); }
+
+    void bind() {
+        glBindTexture(GL_TEXTURE_2D, m_TexId);
+        CheckGLErrors;
+    }
+
+    void unbind() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        CheckGLErrors;
+    }
+
     template <typename TTYPE>
     TTYPE getTexId() const {
         return static_cast<TTYPE>(m_TexId);
     }
     GLuint getTexId() const { return m_TexId; }
+    GLuint getId() const { return m_TexId; }
     std::array<GLsizei, 2U> getSize() const { return {m_Width, m_Height}; }
+    GLsizei getWidth() const { return m_Width; }
+    GLsizei getHeight() const { return m_Height; }
+    GLuint getChannelsCount() const { return m_ChannelsCount; }
+    GLuint getBytesPerPixel() const { return m_BytesPerPixel; }
+    GLenum getFormat() const { return m_Format; }
+    GLenum getInternalFormat() const { return m_InternalFormat; }
+    GLenum getPixelFormat() const { return m_PixelFormat; }
 
-#ifdef STB_IMAGE_WRITER_INCLUDE
-    bool saveToPng(const std::string& vFilePathName) const {
-        if (vFilePathName.empty() || m_TexId == 0)
-            return false;
-
-        // 1) Dimensions
+    template <typename T = uint8_t, size_t Channels = 4>
+    bool setPixels(const GLsizei vX, const GLsizei vY, const GLsizei vWidth, const GLsizei vHeight, const T* vBuffer) {
+        if (m_TexId == 0U || vBuffer == nullptr) { return false; }
+        constexpr size_t bytesPerPixel = sizeof(T) * Channels;
+        ASSERT_THROW(bytesPerPixel == m_BytesPerPixel, "Pixel stride mismatch with texture format");
         glBindTexture(GL_TEXTURE_2D, m_TexId);
-        GLint w = 0, h = 0;
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
-        if (w <= 0 || h <= 0)
-            return false;
+        CheckGLErrors;
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        CheckGLErrors;
+        glTexSubImage2D(GL_TEXTURE_2D, 0, vX, vY, vWidth, vHeight, m_Format, m_PixelFormat, reinterpret_cast<const void*>(vBuffer));
+        CheckGLErrors;
+        glBindTexture(GL_TEXTURE_2D, 0);
+        CheckGLErrors;
+        return true;
+    }
 
-        // 2) Sauvegarde ?tat pack + configuration propre
+    template <typename T = uint8_t, size_t Channels = 4>
+    std::vector<T> getPixels(const GLsizei& vSX, const GLsizei& vSY) {
+        ASSERT_THROW((vSX > 0) && (vSY > 0), "");
+        ASSERT_THROW((m_Width >= vSX) && (m_Height >= vSY), "");
+        constexpr size_t bytesPerPixel = sizeof(T) * Channels;
+        ASSERT_THROW(bytesPerPixel == m_BytesPerPixel, "Pixel stride mismatch with texture format");
+
+        glBindTexture(GL_TEXTURE_2D, m_TexId);
         GLint prevAlign = 0, prevRowLen = 0, prevSkipRows = 0, prevSkipPix = 0;
         glGetIntegerv(GL_PACK_ALIGNMENT, &prevAlign);
         glGetIntegerv(GL_PACK_ROW_LENGTH, &prevRowLen);
         glGetIntegerv(GL_PACK_SKIP_ROWS, &prevSkipRows);
         glGetIntegerv(GL_PACK_SKIP_PIXELS, &prevSkipPix);
-
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_PACK_ROW_LENGTH, 0);
         glPixelStorei(GL_PACK_SKIP_ROWS, 0);
         glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
 
-        // 3) Lecture RGBA8
-        std::vector<unsigned char> pixels(static_cast<size_t>(w) * static_cast<size_t>(h) * 4u);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+        const size_t pixelCount = static_cast<size_t>(vSX) * static_cast<size_t>(vSY);
+        std::vector<uint8_t> raw(pixelCount * m_BytesPerPixel);
+        glGetTexImage(GL_TEXTURE_2D, 0, m_Format, m_PixelFormat, raw.data());
+        CheckGLErrors;
 
-        // 4) ?criture PNG (top-left) : flip vertical pour correspondre aux viewers
-        stbi_flip_vertically_on_write(1);
-        const int ok = stbi_write_png(vFilePathName.c_str(), w, h, 4, pixels.data(), w * 4);
-
-        // 5) Restauration ?tat pack
         glPixelStorei(GL_PACK_ALIGNMENT, prevAlign);
         glPixelStorei(GL_PACK_ROW_LENGTH, prevRowLen);
         glPixelStorei(GL_PACK_SKIP_ROWS, prevSkipRows);
         glPixelStorei(GL_PACK_SKIP_PIXELS, prevSkipPix);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
+        std::vector<T> pixels(pixelCount * Channels);
+        std::memcpy(pixels.data(), raw.data(), raw.size());
+        return pixels;
+    }
+
+    void generateMipmap() {
+        if (m_TexId > 0U) {
+            glBindTexture(GL_TEXTURE_2D, m_TexId);
+            CheckGLErrors;
+            glGenerateMipmap(GL_TEXTURE_2D);
+            CheckGLErrors;
+            glBindTexture(GL_TEXTURE_2D, 0);
+            CheckGLErrors;
+        }
+    }
+
+    void clear() {
+        if (m_TexId > 0U) {
+            const size_t totalBytes = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Height) * m_BytesPerPixel;
+            std::vector<uint8_t> buffer(totalBytes, 0);
+            glBindTexture(GL_TEXTURE_2D, m_TexId);
+            CheckGLErrors;
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            CheckGLErrors;
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, m_Format, m_PixelFormat, buffer.data());
+            CheckGLErrors;
+            glBindTexture(GL_TEXTURE_2D, 0);
+            CheckGLErrors;
+        }
+    }
+
+    void clear(const float vR, const float vG, const float vB, const float vA) {
+        if (m_TexId == 0U) { return; }
+        const size_t pixelCount = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Height);
+        if (m_PixelFormat == GL_FLOAT) {
+            std::vector<float> buffer(pixelCount * m_ChannelsCount);
+            for (size_t i = 0; i < buffer.size(); i += m_ChannelsCount) {
+                if (m_ChannelsCount >= 1) buffer[i] = vR;
+                if (m_ChannelsCount >= 2) buffer[i + 1] = vG;
+                if (m_ChannelsCount >= 3) buffer[i + 2] = vB;
+                if (m_ChannelsCount >= 4) buffer[i + 3] = vA;
+            }
+            setPixels<float>(0, 0, m_Width, m_Height, buffer.data());
+        } else {
+            const auto toU8 = [](float v) -> uint8_t { return static_cast<uint8_t>(ez::clamp(v, 0.0f, 1.0f) * 255.0f); };
+            std::vector<uint8_t> buffer(pixelCount * m_ChannelsCount);
+            for (size_t i = 0; i < buffer.size(); i += m_ChannelsCount) {
+                if (m_ChannelsCount >= 1) buffer[i] = toU8(vR);
+                if (m_ChannelsCount >= 2) buffer[i + 1] = toU8(vG);
+                if (m_ChannelsCount >= 3) buffer[i + 2] = toU8(vB);
+                if (m_ChannelsCount >= 4) buffer[i + 3] = toU8(vA);
+            }
+            setPixels(0, 0, m_Width, m_Height, buffer.data());
+        }
+    }
+
+#ifdef STB_IMAGE_WRITER_INCLUDE
+    bool saveToPng(const std::string& vFilePathName) const {
+        if (vFilePathName.empty() || m_TexId == 0) { return false; }
+
+        GLint w = 0, h = 0;
+        glBindTexture(GL_TEXTURE_2D, m_TexId);
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
+        if (w <= 0 || h <= 0) { return false; }
+
+        // Toujours lire en RGBA uint8 pour le PNG, avec conversion GPU
+        const size_t pixelCount = static_cast<size_t>(w) * static_cast<size_t>(h);
+        std::vector<uint8_t> pixels(pixelCount * 4);
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+        CheckGLErrors;
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        stbi_flip_vertically_on_write(1);
+        const int ok = stbi_write_png(vFilePathName.c_str(), w, h, 4, pixels.data(), w * 4);
         return ok != 0;
     }
-#endif//STB_IMAGE_WRITER_INCLUDE
+#endif  // STB_IMAGE_WRITER_INCLUDE
 
 private:
     void m_setSwizzle(std::array<GLenum, 4> vSwizzle) {
@@ -362,69 +467,47 @@ private:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, vSwizzle[2]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, vSwizzle[3]);
     }
+
     // wrap (repeat|mirror|clamp), filter (linear|nearest)
     void m_setParameters(const std::string& vWrap, const std::string& vFilter, const bool vEnableMipMap) {
         if (vWrap == "repeat") {
             m_WrapS = GL_REPEAT;
             m_WrapT = GL_REPEAT;
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_WrapS);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_WrapT);
-            CheckGLErrors;
         } else if (vWrap == "mirror") {
             m_WrapS = GL_MIRRORED_REPEAT;
             m_WrapT = GL_MIRRORED_REPEAT;
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_WrapS);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_WrapT);
-            CheckGLErrors;
-        } else if (vWrap == "clamp") {
-            m_WrapS = GL_CLAMP_TO_EDGE;
-            m_WrapT = GL_CLAMP_TO_EDGE;
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_WrapS);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_WrapT);
-            CheckGLErrors;
         } else {
             m_WrapS = GL_CLAMP_TO_EDGE;
             m_WrapT = GL_CLAMP_TO_EDGE;
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_WrapS);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_WrapT);
-            CheckGLErrors;
         }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_WrapS);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_WrapT);
+        CheckGLErrors;
 
         if (vFilter == "linear") {
             if (vEnableMipMap) {
                 m_MinFilter = GL_LINEAR_MIPMAP_LINEAR;
                 m_MagFilter = GL_LINEAR;
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_MinFilter);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_MagFilter);
-                CheckGLErrors;
             } else {
                 m_MinFilter = GL_LINEAR;
                 m_MagFilter = GL_LINEAR;
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_MinFilter);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_MagFilter);
-                CheckGLErrors;
             }
         } else if (vFilter == "nearest") {
             if (vEnableMipMap) {
                 m_MinFilter = GL_NEAREST_MIPMAP_NEAREST;
                 m_MagFilter = GL_NEAREST;
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_MinFilter);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_MagFilter);
-                CheckGLErrors;
             } else {
                 m_MinFilter = GL_NEAREST;
                 m_MagFilter = GL_NEAREST;
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_MinFilter);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_MagFilter);
-                CheckGLErrors;
             }
         } else {
             m_MinFilter = GL_LINEAR;
             m_MagFilter = GL_LINEAR;
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_MinFilter);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_MagFilter);
-            CheckGLErrors;
         }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_MinFilter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_MagFilter);
+        CheckGLErrors;
+
         if (m_EnableMipMap) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
             CheckGLErrors;
@@ -438,13 +521,16 @@ private:
             CheckGLErrors;
         }
     }
+
     void m_setFormat(const GLenum vPixelFormat, const GLint& vChannelsCount) {
-        assert(
+        ASSERT_THROW(
             vPixelFormat == GL_UNSIGNED_BYTE ||  // format BYTE
-            vPixelFormat == GL_FLOAT);  // format FLOAT
+                vPixelFormat == GL_FLOAT,        // format FLOAT
+            "");
         m_PixelFormat = vPixelFormat;
         m_ChannelsCount = vChannelsCount;
-        // 1:r, 2:rg, 3:rgb, 4:rgba
+        const size_t bytesPerChannel = (vPixelFormat == GL_FLOAT) ? sizeof(float) : sizeof(uint8_t);
+        m_BytesPerPixel = bytesPerChannel * static_cast<size_t>(vChannelsCount);
         switch (vChannelsCount) {
             case 1: {
                 m_Format = GL_RED;
@@ -480,7 +566,30 @@ private:
             } break;
         }
     }
+
+    static GLuint m_channelsCountFromFormat(const GLenum vFormat) {
+        switch (vFormat) {
+            case GL_RED: return 1;
+            case GL_RG: return 2;
+            case GL_RGB: return 3;
+            case GL_RGBA: return 4;
+            default: return 4;
+        }
+    }
+
+    static size_t m_bytesPerChannelFromType(const GLenum vPixelFormat) {
+        switch (vPixelFormat) {
+            case GL_UNSIGNED_BYTE: return sizeof(uint8_t);
+            case GL_FLOAT: return sizeof(float);
+            case GL_INT: return sizeof(int32_t);
+            case GL_UNSIGNED_INT: return sizeof(uint32_t);
+            case GL_SHORT: return sizeof(int16_t);
+            case GL_UNSIGNED_SHORT: return sizeof(uint16_t);
+            default: return sizeof(uint8_t);
+        }
+    }
 };
+
 class Texture2DArray;
 typedef std::shared_ptr<Texture2DArray> Texture2DArrayPtr;
 typedef std::weak_ptr<Texture2DArray> Texture2DArrayWeak;
@@ -491,17 +600,15 @@ public:
         const GLsizei vSx,
         const GLsizei vSy,
         const GLsizei vLayers,
-        const GLenum vInternalFormat,  // ex: GL_RGBA8, GL_R16F, ...
-        const GLenum vAllocFormat,     // ex: GL_RGBA, GL_RED, GL_RG
-        const GLenum vPixelFormat,     // ex: GL_UNSIGNED_BYTE, GL_HALF_FLOAT, GL_FLOAT
+        const GLenum vInternalFormat,
+        const GLenum vAllocFormat,
+        const GLenum vPixelFormat,
         const std::string& vWrap,
         const std::string& vFilter,
         const bool vUseMipMapping) {
         auto res = std::make_shared<Texture2DArray>();
         res->m_This = res;
-        if (!res->init(vSx, vSy, vLayers, vInternalFormat, vAllocFormat, vPixelFormat, vWrap, vFilter, vUseMipMapping)) {
-            res.reset();
-        }
+        if (!res->init(vSx, vSy, vLayers, vInternalFormat, vAllocFormat, vPixelFormat, vWrap, vFilter, vUseMipMapping)) { res.reset(); }
         return res;
     }
 
@@ -512,19 +619,19 @@ private:
     GLsizei m_Height = 0;
     GLsizei m_Layers = 0;
 
-    GLenum m_InternalFormat = GL_RGBA8;  // stockage interne
-    GLenum m_AllocFormat = GL_RGBA;      // format d?claration
+    GLenum m_InternalFormat = GL_RGBA8;
+    GLenum m_AllocFormat = GL_RGBA;
     GLenum m_PixelFormat = GL_UNSIGNED_BYTE;
 
     std::string m_wrap;
     std::string m_filter;
 
-    std::vector<int> m_FreeList;  // pile de layers libres
+    std::vector<int> m_FreeList;
 
     bool m_useMipMapping = false;
     GLsizei m_MipCount = 0;
-    bool m_useImmutable = false;        // vrai si glTexStorage3D est dispo et choisi
-    std::vector<bool> m_LevelDeclared;  // niveaux (L) ?disponibles? pour sampling
+    bool m_useImmutable = false;
+    std::vector<bool> m_LevelDeclared;
     GLint m_MinDeclaredLevel = -1;
     GLint m_MaxDeclaredLevel = -1;
 
@@ -545,7 +652,7 @@ public:
         const std::string& vFilter,
         const bool vUseMipMapping) {
         unit();
-        assert(vSx > 0 && vSy > 0 && vLayers > 0);
+        ASSERT_THROW(vSx > 0 && vSy > 0 && vLayers > 0, "");
         m_Width = vSx;
         m_Height = vSy;
         m_Layers = vLayers;
@@ -567,47 +674,31 @@ public:
 
         glGenTextures(1, &m_TexId);
         CheckGLErrors;
-        if (m_TexId == 0U) {
-            return false;
-        }
+        if (m_TexId == 0U) { return false; }
 
-        // Mip count th?orique
         m_MipCount = m_useMipMapping ? m_computeMipCount(m_Width, m_Height) : 1;
         m_LevelDeclared.assign((size_t)m_MipCount, false);
         m_MinDeclaredLevel = -1;
         m_MaxDeclaredLevel = -1;
 
-        // Param?tres de base (wrap/filter + fen?tre LOD initiale)
         m_setParameters(m_wrap, m_filter);
 
-        // D?tection simple de glTexStorage3D ? l?ex?cution
         m_useImmutable = (reinterpret_cast<void*>(glTexStorage3D) != nullptr);
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
         CheckGLErrors;
 
         if (m_useImmutable) {
-            // Allocation immuable de tous les niveaux
             glTexStorage3D(GL_TEXTURE_2D_ARRAY, m_MipCount, m_InternalFormat, m_Width, m_Height, m_Layers);
             CheckGLErrors;
-
-            // Rien n?est ?rempli? mais tous les niveaux existent. On n?active la fen?tre [BASE..MAX]
-            // qu?une fois des niveaux marqu?s comme d?clar?s (upload effectu?s).
-            // On pourrait au choix marquer level 0 comme d?clar? imm?diatement si tu veux sampler tout de suite.
-        } else {
-            // Fallback : aucune alloc ici, on allouera paresseusement par niveau via TexImage3D
-            // ? la premi?re demande (m_ensureLevelDeclared).
         }
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         CheckGLErrors;
 
-        // Pr?pare free-list
         m_FreeList.clear();
         m_FreeList.reserve((size_t)vLayers);
-        for (int i = vLayers - 1; i >= 0; --i) {
-            m_FreeList.push_back(i);
-        }
+        for (int i = vLayers - 1; i >= 0; --i) { m_FreeList.push_back(i); }
 
         return check();
     }
@@ -629,20 +720,10 @@ public:
         m_MinDeclaredLevel = m_MaxDeclaredLevel = -1;
     }
 
-    // Alloue une layer libre et uploade le mip 'vLevel' avec 'vpPixels'
-    // Retourne l'index de layer :
-    // -1 : erreur
-    // -2 : saturation
     int addLayer(const GLsizei vLevel, const void* vpPixels) {
-        if (m_TexId == 0U || vpPixels == nullptr) {
-            return -1;
-        }
-        if (vLevel < 0 || vLevel >= m_MipCount) {
-            return -1;
-        }
-        if (m_FreeList.empty()) {
-            return -2;
-        }
+        if (m_TexId == 0U || vpPixels == nullptr) { return -1; }
+        if (vLevel < 0 || vLevel >= m_MipCount) { return -1; }
+        if (m_FreeList.empty()) { return -2; }
 
         const int layer = m_FreeList.back();
         m_FreeList.pop_back();
@@ -669,20 +750,11 @@ public:
         return layer;
     }
 
-    // Met ? jour un mip sur une layer existante
     bool uploadLayer(const GLint vLayer, const GLsizei vLevel, const void* vpPixels) {
-        if (m_TexId == 0U || vpPixels == nullptr) {
-            return false;
-        }
-        if (vLayer < 0 || vLayer >= m_Layers) {
-            return false;
-        }
-        if (vLevel < 0 || vLevel >= m_MipCount) {
-            return false;
-        }
-        if (!m_ensureLevelDeclared(vLevel)) {
-            return false;
-        }
+        if (m_TexId == 0U || vpPixels == nullptr) { return false; }
+        if (vLayer < 0 || vLayer >= m_Layers) { return false; }
+        if (vLevel < 0 || vLevel >= m_MipCount) { return false; }
+        if (!m_ensureLevelDeclared(vLevel)) { return false; }
 
         const GLsizei w = std::max<GLsizei>(1, m_Width >> vLevel);
         const GLsizei h = std::max<GLsizei>(1, m_Height >> vLevel);
@@ -700,25 +772,15 @@ public:
         return true;
     }
 
-    // Lib?re la layer (r?utilisable par addLayer)
     void removeLayer(const GLint vLayer) {
-        if (m_TexId == 0U) {
-            return;
-        }
-        if (vLayer < 0 || vLayer >= m_Layers) {
-            return;
-        }
+        if (m_TexId == 0U) { return; }
+        if (vLayer < 0 || vLayer >= m_Layers) { return; }
         const bool found = (std::find(m_FreeList.begin(), m_FreeList.end(), vLayer) != m_FreeList.end());
-        if (!found) {
-            m_FreeList.push_back(vLayer);
-        }
+        if (!found) { m_FreeList.push_back(vLayer); }
     }
 
-    // Param?tres (wrap/filter) ? safe ? appeler ? tout moment
     void setParameters(const std::string& vWrap, const std::string& vFilter) {
-        if (m_TexId == 0U) {
-            return;
-        }
+        if (m_TexId == 0U) { return; }
         m_setParameters(vWrap, vFilter);
         m_enableMipTrilinearIfPossible(vFilter);
     }
@@ -742,12 +804,8 @@ private:
     }
 
     void m_updateLodClamp() {
-        if (m_TexId == 0U) {
-            return;
-        }
-        if (m_MinDeclaredLevel < 0 || m_MaxDeclaredLevel < 0) {
-            return;
-        }
+        if (m_TexId == 0U) { return; }
+        if (m_MinDeclaredLevel < 0 || m_MaxDeclaredLevel < 0) { return; }
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
         CheckGLErrors;
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, m_MinDeclaredLevel);
@@ -759,19 +817,14 @@ private:
     }
 
     bool m_ensureLevelDeclared(const GLsizei vLevel) {
-        if (vLevel < 0 || vLevel >= m_MipCount) {
-            return false;
-        }
-        if (m_LevelDeclared.empty()) {
-            return false;
-        }
+        if (vLevel < 0 || vLevel >= m_MipCount) { return false; }
+        if (m_LevelDeclared.empty()) { return false; }
         if (m_LevelDeclared[(size_t)vLevel]) {
             m_updateLodClamp();
             return true;
         }
 
         if (!m_useImmutable) {
-            // Fallback : on alloue le niveau (toutes layers) avec data=nullptr
             const GLsizei w = std::max<GLsizei>(1, m_Width >> vLevel);
             const GLsizei h = std::max<GLsizei>(1, m_Height >> vLevel);
 
@@ -781,16 +834,12 @@ private:
             CheckGLErrors;
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
             CheckGLErrors;
-        }  // en immutable, rien ? allouer : les niveaux existent d?j?
+        }
 
         m_LevelDeclared[(size_t)vLevel] = true;
 
-        if (m_MinDeclaredLevel < 0 || vLevel < m_MinDeclaredLevel) {
-            m_MinDeclaredLevel = vLevel;
-        }
-        if (m_MaxDeclaredLevel < 0 || vLevel > m_MaxDeclaredLevel) {
-            m_MaxDeclaredLevel = vLevel;
-        }
+        if (m_MinDeclaredLevel < 0 || vLevel < m_MinDeclaredLevel) { m_MinDeclaredLevel = vLevel; }
+        if (m_MaxDeclaredLevel < 0 || vLevel > m_MaxDeclaredLevel) { m_MaxDeclaredLevel = vLevel; }
 
         m_updateLodClamp();
         return true;
@@ -800,7 +849,6 @@ private:
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
         CheckGLErrors;
 
-        // Wrap
         GLenum wrap = GL_CLAMP_TO_EDGE;
         if (vWrap == "repeat") {
             wrap = GL_REPEAT;
@@ -812,14 +860,12 @@ private:
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, wrap);
         CheckGLErrors;
 
-        // Filter
         const bool linear = (vFilter != "nearest");
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
         CheckGLErrors;
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
         CheckGLErrors;
 
-        // Fen?tre LOD initiale : [0 .. m_MipCount-1] si mipmap, sinon [0..0].
         const GLint initialBase = 0;
         const GLint initialMax = (m_useMipMapping && m_MipCount > 0) ? (m_MipCount - 1) : 0;
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, initialBase);
@@ -832,15 +878,9 @@ private:
     }
 
     void m_enableMipTrilinearIfPossible(const std::string& vFilter) {
-        if (!m_useMipMapping) {
-            return;
-        }
-        if (m_MinDeclaredLevel < 0 || m_MaxDeclaredLevel < 0) {
-            return;
-        }
-        if (m_MaxDeclaredLevel <= m_MinDeclaredLevel) {
-            return;  // un seul niveau
-        }
+        if (!m_useMipMapping) { return; }
+        if (m_MinDeclaredLevel < 0 || m_MaxDeclaredLevel < 0) { return; }
+        if (m_MaxDeclaredLevel <= m_MinDeclaredLevel) { return; }
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_TexId);
         CheckGLErrors;
         const bool linear = (vFilter != "nearest");

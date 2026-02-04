@@ -93,6 +93,7 @@ public:
     uint32_t GetVaoID() { return m_VboId; }
     uint32_t GetVboID() { return m_IboId; }
     uint32_t GetIboID() { return m_VaoId; }
+    bool isValid() const { return (glIsVertexArray(m_VaoId) == GL_TRUE); }
     bool init(
         std::vector<T> vVertices,
         std::vector<uint32_t> vVerticesFormat,
@@ -101,8 +102,8 @@ public:
         std::vector<GLsizei> vIndicesCounts,
         GLsizei vArraysCount,
         bool vIsStaticDraw) {
-        assert(!vVertices.empty());
-        assert(!vVerticesFormat.empty());
+        ASSERT_THROW(!vVertices.empty(), "");
+        ASSERT_THROW(!vVerticesFormat.empty(), "");
         m_Vertices = vVertices;
         m_VerticesFormat = vVerticesFormat;
         m_Indices = vIndices;
@@ -130,7 +131,7 @@ public:
         GLuint idx = 0U;
         GLuint offset = 0U;
         for (const auto& format : m_VerticesFormat) {
-            assert(format > 0U);
+            ASSERT_THROW(format > 0U, "");
             glEnableVertexAttribArray(idx);
             CheckGLErrors;
             if (idx == 0U) {

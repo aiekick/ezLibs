@@ -46,15 +46,20 @@ public:
     typedef std::map<GLenum, std::map<std::string, Uniform>> UniformPerShaderTypeContainer;
     typedef std::function<void(FBOPipeLinePtr, Uniform&)> UniformPreUploadFunctor;
     typedef std::function<bool(Uniform&)> UniformWidgetFunctor;
+    typedef std::function<void()> AdditionnalWidgetsFunctor;
     struct Uniform {
         std::string name;
-        float* datas_f = nullptr;         // float
-        int32_t* datas_i = nullptr;       // int
-        uint32_t* datas_u = nullptr;      // uint
-        bool* datas_b = nullptr;          // bool
-        uint32_t* data_s2d = nullptr;     // sampler2D
-        uint32_t* data_s2darr = nullptr;  // sampler2DArray
-        int32_t matrix_size = 0;          // matrixSize 2,3,4
+        float* datas_f = nullptr;           // float
+        int32_t* datas_i = nullptr;         // int
+        uint32_t* datas_u = nullptr;        // uint
+        bool* datas_b = nullptr;            // bool
+        uint32_t* data_s2d = nullptr;       // sampler2D
+        uint32_t* data_s2darr = nullptr;    // sampler2DArray
+        int32_t matrix_size = 0;            // matrixSize 2,3,4
+        uint32_t* data_i2d = nullptr;       // image2D
+        GLint image_binding = -1;            // image2D
+        GLenum image_mode = GL_READ_WRITE;  // RW, R, W
+        GLenum image_format = GL_RGBA32F;   // image2D
         GLint loc = -1;
         GLuint channels = 0U;
         GLuint elements = 0U;
@@ -63,7 +68,7 @@ public:
         bool used = false;
         bool showed = false;
         BufferBlock** buffer_ptr = nullptr;  // a buffer block ex: UBO /SSBO
-        int32_t bufferBinding = -1;          // the binding point in the sahder of the buffer block
+        int32_t buffer_binding = -1;          // the binding point in the sahder of the buffer block
         UniformWidgetFunctor widget_functor = nullptr;
     };
 
@@ -89,7 +94,7 @@ public:
     Program() = default;
     ~Program() { unit(); }
     bool init(const std::string& vProgramName) {
-        assert(!vProgramName.empty());
+        ASSERT_THROW(!vProgramName.empty(), "");
         m_ProgramName = vProgramName;
         m_ProgramId = glCreateProgram();
         CheckGLErrors;
@@ -149,13 +154,13 @@ public:
     const char* getLabelName() { return m_ProgramName.c_str(); }
     void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) { m_UniformPreUploadFunctor = vUniformPreUploadFunctor; }
     void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock** vBufferPtr) {
-        assert(vShaderType > 0);
-        assert(!vBufferName.empty());
-        assert(vBinding > -1);
-        assert(vBufferPtr != nullptr);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vBufferName.empty(), "");
+        ASSERT_THROW(vBinding > -1, "");
+        ASSERT_THROW(vBufferPtr != nullptr, "");
         Uniform uni;
         uni.name = vBufferName;
-        uni.bufferBinding = vBinding;
+        uni.buffer_binding = vBinding;
         uni.buffer_ptr = vBufferPtr;
         m_Uniforms[vShaderType][vBufferName] = uni;
     }
@@ -167,11 +172,11 @@ public:
         const GLuint vCountElements,
         const bool vShowWidget,
         const UniformWidgetFunctor& vWidgetFunctor) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        assert(vUniformPtr != nullptr);
-        assert(vCountChannels > 0U);
-        assert(vCountElements > 0U);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        ASSERT_THROW(vUniformPtr != nullptr, "");
+        ASSERT_THROW(vCountChannels > 0U, "");
+        ASSERT_THROW(vCountElements > 0U, "");
         Uniform uni;
         uni.name = vUniformName;
         uni.datas_f = vUniformPtr;
@@ -183,9 +188,9 @@ public:
     }
     void setUniformFloatDatas(const GLenum vShaderType, const std::string& vUniformName, float* vUniformPtr) {
         auto itShaderType = m_Uniforms.find(vShaderType);
-        assert(itShaderType != m_Uniforms.end());
+        ASSERT_THROW(itShaderType != m_Uniforms.end(), "");
         auto itUniformName = itShaderType->second.find(vUniformName);
-        assert(itUniformName != itShaderType->second.end());
+        ASSERT_THROW(itUniformName != itShaderType->second.end(), "");
         itUniformName->second.datas_f = vUniformPtr;
     }
     void addUniformMatrix(
@@ -196,11 +201,11 @@ public:
         const GLuint vCountElements,
         const bool vShowWidget,
         const UniformWidgetFunctor& vWidgetFunctor) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        assert(vUniformPtr != nullptr);
-        assert((vMatrixSize == 2U) || (vMatrixSize == 3U) || (vMatrixSize == 4U));
-        assert(vCountElements > 0U);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        ASSERT_THROW(vUniformPtr != nullptr, "");
+        ASSERT_THROW((vMatrixSize == 2U) || (vMatrixSize == 3U) || (vMatrixSize == 4U), "");
+        ASSERT_THROW(vCountElements > 0U, "");
         Uniform uni;
         uni.name = vUniformName;
         uni.datas_f = vUniformPtr;
@@ -212,9 +217,9 @@ public:
     }
     void setUniformMatrixDatas(const GLenum vShaderType, const std::string& vUniformName, float* vUniformPtr) {
         auto itShaderType = m_Uniforms.find(vShaderType);
-        assert(itShaderType != m_Uniforms.end());
+        ASSERT_THROW(itShaderType != m_Uniforms.end(), "");
         auto itUniformName = itShaderType->second.find(vUniformName);
-        assert(itUniformName != itShaderType->second.end());
+        ASSERT_THROW(itUniformName != itShaderType->second.end(), "");
         itUniformName->second.datas_f = vUniformPtr;
     }
     void addUniformInt(
@@ -225,11 +230,11 @@ public:
         const GLuint vCountElements,
         const bool vShowWidget,
         const UniformWidgetFunctor& vWidgetFunctor) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        assert(vUniformPtr != nullptr);
-        assert(vCountChannels > 0U);
-        assert(vCountElements > 0U);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        ASSERT_THROW(vUniformPtr != nullptr, "");
+        ASSERT_THROW(vCountChannels > 0U, "");
+        ASSERT_THROW(vCountElements > 0U, "");
         Uniform uni;
         uni.name = vUniformName;
         uni.datas_i = vUniformPtr;
@@ -241,9 +246,9 @@ public:
     }
     void setUniformIntDatas(const GLenum vShaderType, const std::string& vUniformName, int32_t* vUniformPtr) {
         auto itShaderType = m_Uniforms.find(vShaderType);
-        assert(itShaderType != m_Uniforms.end());
+        ASSERT_THROW(itShaderType != m_Uniforms.end(), "");
         auto itUniformName = itShaderType->second.find(vUniformName);
-        assert(itUniformName != itShaderType->second.end());
+        ASSERT_THROW(itUniformName != itShaderType->second.end(), "");
         itUniformName->second.datas_i = vUniformPtr;
     }
     void addUniformUInt(
@@ -254,11 +259,11 @@ public:
         const GLuint vCountElements,
         const bool vShowWidget,
         const UniformWidgetFunctor& vWidgetFunctor) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        assert(vUniformPtr != nullptr);
-        assert(vCountChannels > 0U);
-        assert(vCountElements > 0U);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        ASSERT_THROW(vUniformPtr != nullptr, "");
+        ASSERT_THROW(vCountChannels > 0U, "");
+        ASSERT_THROW(vCountElements > 0U, "");
         Uniform uni;
         uni.name = vUniformName;
         uni.datas_u = vUniformPtr;
@@ -270,9 +275,9 @@ public:
     }
     void setUniformUIntDatas(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vUniformPtr) {
         auto itShaderType = m_Uniforms.find(vShaderType);
-        assert(itShaderType != m_Uniforms.end());
+        ASSERT_THROW(itShaderType != m_Uniforms.end(), "");
         auto itUniformName = itShaderType->second.find(vUniformName);
-        assert(itUniformName != itShaderType->second.end());
+        ASSERT_THROW(itUniformName != itShaderType->second.end(), "");
         itUniformName->second.datas_u = vUniformPtr;
     }
     void addUniformBool(
@@ -283,11 +288,11 @@ public:
         const GLuint vCountElements,
         const bool vShowWidget,
         const UniformWidgetFunctor& vWidgetFunctor) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        assert(vUniformPtr != nullptr);
-        assert(vCountChannels > 0U);
-        assert(vCountElements > 0U);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        ASSERT_THROW(vUniformPtr != nullptr, "");
+        ASSERT_THROW(vCountChannels > 0U, "");
+        ASSERT_THROW(vCountElements > 0U, "");
         Uniform uni;
         uni.name = vUniformName;
         uni.datas_b = vUniformPtr;
@@ -299,15 +304,15 @@ public:
     }
     void setUniformBoolDatas(const GLenum vShaderType, const std::string& vUniformName, bool* vUniformPtr) {
         auto itShaderType = m_Uniforms.find(vShaderType);
-        assert(itShaderType != m_Uniforms.end());
+        ASSERT_THROW(itShaderType != m_Uniforms.end(), "");
         auto itUniformName = itShaderType->second.find(vUniformName);
-        assert(itUniformName != itShaderType->second.end());
+        ASSERT_THROW(itUniformName != itShaderType->second.end(), "");
         itUniformName->second.datas_b = vUniformPtr;
     }
     void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vSampler2DPtr, const bool vShowWidget) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        // assert(vSampler2D != -1);, if the sampler must point on a buffer after, its normal to have it at -1
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        // ASSERT_THROW(vSampler2D != -1, "");, if the sampler must point on a buffer after, its normal to have it at -1
         Uniform uni;
         uni.name = vUniformName;
         uni.data_s2d = vSampler2DPtr;
@@ -316,14 +321,36 @@ public:
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void addUniformSampler2DArray(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vSampler2DArrayPtr) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        // assert(vSampler2D != -1);, if the sampler must point on a buffer after, its normal to have it at -1
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        // ASSERT_THROW(vSampler2D != -1, "");, if the sampler must point on a buffer after, its normal to have it at -1
         Uniform uni;
         uni.name = vUniformName;
         uni.data_s2darr = vSampler2DArrayPtr;
         uni.channels = 0;
         uni.showed = false;  // no way to display a texture 2d array
+        m_Uniforms[vShaderType][vUniformName] = uni;
+    }
+    void addUniformImage2D(
+        const GLenum& vShaderType,        //
+        const std::string& vUniformName,  //
+        int32_t vBinding,                 //
+        uint32_t* vImage2DPtr,          //
+        GLenum vImageFormat,              //
+        GLenum vImageMode,                //
+        const bool& vShowWidget) {
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        ASSERT_THROW(vBinding > -1, "");
+        // ASSERT_THROW(vImage2D > -1, "");, if the sampler must point on a buffer after, its normal to have it at -1
+        Uniform uni;
+        uni.name = vUniformName;
+        uni.data_i2d = vImage2DPtr;
+        uni.channels = 0;
+        uni.image_binding = vBinding;
+        uni.showed = vShowWidget;
+        uni.image_format = vImageFormat;
+        uni.image_mode = vImageMode;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr = nullptr) {
@@ -466,14 +493,20 @@ public:
                         glUniform1i(uni.second.loc, textureSlotId);
                         CheckGLErrors;
                         ++textureSlotId;
-                    }
+                    } else if (uni.second.data_i2d != nullptr) {
+#ifdef PROFILER_SCOPED_PTR
+                        PROFILER_SCOPED_PTR(&uni, "bind image2D", "%s", name_c_str);
+#endif
+                        glBindImageTexture(uni.second.image_binding, *uni.second.data_i2d, 0, GL_FALSE, 0, uni.second.image_mode, uni.second.image_format);
+                        CheckGLErrors;
+                    } 
                 }
                 // buffer have no widgets, and no use infos
-                if (uni.second.bufferBinding > -1 &&      //
+                if (uni.second.buffer_binding > -1 &&      //
                     uni.second.buffer_ptr != nullptr &&   //
                     *uni.second.buffer_ptr != nullptr &&  //
                     (*uni.second.buffer_ptr)->id() > 0U) {
-                    (*uni.second.buffer_ptr)->bind(uni.second.bufferBinding);
+                    (*uni.second.buffer_ptr)->bind(uni.second.buffer_binding);
                 }
             }
         }
@@ -509,41 +542,53 @@ public:
                     case GL_FRAGMENT_SHADER: ImGui::Text("%s", "Stage Fragment"); break;
                     case GL_TESS_EVALUATION_SHADER: ImGui::Text("%s", "Stage Tesselation Evaluation"); break;
                     case GL_TESS_CONTROL_SHADER: ImGui::Text("%s", "Stage Tesselation Control"); break;
+                    case GL_COMPUTE_SHADER: ImGui::Text("%s", "Stage Compute Control"); break;
                 }
                 ImGui::Indent();
                 for (auto& uni : shader_type.second) {
                     if (uni.second.showed && uni.second.used) {
-                        if (uni.second.widget_functor != nullptr) {
-                            ret |= uni.second.widget_functor(uni.second);
+                        if (uni.second.widgetFunctor != nullptr) {
+                            uni.second.widgetFunctor(uni.second);
                         } else {
                             if (uni.second.datas_f != nullptr) {
-                                for (GLuint i = 0; i < uni.second.elements; ++i) {
-                                    switch (uni.second.channels) {
-                                        case 1U: ret |= ImGui::DragFloat(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 2U: ret |= ImGui::DragFloat2(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 3U: ret |= ImGui::DragFloat3(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 4U: ret |= ImGui::DragFloat4(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                    }
+                                switch (uni.second.channels) {
+                                    case 1U: ImGui::DragFloat(uni.second.name.c_str(), uni.second.datas_f); break;
+                                    case 2U: ImGui::DragFloat2(uni.second.name.c_str(), uni.second.datas_f); break;
+                                    case 3U: ImGui::DragFloat3(uni.second.name.c_str(), uni.second.datas_f); break;
+                                    case 4U: ImGui::DragFloat4(uni.second.name.c_str(), uni.second.datas_f); break;
                                 }
                             } else if (uni.second.datas_i != nullptr) {
-                                for (GLuint i = 0; i < uni.second.elements; ++i) {
-                                    switch (uni.second.channels) {
-                                        case 1U: ret |= ImGui::DragInt(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 2U: ret |= ImGui::DragInt2(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 3U: ret |= ImGui::DragInt3(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 4U: ret |= ImGui::DragInt4(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                    }
+                                switch (uni.second.channels) {
+                                    case 1U: ImGui::DragInt(uni.second.name.c_str(), uni.second.datas_i); break;
+                                    case 2U: ImGui::DragInt2(uni.second.name.c_str(), uni.second.datas_i); break;
+                                    case 3U: ImGui::DragInt3(uni.second.name.c_str(), uni.second.datas_i); break;
+                                    case 4U: ImGui::DragInt4(uni.second.name.c_str(), uni.second.datas_i); break;
                                 }
-                            } else if (uni.second.data_s2d != 0U) {
-                                ImGui::Text("%s", uni.second.name.c_str());
+                            } else if (uni.second.datas_u != nullptr) {
+                                switch (uni.second.channels) {
+                                    case 1U: ImGui::DragScalar(uni.second.name.c_str(), ImGuiDataType_U32, uni.second.datas_u); break;
+                                    case 2U: ImGui::DragScalarN(uni.second.name.c_str(), ImGuiDataType_U32, uni.second.datas_u, 2); break;
+                                    case 3U: ImGui::DragScalarN(uni.second.name.c_str(), ImGuiDataType_U32, uni.second.datas_u, 3); break;
+                                    case 4U: ImGui::DragScalarN(uni.second.name.c_str(), ImGuiDataType_U32, uni.second.datas_u, 4); break;
+                                }
+                            } else if (uni.second.data_s2d > 0U) {
+                                ImGui::Text(uni.second.name.c_str());
                                 ImGui::Indent();
-                                ImGui::Image((ImTextureID)uni.second.data_s2d, ImVec2(64.0f, 64.0f));
+                                ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<size_t>(uni.second.data_s2d)), ImVec2(64.0f, 64.0f));
+                                ImGui::Unindent();
+                            } else if (uni.second.data_i2d > 0U) {
+                                ImGui::Text(uni.second.name.c_str());
+                                ImGui::Indent();
+                                ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<size_t>(uni.second.data_i2d)), ImVec2(64.0f, 64.0f));
                                 ImGui::Unindent();
                             }
                         }
                     }
                 }
                 ImGui::Unindent();
+            }
+            if (vAdditionnalWidgetsFunctor != nullptr) {
+                vAdditionnalWidgetsFunctor();
             }
             ImGui::Unindent();
         }
@@ -556,7 +601,7 @@ public:
     UniformPerShaderTypeContainer& getUniformsRef() { return m_Uniforms; }
 
     void locateUniforms() {
-        assert(m_ProgramId > 0U);
+        ASSERT_THROW(m_ProgramId > 0U, "");
         const char* stage_name = nullptr;
         for (auto& shader_type : m_Uniforms) {
             switch (shader_type.first) {
@@ -564,6 +609,7 @@ public:
                 case GL_FRAGMENT_SHADER: stage_name = "FRAGMENT"; break;
                 case GL_TESS_EVALUATION_SHADER: stage_name = "TESSEVAL"; break;
                 case GL_TESS_CONTROL_SHADER: stage_name = "TESSCTRL"; break;
+                case GL_COMPUTE_SHADER: stage_name = "COMPUTE"; break;
             }
             for (auto& uni : shader_type.second) {
                 if (uni.second.buffer_ptr == nullptr) {  // BufferBlock are not classical uniforms so no widgets so no location detection needed
@@ -589,8 +635,8 @@ public:
 
 private:
     bool printProgramLogs(const std::string& vProgramName, const std::string& vLogTypes) {
-        assert(!vProgramName.empty());
-        assert(!vLogTypes.empty());
+        ASSERT_THROW(!vProgramName.empty(), "");
+        ASSERT_THROW(!vLogTypes.empty(), "");
         if (m_ProgramId > 0U) {
             GLint infoLen = 0;
             glGetProgramiv(m_ProgramId, GL_INFO_LOG_LENGTH, &infoLen);

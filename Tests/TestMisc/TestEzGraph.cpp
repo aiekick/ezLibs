@@ -277,14 +277,6 @@ bool TestEzGraph_Evaluation() {
 //// ENTRY POINT ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-#define IfTestExist(v)            \
-    if (vTest == std::string(#v)) \
-    return v()
-
-#define IfTestCollectionExist(v, str)        \
-    if (vTest.find(#v) != std::string::npos) \
-    return v(str)
-
 bool TestEzGraph(const std::string& vTest) {
     IfTestExist(TestEzGraph_Building);
     else IfTestExist(TestEzGraph_Evaluation);

@@ -59,6 +59,7 @@ SOFTWARE.
 #include <shellapi.h>  // ShellExecute
 #define stat _stat
 #else                // UNIX_OS
+#include <ftw.h>
 #include <unistd.h>  // rmdir
 #ifndef EZ_FILE_SLASH_TYPE
 #define EZ_FILE_SLASH_TYPE "/"
@@ -324,25 +325,43 @@ inline bool destroyFile(const std::string &vFilePathName) {
     if (!vFilePathName.empty()) {
         const auto filePathName = correctSlashTypeForFilePathName(vFilePathName);
         if (isFileExist(filePathName)) {
-            if (remove(filePathName.c_str()) == 0) {
-                return true;
-            }
+            return (remove(filePathName.c_str()) == 0);
         }
+        return true;
     }
     return false;
 }
 
-inline bool destroyDir(const std::string &vPath) {
-    if (!vPath.empty()) {
-        if (isDirectoryExist(vPath)) {
-#ifdef WINDOWS_OS
-            return (RemoveDirectoryA(vPath.c_str()) != 0);
-#elif defined(UNIX_OS)
-            return (rmdir(vPath.c_str()) == 0);
-#endif
-        }
+inline bool destroyDir(const std::string &vPath, bool vRecursive) {
+    if (vPath.empty()) {
+        return false;
     }
-    return false;
+    if (!isDirectoryExist(vPath)) {
+        return true;
+    }
+
+    if (vRecursive) {
+#ifdef WINDOWS_OS
+        // SHFileOperation exige un path double-null terminated
+        std::string path = vPath;
+        path.push_back('\0');  // double null
+        SHFILEOPSTRUCTA op = {};
+        op.wFunc = FO_DELETE;
+        op.pFrom = path.c_str();
+        op.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
+        return SHFileOperationA(&op) == 0;
+#elif defined(UNIX_OS)
+        // nftw parcourt et supprime récursivement
+        auto cb = [](const char *p, const struct stat *, int, struct FTW *) -> int { return remove(p); };
+        return nftw(vPath.c_str(), cb, 64, FTW_DEPTH | FTW_PHYS) == 0;
+#endif
+    } else {
+#ifdef WINDOWS_OS
+        return RemoveDirectoryA(vPath.c_str()) != 0;
+#elif defined(UNIX_OS)
+        return rmdir(vPath.c_str()) == 0;
+#endif
+    }
 }
 
 inline bool createDirectoryIfNotExist(const std::string &name) {
@@ -382,6 +401,9 @@ inline bool createPathIfNotExist(const std::string &vPath) {
                 fullPath += *it;
                 res &= createDirectoryIfNotExist(fullPath);
                 fullPath += EZ_FILE_SLASH_TYPE;
+                if (!res) {
+                    break;
+                }
             }
         }
     }
@@ -595,7 +617,7 @@ private:
     std::unique_ptr<IBackend> m_backend;
 
     static void m_logPathResult(const PathResult &vPathResult) {
-#ifdef _DEBUG
+#ifndef NDEBUG
         const char *mode = " ";
         switch (vPathResult.modifType) {
             case PathResult::ModifType::CREATION: mode = "CREATION"; break;
@@ -897,7 +919,7 @@ private:
 
             // 2) Poll event (non-blocking)
             DWORD wr = WaitForSingleObject(vpHandle->hEvent, 0);
-#ifdef _DEBUG
+#ifndef NDEBUG
             switch (wr) {
                 case WAIT_ABANDONED: {
                     LogVarLightInfo("%s", "WAIT_ABANDONED");

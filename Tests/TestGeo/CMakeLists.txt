@@ -8,10 +8,18 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MSVC)
+    add_definitions(-DNOMINMAX)
+endif()
+
 file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX Src FILES ${PROJECT_TEST_SRC_RECURSE})
+
+file(GLOB_RECURSE PROJECT_TEST_INPUTS_RECURSE 
+	${CMAKE_CURRENT_SOURCE_DIR}/inputs/*.*)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/inputs PREFIX inputs FILES ${PROJECT_TEST_INPUTS_RECURSE})
 
 file(GLOB SRC_RECURSE 
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCron.hpp
@@ -22,6 +30,7 @@ source_group(TREE ${EZ_LIBS_INCLUDE_DIR}/ezlibs PREFIX Lib FILES ${SRC_RECURSE})
 add_executable(${PROJECT} 
 	${SRC_RECURSE}
 	${PROJECT_TEST_SRC_RECURSE}
+	${PROJECT_TEST_INPUTS_RECURSE}
 )
 
 set_target_properties(${PROJECT} PROPERTIES FOLDER Tests)
@@ -99,3 +108,38 @@ AddTest("TestEzTile_AllNeg_Continuous_Wrap")
 AddTest("TestEzTile_AllPos_Discrete")
 AddTest("TestEzTile_AllPos_Continuous_NoWrap")
 AddTest("TestEzTile_AllPos_Continuous_Wrap")
+
+##########################################################
+##### TESTS ezFormats (DEM/HGT/SHP) #####################
+##########################################################
+
+# ezDemAsc tests
+AddTest("TestEzFormats_DemAsc_Load_ValidFile")
+AddTest("TestEzFormats_DemAsc_Save_RoundTrip")
+AddTest("TestEzFormats_DemAsc_Load_InvalidFilename")
+AddTest("TestEzFormats_DemAsc_Load_EmptyBuffer")
+
+# ezDemBin tests
+AddTest("TestEzFormats_DemBin_Load_ValidFile")
+AddTest("TestEzFormats_DemBin_Save_RoundTrip")
+AddTest("TestEzFormats_DemBin_Load_InvalidFilename")
+AddTest("TestEzFormats_DemBin_Load_EmptyBuffer")
+
+# ezHgt tests
+AddTest("TestEzFormats_Hgt_Load_SRTM1")
+AddTest("TestEzFormats_Hgt_Load_SRTM3")
+AddTest("TestEzFormats_Hgt_Save_RoundTrip")
+AddTest("TestEzFormats_Hgt_Load_EmptyBuffer")
+
+# ezShp tests
+AddTest("TestEzFormats_Shp_Load_ValidFile")
+AddTest("TestEzFormats_Shp_Load_ValidBytes")
+AddTest("TestEzFormats_Shp_Load_EmptyBuffer")
+AddTest("TestEzFormats_Shp_Load_InvalidExtension")
+AddTest("TestEzFormats_Shp_Point_Creation")
+AddTest("TestEzFormats_Shp_PointZ_Creation")
+AddTest("TestEzFormats_Shp_PointM_Creation")
+AddTest("TestEzFormats_Shp_MultiPoint_Creation")
+AddTest("TestEzFormats_Shp_PolyTruc_Creation")
+AddTest("TestEzFormats_Shp_ShapeType_Values")
+AddTest("TestEzFormats_Shp_PartType_Values")

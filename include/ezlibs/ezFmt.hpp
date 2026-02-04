@@ -56,7 +56,7 @@ public:
 			}
 		}
 		return *this;
-	}
+    }
 	
     void print(const std::string &vOffset, std::ostream &vOs = std::cout) const {
         vOs << vOffset << "+-";

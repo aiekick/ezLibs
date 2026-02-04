@@ -1,0 +1,17 @@
+#include "TestEzGLCanvas.h"
+#include "glContext.h"
+#include <ezlibs/ezGL/ezGL.hpp>
+#include <ezlibs/ezCTest.hpp>
+
+bool TestEzGL_Canvas_init() {
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//// ENTRY POINT ///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+bool TestEzGL_Canvas(const std::string& vTest) {
+    IfTestExist(TestEzGL_Canvas_init);
+    return false;
+}

@@ -168,7 +168,7 @@ public:
     void clearBuffers(const ez::fvec4& vColorPtr) { mp_fboPipeline->clearBuffer({vColorPtr.x, vColorPtr.y, vColorPtr.z, vColorPtr.w}); }
     bool drawUI() {
 #ifdef IMGUI_API
-#ifdef _DEBUG
+#ifndef NDEBUG
         if (ImGui::CollapsingHeader("Debug##Renderer")) {
             ImGui::Text("Origin Px : %f,%f", m_transform.origin.x, m_transform.origin.y);
             ImGui::Text("FBO Size : %f,%f", m_fboSize.x, m_fboSize.y);

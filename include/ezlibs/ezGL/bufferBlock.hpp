@@ -157,7 +157,7 @@ public:
     bool isDirty() const { return m_isDirty; }
     void create() {
         mp_buffer = BufferBlock::create(m_name, GL_UNIFORM_BUFFER);
-        mp_buffer->upload(GL_DYNAMIC_DRAW, m_datas.data(), m_datas.size());
+        if (!m_datas.empty()) { mp_buffer->upload(GL_DYNAMIC_DRAW, m_datas.data(), m_datas.size()); }
     }
     void destroy() { mp_buffer.reset(); }
     bool recreate() {

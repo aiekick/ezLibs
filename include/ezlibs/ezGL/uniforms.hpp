@@ -358,16 +358,16 @@ protected:
                 size_t pos = _uniform_datas.first - offset;
                 final_code.replace(pos, datas.uniform_line.size(), uniform_code);
                 offset += datas.uniform_line.size() - uniform_code.size();  // le nouveau code sera forcemment plus court
-                assert(offset != std::string::npos);
+                ASSERT_THROW(offset != std::string::npos, "");
             }
         }
-#ifdef _DEBUG
+#ifndef NDEBUG
         m_save_string_to_file(final_code, "debug/shader.glsl");
 #endif
         return final_code;
     }
 
-#ifdef _DEBUG
+#ifndef NDEBUG
     void m_save_string_to_file(const std::string& vString, const std::string& vFilePathName) {
         std::ofstream fileWriter(vFilePathName, std::ios::out);
         if (!fileWriter.bad()) {

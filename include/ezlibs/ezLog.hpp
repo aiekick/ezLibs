@@ -242,7 +242,7 @@ public:
         lck.unlock();
     }
     void logStringByTypeWithFunction_Debug(const MessageType& vType, const std::string& vFunction, const int& vLine, const char* fmt, ...) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 #if defined(TRACY_ENABLE) && defined(LOG_TRACY_MESSAGES)
         ZoneScoped;
 #endif
@@ -261,7 +261,7 @@ public:
 #endif
     }
     void logStringWithFunction_Debug(const std::string& vFunction, const int& vLine, const char* fmt, ...) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 #if defined(TRACY_ENABLE) && defined(LOG_TRACY_MESSAGES)
         ZoneScoped;
 #endif

@@ -6,6 +6,7 @@
 #include <TestEzCnt.h>
 #include <TestEzFigFont.h>
 #include <TestEzSha.h>
+#include <TestEzLog.h>
 #include <TestEzSqlite.h>
 #include <TestEzScreen.h>
 #include <TestEzTemplater.h>
@@ -26,6 +27,7 @@ bool TestMisc(const std::string& vTest) {
     else IfTestCollectionExist(TestEzCnt);
     else IfTestCollectionExist(TestEzFigFont);
     else IfTestCollectionExist(TestEzSha);
+    else IfTestCollectionExist(TestEzLog);
     else IfTestCollectionExist(TestEzSqlite);
     else IfTestCollectionExist(TestEzScreen);
     else IfTestCollectionExist(TestEzTemplater);
@@ -45,5 +47,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzTemplater_MissingTagIsIgnored") ? 0 : 1;
+    return TestMisc("TestEzStr_SearchForPatternWithWildcardsEdgeCases") ? 0 : 1;
 }

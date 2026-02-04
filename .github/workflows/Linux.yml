@@ -1,9 +1,17 @@
 name: Linux
 
 on:
+  workflow_dispatch:
   push:
     branches:
     - master
+    paths-ignore:
+    - '.github/**'
+    - 'doc/**'
+    - '.gitignore'
+    - 'README.md'
+    - 'LICENSE'
+  pull_request:
     paths-ignore:
     - '.github/**'
     - 'doc/**'
@@ -16,20 +24,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-      with:
-        ref: master
     - name: Install Dependencies
-      run : sudo apt-get update && sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
+      run : sudo apt-get update && sudo apt-get install xvfb libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
     - name: configure
       run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_EZ_LIBS_TESTING=ON -DUSE_EZ_EXPR_PERFOS_GENERATION=ON
     - name: build
       run: cmake --build build
     - name: ctest
-      run: ctest --test-dir build --output-on-failure
+      run: xvfb-run --auto-servernum ctest --test-dir build --output-on-failure
     - name: zip test results
+      if: always()
       run: zip ./tests_results.zip ./TestResults -r
     - name: upload test results artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: tests_results.zip
+        name: tests_results_linux.zip
         path: ./tests_results.zip

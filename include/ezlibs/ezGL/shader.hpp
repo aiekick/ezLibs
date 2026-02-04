@@ -71,18 +71,19 @@ public:
     ~Shader() { unit(); }
 
     bool initFromFile(const std::string& vShaderName, const GLenum vShaderType, const std::string& vFile) {
-        assert(!vShaderName.empty());
-        assert(!vFile.empty());
-        assert(vShaderType > 0);
+        ASSERT_THROW(!vShaderName.empty(), "");
+        ASSERT_THROW(!vFile.empty(), "");
+        ASSERT_THROW(vShaderType > 0, "");
         const auto& code = getCodeFromFile(vFile);
+        if (code.empty()) { return false; }
         return initFromCode(vShaderName, vShaderType, code);
     }
 
     bool initFromCode(const std::string& vShaderName, const GLenum vShaderType, const std::string& vCode) {
         bool res = false;
-        assert(!vShaderName.empty());
-        assert(!vCode.empty());
-        assert(vShaderType > 0);
+        ASSERT_THROW(!vShaderName.empty(), "");
+        ASSERT_THROW(!vCode.empty(), "");
+        ASSERT_THROW(vShaderType > 0, "");
         m_ShaderName = vShaderName;
         m_ShaderType = vShaderType;
         m_ShaderId = glCreateShader((GLenum)vShaderType);
@@ -119,7 +120,7 @@ public:
 
 private:
     std::string getCodeFromFile(const std::string& vFile) {
-        assert(!vFile.empty());
+        ASSERT_THROW(!vFile.empty(), "");
         std::string res;
         std::ifstream docFile(vFile, std::ios::in);
         if (docFile.is_open()) {
@@ -131,8 +132,8 @@ private:
         return res;
     }
     void printShaderLogs(const std::string& vShaderName, const std::string& vLogTypes) {
-        assert(!vShaderName.empty());
-        assert(!vLogTypes.empty());
+        ASSERT_THROW(!vShaderName.empty(), "");
+        ASSERT_THROW(!vLogTypes.empty(), "");
         if (m_ShaderId > 0U) {
             GLint infoLen = 0;
             glGetShaderiv(m_ShaderId, GL_INFO_LOG_LENGTH, &infoLen);

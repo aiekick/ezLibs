@@ -91,7 +91,7 @@ public:
         unit();
     }
     bool init(const std::string& vProgramAutoName) {
-        assert(!vProgramAutoName.empty());
+        ASSERT_THROW(!vProgramAutoName.empty(), "");
         m_ProgramAutoName = vProgramAutoName;
         m_ProgramAutoId = glCreateProgram();
         CheckGLErrors;
@@ -143,10 +143,10 @@ public:
     }
     void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) { m_UniformPreUploadFunctor = vUniformPreUploadFunctor; }
     void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock* vBufferPtr) {
-        assert(vShaderType > 0);
-        assert(!vBufferName.empty());
-        assert(vBinding > 0);
-        assert(vBufferPtr != nullptr);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vBufferName.empty(), "");
+        ASSERT_THROW(vBinding > 0, "");
+        ASSERT_THROW(vBufferPtr != nullptr, "");
         Uniform uni;
         uni.bufferBinding = vBinding;
         uni.buffer_ptr = vBufferPtr;
@@ -154,10 +154,10 @@ public:
     }
     void addUniformFloat(const GLenum vShaderType, const std::string& vUniformName, float* vUniformPtr, const GLuint vCountChannels,
                          const bool vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        assert(vUniformPtr != nullptr);
-        assert(vCountChannels > 0U);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        ASSERT_THROW(vUniformPtr != nullptr, "");
+        ASSERT_THROW(vCountChannels > 0U, "");
         Uniform uni;
         uni.name = vUniformName;
         uni.showed = vShowWidget;
@@ -168,10 +168,10 @@ public:
     }
     void addUniformInt(const GLenum vShaderType, const std::string& vUniformName, int32_t* vUniformPtr, const GLuint vCountChannels,
                        const bool vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        assert(vUniformPtr != nullptr);
-        assert(vCountChannels > 0U);
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        ASSERT_THROW(vUniformPtr != nullptr, "");
+        ASSERT_THROW(vCountChannels > 0U, "");
         Uniform uni;
         uni.name = vUniformName;
         uni.showed = vShowWidget;
@@ -182,9 +182,9 @@ public:
     }
     void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D,
                              const bool vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
-        assert(vShaderType > 0);
-        assert(!vUniformName.empty());
-        // assert(vSampler2D != -1);, if the sampler must point on a buffer after, its normal to have it at -1
+        ASSERT_THROW(vShaderType > 0, "");
+        ASSERT_THROW(!vUniformName.empty(), "");
+        // ASSERT_THROW(vSampler2D != -1, "");, if the sampler must point on a buffer after, its normal to have it at -1
         Uniform uni;
         uni.name = vUniformName;
         uni.showed = vShowWidget;
@@ -276,7 +276,7 @@ public:
     }
 #endif
     void locateUniforms() {
-        assert(m_ProgramAutoId > 0U);
+        ASSERT_THROW(m_ProgramAutoId > 0U, "");
         const char* stage_name = nullptr;
         for (auto& shader_type : m_Uniforms) {
             switch (shader_type.first) {
@@ -316,8 +316,8 @@ public:
 
 private:
     bool printProgramAutoLogs(const std::string& vProgramAutoName, const std::string& vLogTypes) {
-        assert(!vProgramAutoName.empty());
-        assert(!vLogTypes.empty());
+        ASSERT_THROW(!vProgramAutoName.empty(), "");
+        ASSERT_THROW(!vLogTypes.empty(), "");
         if (m_ProgramAutoId > 0U) {
             GLint infoLen = 0;
             glGetProgramiv(m_ProgramAutoId, GL_INFO_LOG_LENGTH, &infoLen);

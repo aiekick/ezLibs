@@ -1,6 +1,7 @@
 name: Code Coverage
 
 on:
+  workflow_dispatch:
   push:
     branches: [master]
     paths-ignore:
@@ -31,7 +32,7 @@ jobs:
       - name: Install Clang/LLVM + deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang llvm llvm-dev libclang-dev lcov python3-pip git \
+          sudo apt-get install -y clang llvm llvm-dev libclang-dev lcov python3-pip git xvfb \
                                   libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
           CLANG_MAJOR=$(clang -dumpversion | cut -d. -f1 || true)
           if [ -n "$CLANG_MAJOR" ]; then
@@ -61,7 +62,7 @@ jobs:
 
       - name: Generate coverage
         run: |
-          cmake --build build --target cov -j 12
+          xvfb-run --auto-servernum cmake --build build --target cov -j 12
           mkdir -p build/coverage_web
           cp -r build/Tests/coverage_lcov/* build/coverage_web/
           
@@ -78,14 +79,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./build/coverage_web
-
-      - name: Upload coverage to Codecov (LCOV)
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./build/Tests/coverage_utf8.txt
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-          verbose: true
 
   deploy-coverage:
     runs-on: ubuntu-latest

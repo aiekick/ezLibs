@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzFigFontLoadAndPrint() {
+bool TestEzFigFont_LoadAndPrint() {
     ez::FigFont ff;
     CTEST_ASSERT(ff.load(SAMPLES_PATH "big.flf").isValid());
     const std::string expected_result = u8R"(            _____                                                       ___      __ 
@@ -44,7 +44,7 @@ bool TestEzFigFontLoadAndPrint() {
     return v()
 
 bool TestEzFigFont(const std::string& vTest) {
-    IfTestExist(TestEzFigFontLoadAndPrint);
+    IfTestExist(TestEzFigFont_LoadAndPrint);
     return false;
 }
 

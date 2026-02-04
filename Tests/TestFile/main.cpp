@@ -46,5 +46,5 @@ int main(int argc, char** argv) {
         return TestFile(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestFile("TestEzFileWatcher_Dir") ? 0 : 1;
+    return TestFile("TestEzXmlConfig_StopChildParsing") ? 0 : 1;
 }

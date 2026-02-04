@@ -1,4 +1,5 @@
-﻿#include <TestEzGeo.h>
+﻿#include <ezlibs/ezLog.hpp>
+#include <TestEzGeo.h>
 #include <ezlibs/ezCTest.hpp>
 #include <ezlibs/ezGeo/ezTile.hpp>
 #include <iostream>

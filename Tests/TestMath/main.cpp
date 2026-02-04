@@ -2,6 +2,10 @@
 #include <TestEzVec2.h>
 #include <TestEzVec3.h>
 #include <TestEzVec4.h>
+#include <TestEzAABBCC.h>
+#include <TestEzMat2.h>
+#include <TestEzQuat.h>
+#include <TestEzAABB.h>
 #include <TestEzExpr.h>
 
 #include <limits>
@@ -13,9 +17,13 @@
 
 bool TestMisc(const std::string& vTest) {
     IfTestCollectionExist(TestEzMath);
+    IfTestCollectionExist(TestEzAABBCC);
     IfTestCollectionExist(TestEzVec2);
     IfTestCollectionExist(TestEzVec3);
     IfTestCollectionExist(TestEzVec4);
+    IfTestCollectionExist(TestEzMat2);
+    IfTestCollectionExist(TestEzQuat);
+    IfTestCollectionExist(TestEzAABB);
     IfTestCollectionExist(TestEzExpr);
     return false;
 }
@@ -30,5 +38,5 @@ int main(int argc, char** argv) {
         return TestMisc(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestMisc("TestEzExpr_Exceptions_EvaluationNaN_Log") ? 0 : 1;
+    return TestMisc("TestEzVec2_GetNormalized<double>") ? 0 : 1;
 }

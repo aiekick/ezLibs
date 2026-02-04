@@ -26,6 +26,8 @@ SOFTWARE.
 
 // ezQuat is part of the ezLibs project : https://github.com/aiekick/ezLibs.git
 
+#include <type_traits> // static_assert
+
 namespace ez {
     	
 template <typename T>

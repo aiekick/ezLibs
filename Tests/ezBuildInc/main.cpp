@@ -37,14 +37,14 @@ int main(int vArgc, char* vArgv[]) {
     args.addOptional("--no-help").help("will not print the help if the required arguments are not set", {});
     args.addOptional("--jsfile").help("Will generate also a javascript version file", "<js_file_path>").delimiter(' ');
     if (args.parse(vArgc, vArgv)) {
-        std::string project = args.getValue<std::string>("project");
-        std::string label = args.getValue<std::string>("label");
+        auto project = args.getValue<std::string>("project");
+        auto label = args.getValue<std::string>("label");
         if (label.empty()) {
             label = project;
         }
-        std::string figFontFile = args.getValue<std::string>("figfont");
-        std::string file = args.getValue<std::string>("file");
-        std::string jsfile = args.getValue<std::string>("jsfile");
+        auto figFontFile = args.getValue<std::string>("figfont");
+        auto file = args.getValue<std::string>("file");
+        auto jsfile = args.getValue<std::string>("jsfile");
         if (!file.empty()) {
             ez::BuildInc builder(file);
             builder.setProject(project).setLabel(label).setJsFilePath(jsfile).setFigFontFile(figFontFile);

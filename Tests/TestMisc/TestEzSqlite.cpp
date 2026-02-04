@@ -2,7 +2,7 @@
 #include <ezlibs/ezCTest.hpp>
 #include <string>
 
-// Désactivation des warnings de conversion
+// Dï¿½sactivation des warnings de conversion
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4244)
@@ -56,7 +56,7 @@ bool TestEzSqlite_SyntaxError_CreateTableMissingParenOrAs() {
     ez::sqlite::Parser::Options opts;
     auto parser = ez::sqlite::Parser(opts);
     ez::sqlite::Parser::Report report;
-    // manque '(' ou 'AS' après le nom de table
+    // manque '(' ou 'AS' aprï¿½s le nom de table
     const std::string sql = "CREATE TABLE t name_only;";
     CTEST_ASSERT(parser.parse(sql, report) == true);
     CTEST_ASSERT(report.ok == false);
@@ -79,7 +79,7 @@ bool TestEzSqlite_SyntaxError_InsertValuesNoParens() {
     ez::sqlite::Parser::Options opts;
     auto parser = ez::sqlite::Parser(opts);
     ez::sqlite::Parser::Report report;
-    // VALUES sans liste parenthésée
+    // VALUES sans liste parenthï¿½sï¿½e
     const std::string sql = "INSERT INTO t VALUES 1, 2, 3;";
     CTEST_ASSERT(parser.parse(sql, report) == true);
     CTEST_ASSERT(report.ok == false);
@@ -165,7 +165,7 @@ bool TestEzSqlite_SyntaxError_SelectTrailingCommaBeforeFrom() {
     return true;
 }
 
-// multi-ligne + impression de l’erreur principale (utile pour vérifier la localisation)
+// multi-ligne + impression de lï¿½erreur principale (utile pour vï¿½rifier la localisation)
 bool TestEzSqlite_SyntaxError_MultiLine_ShowLocation() {
     ez::sqlite::Parser::Options opts;
     auto parser = ez::sqlite::Parser(opts);
@@ -184,6 +184,75 @@ bool TestEzSqlite_SyntaxError_MultiLine_ShowLocation() {
     CTEST_ASSERT(err.pos.line == 6);
     CTEST_ASSERT(err.pos.column == 8);
     CTEST_ASSERT(err.pos.offset == 83);
+    return true;
+}
+
+bool TestEzSqlite_QueryBuilder_InsertQuery() {
+    ez::sqlite::QueryBuilder qb;
+    qb.setTable("users")
+      .addOrSetField("name", "John")
+      .addOrSetField("age", 30)
+      .addOrSetField("email", "john@test.com");
+
+    std::string query = qb.build(ez::sqlite::QueryType::INSERT);
+    CTEST_ASSERT(!query.empty());
+    CTEST_ASSERT(query.find("INSERT INTO users") != std::string::npos);
+    CTEST_ASSERT(query.find("name") != std::string::npos);
+    CTEST_ASSERT(query.find("age") != std::string::npos);
+    CTEST_ASSERT(query.find("email") != std::string::npos);
+    return true;
+}
+
+bool TestEzSqlite_QueryBuilder_UpdateQuery() {
+    ez::sqlite::QueryBuilder qb;
+    qb.setTable("users")
+      .addOrSetField("name", "Jane")
+      .addOrSetField("age", 25)
+      .addWhere("id = 1");
+
+    std::string query = qb.build(ez::sqlite::QueryType::UPDATE);
+    CTEST_ASSERT(!query.empty());
+    CTEST_ASSERT(query.find("UPDATE users") != std::string::npos);
+    CTEST_ASSERT(query.find("SET") != std::string::npos);
+    CTEST_ASSERT(query.find("WHERE") != std::string::npos);
+    return true;
+}
+
+bool TestEzSqlite_QueryBuilder_InsertIfNotExist() {
+    ez::sqlite::QueryBuilder qb;
+    qb.setTable("config")
+      .addOrSetField("key", "theme")
+      .addOrSetField("value", "dark");
+
+    std::string query = qb.build(ez::sqlite::QueryType::INSERT_IF_NOT_EXIST);
+    CTEST_ASSERT(!query.empty());
+    CTEST_ASSERT(query.find("SELECT") != std::string::npos);
+    CTEST_ASSERT(query.find("WHERE NOT EXISTS") != std::string::npos);
+    return true;
+}
+
+bool TestEzSqlite_QueryBuilder_WithSubQuery() {
+    ez::sqlite::QueryBuilder qb;
+    qb.setTable("posts")
+      .addOrSetField("title", "Test")
+      .addOrSetFieldQuery("user_id", "SELECT id FROM users WHERE name='John'");
+
+    std::string query = qb.build(ez::sqlite::QueryType::INSERT);
+    CTEST_ASSERT(!query.empty());
+    CTEST_ASSERT(query.find("SELECT id FROM users") != std::string::npos);
+    return true;
+}
+
+bool TestEzSqlite_QueryBuilder_MultipleWhereConditions() {
+    ez::sqlite::QueryBuilder qb;
+    qb.setTable("users")
+      .addOrSetField("status", "active")
+      .addWhere("age > 18")
+      .addWhere("country = 'US'");
+
+    std::string query = qb.build(ez::sqlite::QueryType::UPDATE);
+    CTEST_ASSERT(!query.empty());
+    CTEST_ASSERT(query.find("WHERE") != std::string::npos);
     return true;
 }
 
@@ -210,6 +279,11 @@ bool TestEzSqlite(const std::string& vTest) {
     else IfTestExist(TestEzSqlite_SyntaxError_ParensUnbalancedClose);
     else IfTestExist(TestEzSqlite_SyntaxError_SelectTrailingCommaBeforeFrom);
     else IfTestExist(TestEzSqlite_SyntaxError_MultiLine_ShowLocation);
+    else IfTestExist(TestEzSqlite_QueryBuilder_InsertQuery);
+    else IfTestExist(TestEzSqlite_QueryBuilder_UpdateQuery);
+    else IfTestExist(TestEzSqlite_QueryBuilder_InsertIfNotExist);
+    else IfTestExist(TestEzSqlite_QueryBuilder_WithSubQuery);
+    else IfTestExist(TestEzSqlite_QueryBuilder_MultipleWhereConditions);
     return false;
 }
 

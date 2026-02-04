@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MSVC)
+    add_definitions(-DNOMINMAX)
+endif()
+
 file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.h)
@@ -21,6 +25,7 @@ file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStackString.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezLog.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezSha.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezTemplater.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp
@@ -62,9 +67,42 @@ AddTest("TestEzGraph_Evaluation")
 ##### TESTS EzStr ########################################
 ##########################################################
 
-AddTest("TestEzStrGetDigitsCountOfAIntegralNumber")
-AddTest("TestEzStrSearchForPatternWithWildcards")
-AddTest("TestEzStrExtractWildcardsFromPattern")
+AddTest("TestEzStr_SplitStringToList")
+AddTest("TestEzStr_SplitStringToVector")
+AddTest("TestEzStr_SplitStringToSet")
+AddTest("TestEzStr_StringToNumber")
+AddTest("TestEzStr_StringToNumberVector")
+AddTest("TestEzStr_ToUpper")
+AddTest("TestEzStr_ToLower")
+AddTest("TestEzStr_ToHex")
+AddTest("TestEzStr_ToHexStr")
+AddTest("TestEzStr_ToDecStr")
+AddTest("TestEzStr_StrContains")
+AddTest("TestEzStr_ReplaceString")
+AddTest("TestEzStr_GetCountOccurence")
+AddTest("TestEzStr_GetCountOccurenceInSection")
+AddTest("TestEzStr_GetDigitsCountOfAIntegralNumber")
+AddTest("TestEzStr_SearchForPatternWithWildcards")
+AddTest("TestEzStr_ExtractWildcardsFromPattern")
+AddTest("TestEzStr_ToStr")
+AddTest("TestEzStr_ToStrFromArray")
+AddTest("TestEzStr_ToStrTemplate")
+AddTest("TestEzStr_SplitStringToListInversion")
+AddTest("TestEzStr_SplitStringToListEmpty")
+AddTest("TestEzStr_SplitStringToVectorEmpty")
+AddTest("TestEzStr_SplitStringToSetEmpty")
+AddTest("TestEzStr_StringToNumberEdgeCases")
+AddTest("TestEzStr_StringToNumberVectorEmpty")
+AddTest("TestEzStr_ToHexEdgeCases")
+AddTest("TestEzStr_ToHexStrEdgeCases")
+AddTest("TestEzStr_ToDecStrEdgeCases")
+AddTest("TestEzStr_StrContainsEdgeCases")
+AddTest("TestEzStr_ReplaceStringEdgeCases")
+AddTest("TestEzStr_GetCountOccurenceEdgeCases")
+AddTest("TestEzStr_GetCountOccurenceInSectionEdgeCases")
+AddTest("TestEzStr_GetDigitsCountOfAIntegralNumberEdgeCases")
+AddTest("TestEzStr_SearchForPatternWithWildcardsEdgeCases")
+AddTest("TestEzStr_ExtractWildcardsFromPatternEdgeCases")
 
 ##########################################################
 ##### TESTS EzStackString ################################
@@ -85,29 +123,52 @@ AddTest("TestEzStackString_HeapDisabled")
 ##### TESTS EzCnt ########################################
 ##########################################################
 
-AddTest("TestEzCntGeneric")
-AddTest("TestEzCntOneTypename")
-AddTest("TestEzCntTwoTypename")
+AddTest("TestEzCnt_Generic")
+AddTest("TestEzCnt_OneTypename")
+AddTest("TestEzCnt_TwoTypename")
 
 ##########################################################
 ##### TESTS EzXml ########################################
 ##########################################################
 
-AddTest("TestEzXmlParsingOK")
-AddTest("TestEzXmlParsingNOK_0")
-AddTest("TestEzXmlParsingNOK_1")
+AddTest("TestEzXml_ParsingOK")
+AddTest("TestEzXml_ParsingNOK_0")
+AddTest("TestEzXml_ParsingNOK_1")
+AddTest("TestEzXml_Writing_1")
+AddTest("TestEzXml_EscapeUnescapeXml")
+AddTest("TestEzXml_NodeOperations")
+AddTest("TestEzXml_GetOrAddChild")
+AddTest("TestEzXml_GetChildNull")
+AddTest("TestEzXml_AddChilds")
+AddTest("TestEzXml_AttributeWithTemplateTypes")
+AddTest("TestEzXml_ReplaceAll")
 
 ##########################################################
 ##### TESTS EzFigFont ####################################
 ##########################################################
 
-AddTest("TestEzFigFontLoadAndPrint")
+AddTest("TestEzFigFont_LoadAndPrint")
 
 ##########################################################
 ##### TESTS EzSha ########################################
 ##########################################################
 
 AddTest("TestEzSha_0")
+
+##########################################################
+##### TESTS EzLog #########################################
+##########################################################
+
+AddTest("TestEzLog_LogSimpleString")
+AddTest("TestEzLog_LogSimpleStringByType")
+AddTest("TestEzLog_LogStringWithFunction")
+AddTest("TestEzLog_LogStringByTypeWithFunction")
+AddTest("TestEzLog_VerboseMode")
+AddTest("TestEzLog_LogMacros")
+AddTest("TestEzLog_LogLightMacros")
+AddTest("TestEzLog_LogDebugMacros")
+AddTest("TestEzLog_CustomLogFunctor")
+AddTest("TestEzLog_CloseAndReopen")
 
 ##########################################################
 ##### TESTS EzSqlite #####################################
@@ -127,6 +188,11 @@ AddTest("TestEzSqlite_SyntaxError_ParensUnbalancedOpen")
 AddTest("TestEzSqlite_SyntaxError_ParensUnbalancedClose")
 AddTest("TestEzSqlite_SyntaxError_SelectTrailingCommaBeforeFrom")
 AddTest("TestEzSqlite_SyntaxError_MultiLine_ShowLocation")
+AddTest("TestEzSqlite_QueryBuilder_InsertQuery")
+AddTest("TestEzSqlite_QueryBuilder_UpdateQuery")
+AddTest("TestEzSqlite_QueryBuilder_InsertIfNotExist")
+AddTest("TestEzSqlite_QueryBuilder_WithSubQuery")
+AddTest("TestEzSqlite_QueryBuilder_MultipleWhereConditions")
 
 ##########################################################
 ##### TESTS EzScreen #####################################

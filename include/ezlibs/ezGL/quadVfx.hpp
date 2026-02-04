@@ -116,12 +116,12 @@ public:
         const uint32_t& vCountBuffers,  //
         const bool vUseMipMapping,  //
         const bool vMultiPass) {  //
-        assert(!vVertShader.expired());
-        assert(!vQuadMesh.expired());
-        assert(!vFragFile.empty());
-        assert(vSx > 0);
-        assert(vSy > 0);
-        assert(vCountBuffers > 0U);
+        ASSERT_THROW(!vVertShader.expired(), "");
+        ASSERT_THROW(!vQuadMesh.expired(), "");
+        ASSERT_THROW(!vFragFile.empty(), "");
+        ASSERT_THROW(vSx > 0, "");
+        ASSERT_THROW(vSy > 0, "");
+        ASSERT_THROW(vCountBuffers > 0U, "");
         m_Name = vName;
         m_VertShader = vVertShader;
         m_QuadMesh = vQuadMesh;
@@ -155,12 +155,12 @@ public:
         const uint32_t& vCountBuffers,  //
         const bool vUseMipMapping,  //
         const bool vMultiPass) {  //
-        assert(!vVertShader.expired());
-        assert(!vQuadMesh.expired());
-        assert(!vFragCode.empty());
-        assert(vSx > 0);
-        assert(vSy > 0);
-        assert(vCountBuffers > 0U);
+        ASSERT_THROW(!vVertShader.expired(), "");
+        ASSERT_THROW(!vQuadMesh.expired(), "");
+        ASSERT_THROW(!vFragCode.empty(), "");
+        ASSERT_THROW(vSx > 0, "");
+        ASSERT_THROW(vSy > 0, "");
+        ASSERT_THROW(vCountBuffers > 0U, "");
         m_Name = vName;
         m_VertShader = vVertShader;
         m_QuadMesh = vQuadMesh;
@@ -192,11 +192,11 @@ public:
     void setRenderingPause(const bool vRenderingPause) { m_RenderingPause = vRenderingPause; }
     bool& getRenderingPauseRef() { return m_RenderingPause; }
     void setUniformPreUploadFunctor(Program::UniformPreUploadFunctor vUniformPreUploadFunctor) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->setUniformPreUploadFunctor(vUniformPreUploadFunctor);
     }
     void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock** vBufferPtr) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->addBufferBlock(vShaderType, vBufferName, vBinding, vBufferPtr);
     }
     void addUniformFloat(
@@ -207,11 +207,11 @@ public:
         const GLuint vCountElements = 1U,
         const bool vShowWidget = true,
         const Program::UniformWidgetFunctor& vWidgetFunctor = nullptr) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->addUniformFloat(vShaderType, vUniformName, vUniformPtr, vCountChannels, vCountElements, vShowWidget, vWidgetFunctor);
     }
     void setUniformFloatDatas(const GLenum vShaderType, const std::string& vUniformName, float* vUniformPtr) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->setUniformFloatDatas(vShaderType, vUniformName, vUniformPtr);
     }
     void addUniformInt(
@@ -222,11 +222,11 @@ public:
         const GLuint vCountElements = 1U,
         const bool vShowWidget = true,
         const Program::UniformWidgetFunctor& vWidgetFunctor = nullptr) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->addUniformInt(vShaderType, vUniformName, vUniformPtr, vCountChannels, vCountElements, vShowWidget, vWidgetFunctor);
     }
     void setUniformIntDatas(const GLenum vShaderType, const std::string& vUniformName, int32_t* vUniformPtr) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->setUniformIntDatas(vShaderType, vUniformName, vUniformPtr);
     }
     void addUniformUInt(
@@ -237,23 +237,23 @@ public:
         const GLuint vCountElements = 1U,
         const bool vShowWidget = true,
         const Program::UniformWidgetFunctor& vWidgetFunctor = nullptr) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->addUniformUInt(vShaderType, vUniformName, vUniformPtr, vCountChannels, vCountElements, vShowWidget, vWidgetFunctor);
     }
     void setUniformUIntDatas(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vUniformPtr) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->setUniformUIntDatas(vShaderType, vUniformName, vUniformPtr);
     }
     void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, uint32_t* vSampler2DPtr, const bool vShowWidget = true) {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2DPtr, vShowWidget);
     }
     void finalizeBeforeRendering() {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->locateUniforms();
     }
     bool resize(const GLsizei& vSx, const GLsizei vSy) {
-        assert(m_FBOPipeLinePtr != nullptr);
+        ASSERT_THROW(m_FBOPipeLinePtr != nullptr, "");
         if (m_FBOPipeLinePtr->resize(vSx, vSy)) {
             m_Size[0] = vSx;
             m_Size[1] = vSy;
@@ -262,7 +262,7 @@ public:
         return false;
     }
     void clearBuffers(const std::array<float, 4U>& vColor) {
-        assert(m_FBOPipeLinePtr != nullptr);
+        ASSERT_THROW(m_FBOPipeLinePtr != nullptr, "");
         m_FBOPipeLinePtr->clearBuffer(vColor);
     }
     void render(const ez::fvec2& vPos = {}) {
@@ -274,9 +274,9 @@ public:
         PROFILER_SCOPED("VFX", "Render %s", name_c_str);
 #endif
         auto quad_ptr = m_QuadMesh.lock();
-        assert(quad_ptr != nullptr);
-        assert(m_FBOPipeLinePtr != nullptr);
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(quad_ptr != nullptr, "");
+        ASSERT_THROW(m_FBOPipeLinePtr != nullptr, "");
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         for (GLuint idx = 0; idx < m_RenderIterations; ++idx) {
 #ifdef PROFILER_SCOPED
             PROFILER_SCOPED("VFX", "Iter %i", idx);
@@ -299,22 +299,34 @@ public:
             }
         }
     }
-    GLuint getTextureId(const size_t& vBufferIdx = 0U) {
-        assert(m_FBOPipeLinePtr != nullptr);
+    GLuint getFrontTextureId(const size_t& vBufferIdx = 0U) {
+        ASSERT_THROW(m_FBOPipeLinePtr != nullptr, "");
         auto front_fbo_ptr = m_FBOPipeLinePtr->getFrontFBO().lock();
         if (front_fbo_ptr != nullptr) {
             return front_fbo_ptr->getTextureId(vBufferIdx);
         }
         return 0U;
     }
+    GLuint getBackTextureId(const size_t& vBufferIdx = 0U) {
+        ASSERT_THROW(m_FBOPipeLinePtr != nullptr, "");
+        auto front_fbo_ptr = m_FBOPipeLinePtr->getBackFBO().lock();
+        if (front_fbo_ptr != nullptr) {
+            return front_fbo_ptr->getTextureId(vBufferIdx);
+        }
+        return 0U;
+    }
     FBOWeak getFrontFBO() {
-        assert(m_FBOPipeLinePtr != nullptr);
+        ASSERT_THROW(m_FBOPipeLinePtr != nullptr, "");
         return m_FBOPipeLinePtr->getFrontFBO();
+    }
+    FBOWeak getBackFBO() {
+        ASSERT_THROW(m_FBOPipeLinePtr != nullptr, "");
+        return m_FBOPipeLinePtr->getBackFBO();
     }
 
 #ifdef IMGUI_INCLUDE
     bool drawImGuiThumbnail(const float& vSx, const float& vSy, const float& vScaleInv, const bool vUseButton) {
-        assert(m_FBOPipeLinePtr != nullptr);
+        ASSERT_THROW(m_FBOPipeLinePtr != nullptr, "");
         auto front_fbo_ptr = m_FBOPipeLinePtr->getFrontFBO().lock();
         if (front_fbo_ptr != nullptr) {
             const auto texId = front_fbo_ptr->getTextureId();
@@ -329,7 +341,7 @@ public:
         return false;
     }
     void drawUniformWidgets() {
-        assert(m_ProgramPtr != nullptr);
+        ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->drawUniformWidgets();
     }
 #endif

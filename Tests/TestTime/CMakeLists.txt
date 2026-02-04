@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MSVC)
+    add_definitions(-DNOMINMAX)
+endif()
+
 file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.h)
@@ -35,6 +39,27 @@ StageBuildInc()
 ##########################################################
 ##### EzTime #############################################
 ##########################################################
+
+AddTest("TestEzTime_Iso8601ToEpoch")
+AddTest("TestEzTime_EpochToISO8601")
+AddTest("TestEzTime_DecomposeEpoch")
+AddTest("TestEzTime_GetCurrentDate")
+AddTest("TestEzTime_GetCurrentDateWithOffset")
+AddTest("TestEzTime_GetTicks")
+AddTest("TestEzTime_ScopedTimer")
+AddTest("TestEzTime_GetTimeInterval")
+AddTest("TestEzTime_ActionTime_Basic")
+AddTest("TestEzTime_ActionTime_GetTime")
+AddTest("TestEzTime_ActionTime_Fix")
+AddTest("TestEzTime_ActionTime_SetTime")
+AddTest("TestEzTime_ActionTime_FixTime")
+AddTest("TestEzTime_ActionTime_PauseResume")
+AddTest("TestEzTime_ActionTime_IsTimeToAct")
+AddTest("TestEzTime_MeasureOperationUs")
+AddTest("TestEzTime_MeasureOperationUs_WithWork")
+AddTest("TestEzTime_WaitUntil_Success")
+AddTest("TestEzTime_WaitUntil_Timeout")
+AddTest("TestEzTime_WaitUntil_ImmediateTrue")
 
 ##########################################################
 ##### EzCron #############################################

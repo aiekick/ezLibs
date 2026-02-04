@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MSVC)
+    add_definitions(-DNOMINMAX)
+endif()
+
 file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/*.h)
@@ -63,6 +67,26 @@ AddTest("TestEzFile_simplifyFilePath")
 AddTest("TestEzFile_composePath")
 AddTest("TestEzFile_correctSlashTypeForFilePathName")
 AddTest("TestEzFile_createDirectoryIfNotExist")
+AddTest("TestEzFile_loadFileToString")
+AddTest("TestEzFile_loadFileToBin")
+AddTest("TestEzFile_isFileExist")
+AddTest("TestEzFile_isDirectoryExist")
+AddTest("TestEzFile_destroyFile")
+AddTest("TestEzFile_destroyDir")
+AddTest("TestEzFile_createPathIfNotExist")
+AddTest("TestEzFile_composePathEdgeCases")
+AddTest("TestEzFile_parsePathFileNameEdgeCases")
+AddTest("TestEzFile_simplifyFilePathEdgeCases")
+AddTest("TestEzFile_correctSlashTypeEdgeCases")
+AddTest("TestEzFile_saveStringToFileWithTimestamp")
+AddTest("TestEzFile_saveBinToFileWithTimestamp")
+AddTest("TestEzFile_PathInfos_GetFPNE")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithPath")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithName")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithExt")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithPathName")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithNameExt")
+AddTest("TestEzFile_PathInfos_ExtensionInName")
 
 ##########################################################
 ##### TESTS EzBinBuf #####################################
@@ -131,3 +155,15 @@ AddTest("TestEzVoxWriter_Writer")
 ##########################################################
 
 AddTest("TestEzVdbWriter_Writer")
+
+##########################################################
+##### TESTS EzXmlConfig ###################################
+##########################################################
+
+AddTest("TestEzXmlConfig_ParsingOK")
+AddTest("TestEzXmlConfig_SaveLoadString")
+AddTest("TestEzXmlConfig_SaveLoadFile")
+AddTest("TestEzXmlConfig_LoadNonExistentFile")
+AddTest("TestEzXmlConfig_UserDatas")
+AddTest("TestEzXmlConfig_RecursiveParsing")
+AddTest("TestEzXmlConfig_StopChildParsing")

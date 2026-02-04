@@ -1,9 +1,17 @@
 name: Win
 
 on:
+  workflow_dispatch:
   push:
     branches:
     - master
+    paths-ignore:
+    - '.github/**'
+    - 'doc/**'
+    - '.gitignore'
+    - 'README.md'
+    - 'LICENSE'
+  pull_request:
     paths-ignore:
     - '.github/**'
     - 'doc/**'
@@ -16,18 +24,23 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
-      with:
-        ref: master
     - name: configure
       run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_EZ_LIBS_TESTING=ON -DUSE_EZ_EXPR_PERFOS_GENERATION=ON
     - name: build
       run: cmake --build build
+    - name: Download Mesa
+      run: |
+        curl -L -o mesa.7z https://github.com/pal1000/mesa-dist-win/releases/download/24.3.2/mesa3d-24.3.2-release-msvc.7z
+        7z x mesa.7z -omesa
+        copy mesa\x64\* build\Tests\TestOpengl\Debug\
     - name: ctest
       run: ctest --test-dir build --output-on-failure
     - name: zip test results
+      if: always()
       run: Compress-Archive -Path ./TestResults/* -Destination ./tests_results.zip
     - name: upload test results artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: tests_results.zip
+        name: tests_results_windows.zip
         path: ./tests_results.zip

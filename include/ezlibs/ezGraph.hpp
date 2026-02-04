@@ -139,7 +139,7 @@ struct SlotDatas {
     SlotDir dir = SlotDir::INPUT;
     SlotDatas() = default;
     SlotDatas(const std::string &vName, const std::string &vType, const SlotDir vSlotDir, UserDatas vUserDatas = nullptr)
-        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas), dir(vSlotDir) {}
+        : name(vName), type(vType), userDatas(vUserDatas), dir(vSlotDir) {}
 };
 
 struct EvalDatas {
@@ -247,7 +247,7 @@ struct NodeDatas {
     UserDatas userDatas = nullptr;
     NodeDatas() = default;
     NodeDatas(const std::string &vName, const std::string &vType, UserDatas vUserDatas = nullptr)
-        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
+        : name(vName), type(vType), userDatas(vUserDatas) {}
 };
 
 class Node : public UUID {
@@ -435,7 +435,7 @@ struct GraphDatas {
     UserDatas userDatas = nullptr;
     GraphDatas() = default;
     GraphDatas(const std::string &vName, const std::string &vType, UserDatas vUserDatas = nullptr)
-        : name(std::move(vName)), type(std::move(vType)), userDatas(vUserDatas) {}
+        : name(vName), type(vType), userDatas(vUserDatas) {}
 };
 
 class Graph : public UUID {

@@ -34,6 +34,73 @@ SOFTWARE.
 namespace ez {
 namespace gl {
 
+namespace detail {
+
+// Replace if-constexpr chain with template specializations
+template <typename T>
+struct GLTypeOf;
+
+// Par défaut, le type scalaire c'est T lui-même
+template <typename T>
+struct ScalarType {
+    using type = T;
+};
+
+// Spécialisations pour tes types vec
+template <>
+struct ScalarType<ez::fvec4> {
+    using type = float;
+};
+template <>
+struct ScalarType<ez::fvec3> {
+    using type = float;
+};
+template <>
+struct ScalarType<ez::fvec2> {
+    using type = float;
+};
+template <>
+struct ScalarType<ez::u8vec4> {
+    using type = uint8_t;
+};
+
+template <>
+struct GLTypeOf<uint8_t> {
+    static const GLenum value = GL_UNSIGNED_BYTE;
+};
+template <>
+struct GLTypeOf<float> {
+    static const GLenum value = GL_FLOAT;
+};
+template <>
+struct GLTypeOf<int32_t> {
+    static const GLenum value = GL_INT;
+};
+template <>
+struct GLTypeOf<uint32_t> {
+    static const GLenum value = GL_UNSIGNED_INT;
+};
+template <>
+struct GLTypeOf<int16_t> {
+    static const GLenum value = GL_SHORT;
+};
+template <>
+struct GLTypeOf<uint16_t> {
+    static const GLenum value = GL_UNSIGNED_SHORT;
+};
+
+// ScalarType stays the same — already C++11 compatible
+
+template <typename T>
+struct GLTypeForT {
+    static const GLenum value = GLTypeOf<typename ScalarType<T>::type>::value;
+};
+
+// glFormatFor: constexpr with single return for C++11
+constexpr GLenum glFormatFor(size_t channels) { return (channels == 1) ? GL_RED : (channels == 2) ? GL_RG : (channels == 3) ? GL_RGB : GL_RGBA; }
+
+}  // namespace detail
+
 class FBO;
 typedef std::shared_ptr<FBO> FBOPtr;
 typedef std::weak_ptr<FBO> FBOWeak;
@@ -131,6 +198,22 @@ public:
                 }
             }
         }
+    }
+    template <typename T = uint8_t, size_t Channels = 4>
+    std::vector<T> getPixels(const GLsizei& vPX, const GLsizei& vPY, const GLsizei& vSX, const GLsizei& vSY) {
+        ASSERT_THROW((vPX >= 0) && (vPY >= 0) && (vSX > 0) && (vSY > 0), "");
+        ASSERT_THROW((m_SizeX >= vPX + vSX) && (m_SizeY >= vPY + vSY), "");
+        const GLenum glType = detail::GLTypeForT<T>::value;
+        const GLenum glFormat = detail::glFormatFor(sizeof(T) / sizeof(typename detail::ScalarType<T>::type) * Channels);
+        const size_t pixelCount = static_cast<size_t>(vSX) * static_cast<size_t>(vSY);
+        std::vector<T> pixels(pixelCount * Channels);
+        if (bind()) {
+            glPixelStorei(GL_PACK_ALIGNMENT, 1);
+            glReadPixels(vPX, vPY, vSX, vSY, glFormat, glType, pixels.data());
+            CheckGLErrors;
+            unbind();
+        }
+        return pixels;
     }
 
     void selectBuffers() {
@@ -267,10 +350,10 @@ public:
     }
     bool resize(const GLsizei& vNewSx, const GLsizei& vNewSy) {
         bool res = false;
-        assert(m_FrontFBOPtr != nullptr);
+        ASSERT_THROW(m_FrontFBOPtr != nullptr, "");
         res = m_FrontFBOPtr->resize(vNewSx, vNewSy);
         if (m_MultiPass) {
-            assert(m_BackFBOPtr != nullptr);
+            ASSERT_THROW(m_BackFBOPtr != nullptr, "");
             res &= m_BackFBOPtr->resize(vNewSx, vNewSy);
         }
         return res;
@@ -280,48 +363,48 @@ public:
         m_BackFBOPtr.reset();
     }
     bool bind() {
-        assert(m_FrontFBOPtr != nullptr);
+        ASSERT_THROW(m_FrontFBOPtr != nullptr, "");
         return m_FrontFBOPtr->bind();
     }
     void clearBuffer(const std::array<float, 4U>& vColor) {
-        assert(m_FrontFBOPtr != nullptr);
+        ASSERT_THROW(m_FrontFBOPtr != nullptr, "");
         m_FrontFBOPtr->clearBuffer(vColor);
         if (m_MultiPass) {
-            assert(m_BackFBOPtr != nullptr);
+            ASSERT_THROW(m_BackFBOPtr != nullptr, "");
             m_BackFBOPtr->clearBuffer(vColor);
         }
     }
     void updateMipMaping() {
-        assert(m_FrontFBOPtr != nullptr);
+        ASSERT_THROW(m_FrontFBOPtr != nullptr, "");
         m_FrontFBOPtr->updateMipMaping();
     }
     void selectBuffers() {
-        assert(m_FrontFBOPtr != nullptr);
+        ASSERT_THROW(m_FrontFBOPtr != nullptr, "");
         m_FrontFBOPtr->selectBuffers();
     }
     void unbind() {
-        assert(m_FrontFBOPtr != nullptr);
+        ASSERT_THROW(m_FrontFBOPtr != nullptr, "");
         m_FrontFBOPtr->unbind();
         if (m_MultiPass) {
             swapFBOs();
         }
     }
     GLuint getFrontTextureId(const size_t& vBufferIdx = 0U) const {
-        assert(m_FrontFBOPtr != nullptr);
+        ASSERT_THROW(m_FrontFBOPtr != nullptr, "");
         return m_FrontFBOPtr->getTextureId(vBufferIdx);
     }
     GLuint getBackTextureId(const size_t& vBufferIdx = 0U) const {
-        assert(m_MultiPass);
-        assert(m_BackFBOPtr != nullptr);
+        ASSERT_THROW(m_MultiPass, "");
+        ASSERT_THROW(m_BackFBOPtr != nullptr, "");
         return m_BackFBOPtr->getTextureId(vBufferIdx);
     }
     FBOWeak getFrontFBO() const { return m_FrontFBOPtr; }
     FBOWeak getBackFBO() const {
-        assert(m_MultiPass);
+        ASSERT_THROW(m_MultiPass, "");
         return m_BackFBOPtr;
     }
     void swapFBOs() {
-        assert(m_MultiPass);
+        ASSERT_THROW(m_MultiPass, "");
         FBOPtr tmp = m_BackFBOPtr;
         m_BackFBOPtr = m_FrontFBOPtr;
         m_FrontFBOPtr = tmp;

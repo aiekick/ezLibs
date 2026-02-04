@@ -51,7 +51,7 @@ public:
     static ProcMeshPtr createUVSphere(const double& vRadius, const uint32_t& vUSubdivs, const uint32_t& vVSubdivs) {
         auto res = std::make_shared<ProcMesh>();
         res->m_This = res;
-        assert(vRadius > 0.0 && vUSubdivs > 2U && vVSubdivs > 2U);
+        ASSERT_THROW(vRadius > 0.0 && vUSubdivs > 2U && vVSubdivs > 2U, "");
 
         std::vector<ProcDatas> vertices;
         std::vector<uint32_t> indices;

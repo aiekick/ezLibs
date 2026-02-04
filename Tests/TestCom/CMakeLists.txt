@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MSVC)
+    add_definitions(-DNOMINMAX)
+endif()
+
 option(USE_EZ_EXPR_PERFOS_GENERATION "Enable the perfos file generation of EzExpr" OFF)
 
 file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE 
@@ -36,5 +40,9 @@ StageBuildInc()
 ## TESTS NAMED PIPE ######################################
 ##########################################################
 
-AddTest(TestEzNamedPipeBasis)
+AddTest(TestEzNamedPipe_Basis)
+AddTest(TestEzNamedPipe_GetActivePipes)
+AddTest(TestEzNamedPipe_BufferCommunication)
+AddTest(TestEzNamedPipe_MultipleMessages)
+AddTest(TestEzNamedPipe_EmptyMessage)
 
