@@ -156,6 +156,23 @@ inline uint64_t getTicks() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
+/*
+double time_measure{};
+{
+    ScopedTimer t(time_measure);
+    // working
+}
+std::cout << "Measured time : " << time_measure << std::endl;
+*/
+class ScopedTimer {
+    double& m_target;
+    uint64_t m_start{};
+
+public:
+    ScopedTimer(double& target) : m_target(target), m_start(getTicks()) {}
+    ~ScopedTimer() { m_target = static_cast<double>(getTicks() - m_start); }
+};
+
 // TODO: TO TEST
 inline float getTimeInterval() {
     static auto S_lastTick = getTicks();
