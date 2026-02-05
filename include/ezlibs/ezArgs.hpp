@@ -52,7 +52,8 @@ private:
     protected:
         std::vector<std::string> m_base_args;
         std::set<std::string> m_full_args;
-        char one_char_arg = 0;
+        char m_one_char_arg = 0;
+        std::string m_one_char_prefix;
         std::string m_help_text;
         std::string m_help_var_name;
         std::string m_type;
@@ -230,8 +231,8 @@ private:
                 if (pos != std::string::npos) {
                     res.m_full_args.emplace(a.substr(pos));
                 }
-                if (a.size() == 2 && a[0] == '-' && a[1] != '-') {
-                    res.one_char_arg = a[1];
+                if (res.m_one_char_arg == 0) {
+                    Args::m_extractOneChar(res, a);
                 }
             }
             m_subOptionals.push_back(res);
@@ -277,7 +278,7 @@ public:
     Args() = default;
     virtual ~Args() = default;
 
-    bool init(const std::string &vName, const std::string& vHelpOptionalKey) {
+    bool init(const std::string &vName, const std::string &vHelpOptionalKey) {
         if (vName.empty()) {
             m_addError("Name cant be empty");
             return false;
@@ -469,25 +470,36 @@ public:
             std::string value;
             bool is_optional = false;
 
-            // Handle combined short args like -blm
-            if (arg.size() > 2 && arg[0] == '-' && arg[1] != '-') {
-                bool all_short = true;
-                char unknown_char = 0;
-                for (size_t i = 1; i < arg.size(); ++i) {
-                    if (!m_isShortArg(arg[i])) {
-                        all_short = false;
-                        unknown_char = arg[i];
-                        break;
+            // Handle combined short args like -blm or #fbc
+            // Extract the non-alphanumeric prefix, then check if each remaining char is a known one_char_arg with that prefix
+            // But first, skip this if the full arg is already a known optional (e.g., -ff defined as its own option)
+            {
+                auto alnum_pos = arg.find_first_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+                if (alnum_pos != std::string::npos && alnum_pos > 0) {
+                    std::string prefix = arg.substr(0, alnum_pos);
+                    std::string suffix = arg.substr(alnum_pos);
+                    if (suffix.size() > 1 && !m_isKnownFullArgument(arg)) {
+                        // More than one alnum char after prefix and not a known full option: could be combined short args
+                        bool all_short = true;
+                        char unknown_char = 0;
+                        for (const auto &ch : suffix) {
+                            if (!m_isShortArg(prefix, ch)) {
+                                all_short = false;
+                                unknown_char = ch;
+                                break;
+                            }
+                        }
+                        if (all_short) {
+                            for (const auto &ch : suffix) {
+                                m_markShortArgPresent(prefix, ch);
+                            }
+                            is_optional = true;
+                        } else {
+                            // Not all chars are known short args with this prefix.
+                            // Don't treat as combined short args, let it fall through to normal optional matching.
+                            // This allows -ff to be matched as a normal optional if defined.
+                        }
                     }
-                }
-                if (all_short) {
-                    for (size_t i = 1; i < arg.size(); ++i) {
-                        m_markShortArgPresent(arg[i]);
-                    }
-                    is_optional = true;
-                } else {
-                    m_addError("Unknown short option: -" + std::string(1, unknown_char) + " in " + arg);
-                    is_optional = true;  // Don't try to parse as positional
                 }
             }
 
@@ -629,6 +641,21 @@ private:
 
     Argument *m_getArgumentPtr(const std::string &vKey) { return const_cast<Argument *>(static_cast<const Args *>(this)->m_getArgumentPtr(vKey)); }
 
+    // Extract the non-alphanumeric prefix and check if the remaining part is a single char.
+    // If so, the argument is "combinable" (can be grouped like -abc or #fbc).
+    // Examples: "-f" -> prefix="-", char='f' | "-ff" -> not combinable | "#f" -> prefix="#", char='f'
+    static void m_extractOneChar(OptionalArgument &vArg, const std::string &a) {
+        auto pos = a.find_first_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+        if (pos != std::string::npos && pos > 0) {
+            std::string prefix = a.substr(0, pos);
+            std::string suffix = a.substr(pos);
+            if (suffix.size() == 1) {
+                vArg.m_one_char_arg = suffix[0];
+                vArg.m_one_char_prefix = prefix;
+            }
+        }
+    }
+
     OptionalArgument &m_addOptional(OptionalArgument &vInOutArgument, const std::string &vKey) {
         vInOutArgument.m_base_args = ez::str::splitStringToVector(vKey, '/');
         for (const auto &a : vInOutArgument.m_base_args) {
@@ -637,26 +664,26 @@ private:
             if (pos != std::string::npos) {
                 vInOutArgument.m_full_args.emplace(a.substr(pos));
             }
-            if (a.size() == 2 && a[0] == '-' && a[1] != '-') {
-                vInOutArgument.one_char_arg = a[1];
+            if (vInOutArgument.m_one_char_arg == 0) {
+                m_extractOneChar(vInOutArgument, a);
             }
         }
         return vInOutArgument;
     }
 
-    // Check if a char is a known short arg
-    bool m_isShortArg(char c) const {
-        if (m_HelpArgument.one_char_arg == c) {
+    // Check if a char is a known short arg for the given prefix
+    bool m_isShortArg(const std::string &vPrefix, char c) const {
+        if (m_HelpArgument.m_one_char_arg == c && m_HelpArgument.m_one_char_prefix == vPrefix) {
             return true;
         }
         for (const auto &opt : m_Optionals) {
-            if (opt.one_char_arg == c) {
+            if (opt.m_one_char_arg == c && opt.m_one_char_prefix == vPrefix) {
                 return true;
             }
         }
         if (m_ActiveCommand != nullptr) {
             for (const auto &opt : m_ActiveCommand->m_subOptionals) {
-                if (opt.one_char_arg == c) {
+                if (opt.m_one_char_arg == c && opt.m_one_char_prefix == vPrefix) {
                     return true;
                 }
             }
@@ -665,16 +692,16 @@ private:
     }
 
     // Mark a short arg as present
-    void m_markShortArgPresent(char c) {
+    void m_markShortArgPresent(const std::string &vPrefix, char c) {
         for (auto &opt : m_Optionals) {
-            if (opt.one_char_arg == c) {
+            if (opt.m_one_char_arg == c && opt.m_one_char_prefix == vPrefix) {
                 opt.m_is_present = true;
                 return;
             }
         }
         if (m_ActiveCommand != nullptr) {
             for (auto &opt : m_ActiveCommand->m_subOptionals) {
-                if (opt.one_char_arg == c) {
+                if (opt.m_one_char_arg == c && opt.m_one_char_prefix == vPrefix) {
                     opt.m_is_present = true;
                     return;
                 }
@@ -693,7 +720,7 @@ private:
                 }
             }
         }
-        if (arg_ref.one_char_arg != 0 && token.size() == 1 && token[0] == arg_ref.one_char_arg) {
+        if (arg_ref.m_one_char_arg != 0 && token.size() == 1 && token[0] == arg_ref.m_one_char_arg) {
             return true;
         }
         if (arg_ref.m_full_args.find(token) != arg_ref.m_full_args.end()) {
@@ -770,15 +797,24 @@ private:
     }
 
     bool m_isKnownArgument(const std::string &arg) const {
-        // Check combined short args like -blm
-        if (arg.size() > 2 && arg[0] == '-' && arg[1] != '-') {
-            for (size_t i = 1; i < arg.size(); ++i) {
-                if (m_isShortArg(arg[i])) {
-                    return true;  // At least one valid short arg
+        // Check combined short args like -blm or #fbc
+        auto alnum_pos = arg.find_first_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+        if (alnum_pos != std::string::npos && alnum_pos > 0) {
+            std::string prefix = arg.substr(0, alnum_pos);
+            std::string suffix = arg.substr(alnum_pos);
+            if (suffix.size() > 1) {
+                for (const auto &ch : suffix) {
+                    if (m_isShortArg(prefix, ch)) {
+                        return true;  // At least one valid short arg
+                    }
                 }
             }
         }
+        return m_isKnownFullArgument(arg);
+    }
 
+    // Check if the argument matches a fully defined optional/command (no combined short arg detection)
+    bool m_isKnownFullArgument(const std::string &arg) const {
         std::string trimmed = m_trim(arg);
         for (const auto &opt : m_Optionals) {
             if (opt.m_full_args.find(trimmed) != opt.m_full_args.end()) {
@@ -883,20 +919,20 @@ private:
         if (!cnt_pos.empty()) {
             ss << std::endl << vPositionalHeader << " :" << std::endl;
             for (const auto &it : cnt_pos) {
-                ss <<  it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
+                ss << it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
             }
         }
         if (!cnt_opt.empty()) {
             ss << std::endl << vOptionalHeader << " :" << std::endl;
             for (const auto &it : cnt_opt) {
-                ss <<  it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
+                ss << it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
             }
         }
         if (!cnt_cmd.empty()) {
             ss << std::endl << vCommandHeader << " :" << std::endl;
             size_t cmd_idx = 0;
             for (const auto &it : cnt_cmd) {
-                ss <<  it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
+                ss << it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
                 const auto &cmd = m_Commands.at(cmd_idx);
                 if (!cmd.m_subPositionals.empty() || !cmd.m_subOptionals.empty()) {
                     ss << cmd.getCommandHelp(first_col_size, vIndent);
