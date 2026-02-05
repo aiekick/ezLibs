@@ -99,3 +99,34 @@ AddTest("TestEzTile_AllNeg_Continuous_Wrap")
 AddTest("TestEzTile_AllPos_Discrete")
 AddTest("TestEzTile_AllPos_Continuous_NoWrap")
 AddTest("TestEzTile_AllPos_Continuous_Wrap")
+
+##########################################################
+##### TESTS ezFormats (DEM/HGT/SHP) #####################
+##########################################################
+
+# ezDemAsc tests
+AddTest("TestEzDemAsc_Load_ValidFile")
+AddTest("TestEzDemAsc_Save_RoundTrip")
+AddTest("TestEzDemAsc_Load_InvalidFilename")
+AddTest("TestEzDemAsc_Load_EmptyBuffer")
+
+# ezDemBin tests
+AddTest("TestEzDemBin_Load_ValidFile")
+AddTest("TestEzDemBin_Save_RoundTrip")
+AddTest("TestEzDemBin_Load_InvalidFilename")
+AddTest("TestEzDemBin_Load_EmptyBuffer")
+
+# ezHgt tests
+AddTest("TestEzHgt_Load_SRTM1")
+AddTest("TestEzHgt_Load_SRTM3")
+AddTest("TestEzHgt_Save_RoundTrip")
+AddTest("TestEzHgt_Load_EmptyBuffer")
+
+# ezShp tests
+AddTest("TestEzShp_Point_Creation")
+AddTest("TestEzShp_PointZ_Creation")
+AddTest("TestEzShp_PointM_Creation")
+AddTest("TestEzShp_MultiPoint_Creation")
+AddTest("TestEzShp_PolyTruc_Creation")
+AddTest("TestEzShp_ShapeType_Values")
+AddTest("TestEzShp_PartType_Values")
