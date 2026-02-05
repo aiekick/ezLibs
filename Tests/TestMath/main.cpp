@@ -2,6 +2,7 @@
 #include <TestEzVec2.h>
 #include <TestEzVec3.h>
 #include <TestEzVec4.h>
+#include <TestEzAABBCC.h>
 #include <TestEzExpr.h>
 
 #include <limits>
@@ -13,6 +14,7 @@
 
 bool TestMisc(const std::string& vTest) {
     IfTestCollectionExist(TestEzMath);
+    IfTestCollectionExist(TestEzAABBCC);
     IfTestCollectionExist(TestEzVec2);
     IfTestCollectionExist(TestEzVec3);
     IfTestCollectionExist(TestEzVec4);

@@ -361,6 +361,22 @@ AddTest("TestEzMathIsEqual<int64_t>")
 AddTest("TestEzMathIsEqual<uint64_t>")
 
 ##########################################################
+##### TESTS EzAABBCC #####################################
+##########################################################
+
+AddTest("TestEzAABBCC_Constructor")
+AddTest("TestEzAABBCC_GetCenter")
+AddTest("TestEzAABBCC_GetExtents")
+AddTest("TestEzAABBCC_GetPerimeter")
+AddTest("TestEzAABBCC_Size")
+AddTest("TestEzAABBCC_CombineAABB")
+AddTest("TestEzAABBCC_CombineTwoAABBs")
+AddTest("TestEzAABBCC_CombinePoint")
+AddTest("TestEzAABBCC_Contains")
+AddTest("TestEzAABBCC_ContainsPoint")
+AddTest("TestEzAABBCC_Operators")
+
+##########################################################
 ##### TESTS EzVec2 #######################################
 ##########################################################
 
