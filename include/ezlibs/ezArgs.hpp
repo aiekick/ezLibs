@@ -30,12 +30,13 @@ SOFTWARE.
 
 #include <vector>
 #include <string>
-#include <cstdio>   // FILENAME_MAX
-#include <cstdint>  // int32_t
+#include <cstdio>
+#include <cstdint>
 #include <iostream>
-#include <stdexcept>
 #include <algorithm>
 #include <limits>
+#include <set>
+#include <sstream>
 
 #include "ezStr.hpp"
 #include "ezLog.hpp"
@@ -49,22 +50,20 @@ private:
         friend class CommandArgument;
 
     protected:
-        std::vector<std::string> m_base_args;  // base args
-        std::set<std::string> m_full_args;     // full args
+        std::vector<std::string> m_base_args;
+        std::set<std::string> m_full_args;
         char one_char_arg = 0;
         std::string m_help_text;
         std::string m_help_var_name;
         std::string m_type;
-        char m_delimiter = 0;       // delimiter used for arguments : toto a, toto=a, toto:a, etc...
-        bool m_is_present = false;  // found during parsing
-        bool m_has_value = false;   // found during parsing
-        std::string m_value;        // value
-
-        // Array support
+        char m_delimiter = 0;
+        bool m_is_present = false;
+        bool m_has_value = false;
+        std::string m_value;
         bool m_is_array = false;
-        size_t m_array_min_count = 0;                                   // minimum number of elements (0 = no minimum)
-        size_t m_array_max_count = std::numeric_limits<size_t>::max();  // maximum number of elements
-        std::vector<std::string> m_array_values;                        // array values
+        size_t m_array_min_count = 0;
+        size_t m_array_max_count = std::numeric_limits<size_t>::max();
+        std::vector<std::string> m_array_values;
 
     public:
         Argument() = default;
@@ -137,7 +136,7 @@ private:
             }
         }
 
-        HelpCnt m_getHelp(bool vPositional, size_t &vInOutFirstColSize) const {
+        HelpCnt m_getHelp(bool vPositional, size_t &vInOutFirstColSize, const std::string &vIndent) const {
             HelpCnt res;
             std::stringstream ss;
             if (vPositional) {
@@ -145,11 +144,11 @@ private:
                 if (token.empty()) {
                     token = *(m_base_args.begin());
                 }
-                ss << "  " << token;
+                ss << vIndent << token;
                 m_getHelpArray(ss, {});
             } else {
                 size_t idx = 0;
-                ss << "  ";
+                ss << vIndent;
                 for (const auto &arg : m_base_args) {
                     if (idx++ > 0) {
                         ss << ", ";
@@ -202,9 +201,6 @@ private:
         OptionalArgument &arrayUnlimited() { return Argument::arrayUnlimited<OptionalArgument>(); }
     };
 
-    // =========================================================================
-    // NEW: CommandArgument - une commande avec ses propres sous-arguments
-    // =========================================================================
     class CommandArgument final : public Argument {
         friend class Args;
 
@@ -215,11 +211,7 @@ private:
     public:
         CommandArgument &help(const std::string &vHelp, const std::string &vVarName) { return Argument::help<CommandArgument>(vHelp, vVarName); }
 
-        // Ajouter un sous-positional (obligatoire quand la commande est active)
         PositionalArgument &addPositional(const std::string &vKey) {
-            if (vKey.empty()) {
-                throw std::runtime_error("sub-positional cant be empty");
-            }
             PositionalArgument res;
             res.m_base_args = ez::str::splitStringToVector(vKey, '/');
             for (const auto &a : res.m_base_args) {
@@ -229,102 +221,42 @@ private:
             return m_subPositionals.back();
         }
 
-        // Ajouter un sous-optional
         OptionalArgument &addOptional(const std::string &vKey) {
-            if (vKey.empty()) {
-                throw std::runtime_error("sub-optional cant be empty");
-            }
             OptionalArgument res;
             res.m_base_args = ez::str::splitStringToVector(vKey, '/');
             for (const auto &a : res.m_base_args) {
                 res.m_full_args.emplace(a);
-            }
-            // Ajouter aussi les versions sans tirets
-            for (const auto &arg : res.m_base_args) {
-                auto short_last_minus = arg.find_first_not_of("-");
-                if (short_last_minus != std::string::npos) {
-                    res.m_full_args.emplace(arg.substr(short_last_minus));
+                auto pos = a.find_first_not_of("-");
+                if (pos != std::string::npos) {
+                    res.m_full_args.emplace(a.substr(pos));
+                }
+                if (a.size() == 2 && a[0] == '-' && a[1] != '-') {
+                    res.one_char_arg = a[1];
                 }
             }
-            res.one_char_arg = (vKey.size() == 1U) ? vKey[0] : 0;
             m_subOptionals.push_back(res);
             return m_subOptionals.back();
         }
 
-        // Vérifier si un sous-optional est présent
-        bool isSubPresent(const std::string &vKey) const {
-            for (const auto &opt : m_subOptionals) {
-                if (opt.m_full_args.find(vKey) != opt.m_full_args.end()) {
-                    return opt.m_is_present;
-                }
-            }
-            for (const auto &pos : m_subPositionals) {
-                if (pos.m_full_args.find(vKey) != pos.m_full_args.end()) {
-                    return pos.m_is_present;
-                }
-            }
-            return false;
-        }
-
-        // Récupérer la valeur d'un sous-argument
-        std::string getSubValue(const std::string &vKey) const {
-            for (const auto &opt : m_subOptionals) {
-                if (opt.m_full_args.find(vKey) != opt.m_full_args.end()) {
-                    return opt.m_value;
-                }
-            }
-            for (const auto &pos : m_subPositionals) {
-                if (pos.m_full_args.find(vKey) != pos.m_full_args.end()) {
-                    return pos.m_value;
-                }
-            }
-            return {};
-        }
-
-        // Récupérer les valeurs array d'un sous-argument
-        std::vector<std::string> getSubArrayValues(const std::string &vKey) const {
-            for (const auto &opt : m_subOptionals) {
-                if (opt.m_full_args.find(vKey) != opt.m_full_args.end()) {
-                    return opt.m_array_values;
-                }
-            }
-            for (const auto &pos : m_subPositionals) {
-                if (pos.m_full_args.find(vKey) != pos.m_full_args.end()) {
-                    return pos.m_array_values;
-                }
-            }
-            return {};
-        }
-
     private:
-        // Génère l'aide spécifique à cette commande
-        std::string getCommandHelp(size_t vFirstColSize) const {
+        std::string getCommandHelp(size_t vFirstColSize, const std::string &vIndent) const {
             std::stringstream ss;
-
-            // Sous-positionals
-            if (!m_subPositionals.empty()) {
-                for (const auto &pos : m_subPositionals) {
-                    auto helpPair = pos.m_getHelp(true, vFirstColSize);
-                    ss << "    " << helpPair.first;
-                    if (helpPair.first.size() < vFirstColSize) {
-                        ss << std::string(vFirstColSize - helpPair.first.size(), ' ');
-                    }
-                    ss << helpPair.second << std::endl;
+            for (const auto &pos : m_subPositionals) {
+                auto helpPair = pos.m_getHelp(true, vFirstColSize, vIndent);
+                ss << vIndent << helpPair.first;
+                if (helpPair.first.size() < vFirstColSize) {
+                    ss << std::string(vFirstColSize - helpPair.first.size(), ' ');
                 }
+                ss << helpPair.second << std::endl;
             }
-
-            // Sous-optionals
-            if (!m_subOptionals.empty()) {
-                for (const auto &opt : m_subOptionals) {
-                    auto helpPair = opt.m_getHelp(false, vFirstColSize);
-                    ss << "    " << helpPair.first;
-                    if (helpPair.first.size() < vFirstColSize) {
-                        ss << std::string(vFirstColSize - helpPair.first.size(), ' ');
-                    }
-                    ss << helpPair.second << std::endl;
+            for (const auto &opt : m_subOptionals) {
+                auto helpPair = opt.m_getHelp(false, vFirstColSize, vIndent);
+                ss << vIndent << helpPair.first;
+                if (helpPair.first.size() < vFirstColSize) {
+                    ss << std::string(vFirstColSize - helpPair.first.size(), ' ');
                 }
+                ss << helpPair.second << std::endl;
             }
-
             return ss.str();
         }
     };
@@ -337,19 +269,25 @@ private:
     OptionalArgument m_HelpArgument;
     std::vector<PositionalArgument> m_Positionals;
     std::vector<OptionalArgument> m_Optionals;
-    std::vector<CommandArgument> m_Commands;     // NEW
-    CommandArgument *m_ActiveCommand = nullptr;  // NEW: commande active après parsing
+    std::vector<CommandArgument> m_Commands;
+    CommandArgument *m_ActiveCommand = nullptr;
     std::vector<std::string> m_errors;
 
 public:
     Args() = default;
     virtual ~Args() = default;
-    Args(const std::string &vName) : m_AppName(vName) {
+
+    bool init(const std::string &vName, const std::string& vHelpOptionalKey) {
         if (vName.empty()) {
-            throw std::runtime_error("Name cant be empty");
+            m_addError("Name cant be empty");
+            return false;
         }
-        m_addOptional(m_HelpArgument, "-h/--help").help("Show the usage", {});
+        m_AppName = vName;
+        m_addOptional(m_HelpArgument, vHelpOptionalKey).help("Show the usage", {});
+        return true;
     }
+
+    Args(const std::string &vName, const std::string &vHelpOptionalKey = "-h/--help") { init(vName, vHelpOptionalKey); }
 
     Args &addHeader(const std::string &vHeader) {
         m_HelpHeader = vHeader;
@@ -367,10 +305,12 @@ public:
     }
 
     PositionalArgument &addPositional(const std::string &vKey) {
-        if (vKey.empty()) {
-            throw std::runtime_error("argument cant be empty");
-        }
         PositionalArgument res;
+        if (vKey.empty()) {
+            m_addError("Positional argument cant be empty");
+            m_Positionals.push_back(res);
+            return m_Positionals.back();
+        }
         res.m_base_args = ez::str::splitStringToVector(vKey, '/');
         for (const auto &a : res.m_base_args) {
             res.m_full_args.emplace(a);
@@ -380,23 +320,24 @@ public:
     }
 
     OptionalArgument &addOptional(const std::string &vKey) {
-        if (vKey.empty()) {
-            throw std::runtime_error("optional cant be empty");
-        }
         OptionalArgument res;
+        if (vKey.empty()) {
+            m_addError("Optional argument cant be empty");
+            m_Optionals.push_back(res);
+            return m_Optionals.back();
+        }
         m_addOptional(res, vKey);
         m_Optionals.push_back(res);
         return m_Optionals.back();
     }
 
-    // =========================================================================
-    // NEW: Ajouter une commande
-    // =========================================================================
     CommandArgument &addCommand(const std::string &vKey) {
-        if (vKey.empty()) {
-            throw std::runtime_error("command cant be empty");
-        }
         CommandArgument res;
+        if (vKey.empty()) {
+            m_addError("Command cant be empty");
+            m_Commands.push_back(res);
+            return m_Commands.back();
+        }
         res.m_base_args = ez::str::splitStringToVector(vKey, '/');
         for (const auto &a : res.m_base_args) {
             res.m_full_args.emplace(a);
@@ -405,10 +346,8 @@ public:
         return m_Commands.back();
     }
 
-    // NEW: Récupérer la commande active (nullptr si aucune)
     const CommandArgument *getActiveCommand() const { return m_ActiveCommand; }
 
-    // NEW: Vérifier si une commande est active
     bool isCommand(const std::string &vKey) const {
         if (m_ActiveCommand == nullptr) {
             return false;
@@ -416,143 +355,54 @@ public:
         return m_ActiveCommand->m_full_args.find(vKey) != m_ActiveCommand->m_full_args.end();
     }
 
-    // is token present
     bool isPresent(const std::string &vKey) const {
-        // D'abord chercher dans la commande active
-        if (m_ActiveCommand != nullptr) {
-            for (const auto &opt : m_ActiveCommand->m_subOptionals) {
-                if (opt.m_full_args.find(vKey) != opt.m_full_args.end()) {
-                    return opt.m_is_present;
-                }
-            }
-            for (const auto &pos : m_ActiveCommand->m_subPositionals) {
-                if (pos.m_full_args.find(vKey) != pos.m_full_args.end()) {
-                    return pos.m_is_present;
-                }
-            }
-        }
-        // Sinon chercher dans les globaux
-        auto *ptr = m_getArgumentPtr(vKey, true);
-        if (ptr != nullptr) {
-            return ptr->m_is_present;
-        }
-        return false;
+        auto *ptr = m_getArgumentPtr(vKey);
+        return (ptr != nullptr) ? ptr->m_is_present : false;
     }
 
-    // is token have value
     bool hasValue(const std::string &vKey) const {
-        if (m_ActiveCommand != nullptr) {
-            for (const auto &opt : m_ActiveCommand->m_subOptionals) {
-                if (opt.m_full_args.find(vKey) != opt.m_full_args.end()) {
-                    return opt.m_has_value;
-                }
-            }
-            for (const auto &pos : m_ActiveCommand->m_subPositionals) {
-                if (pos.m_full_args.find(vKey) != pos.m_full_args.end()) {
-                    return pos.m_has_value;
-                }
-            }
-        }
-        auto *ptr = m_getArgumentPtr(vKey, true);
-        if (ptr != nullptr) {
-            return ptr->m_has_value;
-        }
-        return false;
+        auto *ptr = m_getArgumentPtr(vKey);
+        return (ptr != nullptr) ? ptr->m_has_value : false;
     }
 
-    // is token an array
     bool isArray(const std::string &vKey) const {
-        if (m_ActiveCommand != nullptr) {
-            for (const auto &opt : m_ActiveCommand->m_subOptionals) {
-                if (opt.m_full_args.find(vKey) != opt.m_full_args.end()) {
-                    return opt.m_is_array;
-                }
-            }
-            for (const auto &pos : m_ActiveCommand->m_subPositionals) {
-                if (pos.m_full_args.find(vKey) != pos.m_full_args.end()) {
-                    return pos.m_is_array;
-                }
-            }
-        }
-        auto *ptr = m_getArgumentPtr(vKey, true);
-        if (ptr != nullptr) {
-            return ptr->m_is_array;
-        }
-        return false;
+        auto *ptr = m_getArgumentPtr(vKey);
+        return (ptr != nullptr) ? ptr->m_is_array : false;
     }
 
     template <typename T>
-    T getValue(const std::string &vKey, bool vNoExcept = false) const {
-        // Chercher dans la commande active d'abord
-        if (m_ActiveCommand != nullptr) {
-            for (const auto &opt : m_ActiveCommand->m_subOptionals) {
-                if (opt.m_full_args.find(vKey) != opt.m_full_args.end() && !opt.m_value.empty()) {
-                    return m_convertString<T>(opt.m_value);
-                }
-            }
-            for (const auto &pos : m_ActiveCommand->m_subPositionals) {
-                if (pos.m_full_args.find(vKey) != pos.m_full_args.end() && !pos.m_value.empty()) {
-                    return m_convertString<T>(pos.m_value);
-                }
-            }
-        }
-        auto *ptr = m_getArgumentPtr(vKey, vNoExcept);
+    T getValue(const std::string &vKey) const {
+        auto *ptr = m_getArgumentPtr(vKey);
         if (ptr != nullptr && !ptr->m_value.empty()) {
             return m_convertString<T>(ptr->m_value);
         }
         return {};
     }
 
-    // Get array values as vector of strings
-    std::vector<std::string> getArrayValues(const std::string &vKey, bool vNoExcept = false) const {
-        // Chercher dans la commande active d'abord
-        if (m_ActiveCommand != nullptr) {
-            for (const auto &opt : m_ActiveCommand->m_subOptionals) {
-                if (opt.m_full_args.find(vKey) != opt.m_full_args.end()) {
-                    return opt.m_array_values;
-                }
-            }
-            for (const auto &pos : m_ActiveCommand->m_subPositionals) {
-                if (pos.m_full_args.find(vKey) != pos.m_full_args.end()) {
-                    return pos.m_array_values;
-                }
-            }
-        }
-        auto *ptr = m_getArgumentPtr(vKey, vNoExcept);
-        if (ptr != nullptr) {
-            if (!ptr->m_is_array) {
-                if (!vNoExcept) {
-                    throw std::runtime_error("Argument is not an array");
-                }
-                return {};
-            }
+    std::vector<std::string> getArrayValues(const std::string &vKey) const {
+        auto *ptr = m_getArgumentPtr(vKey);
+        if (ptr != nullptr && ptr->m_is_array) {
             return ptr->m_array_values;
         }
         return {};
     }
 
-    // Get array values with type conversion
     template <typename T>
-    std::vector<T> getArrayValues(const std::string &vKey, bool vNoExcept = false) const {
-        auto strValues = getArrayValues(vKey, vNoExcept);
+    std::vector<T> getArrayValues(const std::string &vKey) const {
+        auto strValues = getArrayValues(vKey);
         std::vector<T> result;
         result.reserve(strValues.size());
         for (const auto &val : strValues) {
-            try {
-                result.push_back(m_convertString<T>(val));
-            } catch (const std::exception &e) {
-                if (!vNoExcept) {
-                    throw;
-                }
-            }
+            result.push_back(m_convertString<T>(val));
         }
         return result;
     }
 
-    void getHelp(  //
+    void getHelp(
         std::ostream &vOs,
-        const std::string &vPositionalHeader,
-        const std::string &vOptionalHeader,
+        const std::string &vIndent,
+        const std::string &vPositionalHeader = "Positionnal arguments",
+        const std::string &vOptionalHeader = "Optional arguments",
         const std::string &vCommandHeader = "Commands") const {
         if (!m_HelpHeader.empty()) {
             vOs << m_HelpHeader << std::endl << std::endl;
@@ -560,9 +410,9 @@ public:
         vOs << m_getCmdLineHelp();
         vOs << std::endl;
         if (!m_HelpDescription.empty()) {
-            vOs << std::endl << " " << m_HelpDescription << std::endl;
+            vOs << std::endl << vIndent << m_HelpDescription << std::endl;
         }
-        vOs << m_getHelpDetails(vPositionalHeader, vOptionalHeader, vCommandHeader);
+        vOs << m_getHelpDetails(vIndent, vPositionalHeader, vOptionalHeader, vCommandHeader);
         if (!m_HelpFooter.empty()) {
             vOs << std::endl << m_HelpFooter << std::endl;
         }
@@ -570,17 +420,15 @@ public:
 
     void printHelp(
         std::ostream &vOs = std::cout,
+        const std::string &vIndent = "  ",
         const std::string &vPositionalHeader = "Positionnal arguments",
         const std::string &vOptionalHeader = "Optional arguments",
         const std::string &vCommandHeader = "Commands") const {
-        getHelp(vOs, vPositionalHeader, vOptionalHeader, vCommandHeader);
+        getHelp(vOs, vIndent, vPositionalHeader, vOptionalHeader, vCommandHeader);
         vOs << std::endl;
     }
 
-    void printErrors(const std::string &vIndent) const {
-        if (m_errors.empty()) {
-            return;
-        }
+    void printErrors(const std::string &vIndent = " - ") const {
         for (const auto &error : m_errors) {
             std::cout << vIndent << error << std::endl;
         }
@@ -591,21 +439,20 @@ public:
         m_ActiveCommand = nullptr;
 
         for (int32_t idx = vStartIdx; idx < vArgc; ++idx) {
-            std::string arg = m_trim(vArgv[idx]);
+            std::string arg = vArgv[idx];
+            std::string trimmedArg = m_trim(arg);
 
-            // print help
-            if (m_HelpArgument.m_full_args.find(arg) != m_HelpArgument.m_full_args.end()) {
+            // Check help
+            if (m_HelpArgument.m_full_args.find(trimmedArg) != m_HelpArgument.m_full_args.end()) {
                 printHelp();
-                return false;  // interrupt parsing
+                return false;
             }
 
-            // =========================================================
-            // NEW: Vérifier si c'est une commande
-            // =========================================================
+            // Check if it's a command
             bool is_command = false;
-            if (m_ActiveCommand == nullptr) {  // Une seule commande active
+            if (m_ActiveCommand == nullptr) {
                 for (auto &cmd : m_Commands) {
-                    if (cmd.m_full_args.find(arg) != cmd.m_full_args.end()) {
+                    if (cmd.m_full_args.find(trimmedArg) != cmd.m_full_args.end()) {
                         cmd.m_is_present = true;
                         m_ActiveCommand = &cmd;
                         is_command = true;
@@ -614,115 +461,76 @@ public:
                 }
             }
             if (is_command) {
-                continue;  // Passer à l'argument suivant
+                continue;
             }
 
-            // check optionals (globaux et de la commande active)
-            std::string token = arg;
+            // Check optionals
+            std::string token = trimmedArg;
             std::string value;
             bool is_optional = false;
-            bool check_for_value = false;
-            OptionalArgument *current_optional = nullptr;
 
-            // D'abord vérifier les sous-optionals de la commande active
-            if (m_ActiveCommand != nullptr) {
+            // Handle combined short args like -blm
+            if (arg.size() > 2 && arg[0] == '-' && arg[1] != '-') {
+                bool all_short = true;
+                char unknown_char = 0;
+                for (size_t i = 1; i < arg.size(); ++i) {
+                    if (!m_isShortArg(arg[i])) {
+                        all_short = false;
+                        unknown_char = arg[i];
+                        break;
+                    }
+                }
+                if (all_short) {
+                    for (size_t i = 1; i < arg.size(); ++i) {
+                        m_markShortArgPresent(arg[i]);
+                    }
+                    is_optional = true;
+                } else {
+                    m_addError("Unknown short option: -" + std::string(1, unknown_char) + " in " + arg);
+                    is_optional = true;  // Don't try to parse as positional
+                }
+            }
+
+            // Check sub-optionals of active command
+            if (!is_optional && m_ActiveCommand != nullptr) {
                 for (auto &arg_ref : m_ActiveCommand->m_subOptionals) {
-                    check_for_value = false;
-                    if (arg_ref.m_delimiter != 0) {
-                        if (arg_ref.m_delimiter != ' ') {
-                            if (token.find(arg_ref.m_delimiter) != std::string::npos) {
-                                auto arr = ez::str::splitStringToVector(token, arg_ref.m_delimiter);
-                                if (arr.size() == 2) {
-                                    token = arr.at(0);
-                                    value = arr.at(1);
-                                }
-                            }
-                        }
-                    }
-                    if (arg_ref.one_char_arg != 0) {
-                        auto p = token.find(arg_ref.one_char_arg);
-                        if (p != std::string::npos) {
-                            arg_ref.m_is_present = true;
-                            is_optional = true;
-                            current_optional = &arg_ref;
-                            if (p == (token.size() - 1)) {
-                                check_for_value = true;
-                            }
-                        }
-                    } else if (arg_ref.m_full_args.find(token) != arg_ref.m_full_args.end()) {
+                    if (m_matchOptional(arg_ref, token, value)) {
                         arg_ref.m_is_present = true;
                         is_optional = true;
-                        current_optional = &arg_ref;
-                        check_for_value = true;
-                    }
-
-                    if (check_for_value && current_optional != nullptr) {
-                        m_parseOptionalValue(current_optional, idx, vArgc, vArgv, value);
+                        m_parseOptionalValue(&arg_ref, idx, vArgc, vArgv, value);
                         break;
                     }
                 }
             }
 
-            // Puis vérifier les optionals globaux
+            // Check global optionals
             if (!is_optional) {
-                token = arg;  // Reset token
+                token = trimmedArg;
                 for (auto &arg_ref : m_Optionals) {
-                    check_for_value = false;
-                    if (arg_ref.m_delimiter != 0) {
-                        if (arg_ref.m_delimiter != ' ') {
-                            if (token.find(arg_ref.m_delimiter) != std::string::npos) {
-                                auto arr = ez::str::splitStringToVector(token, arg_ref.m_delimiter);
-                                if (arr.size() == 2) {
-                                    token = arr.at(0);
-                                    value = arr.at(1);
-                                } else {
-                                    if (arr.size() < 2) {
-                                        m_addError("bad parsing of key \"" + token + "\". no value");
-                                    } else if (arr.size() > 2) {
-                                        m_addError("bad parsing of key \"" + token + "\". more than one value");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (arg_ref.one_char_arg != 0) {
-                        auto p = token.find(arg_ref.one_char_arg);
-                        if (p != std::string::npos) {
-                            arg_ref.m_is_present = true;
-                            is_optional = true;
-                            current_optional = &arg_ref;
-                            if (p == (token.size() - 1)) {
-                                check_for_value = true;
-                            }
-                        }
-                    } else if (arg_ref.m_full_args.find(token) != arg_ref.m_full_args.end()) {
+                    if (m_matchOptional(arg_ref, token, value)) {
                         arg_ref.m_is_present = true;
                         is_optional = true;
-                        current_optional = &arg_ref;
-                        check_for_value = true;
-                    }
-
-                    if (check_for_value && current_optional != nullptr) {
-                        m_parseOptionalValue(current_optional, idx, vArgc, vArgv, value);
+                        m_parseOptionalValue(&arg_ref, idx, vArgc, vArgv, value);
                         break;
                     }
                 }
             }
 
-            // check positionals (globaux puis de la commande active)
+            // Check positionals
             if (!is_optional) {
-                // D'abord les positionals globaux
                 if (positional_idx < m_Positionals.size()) {
                     auto &positional = m_Positionals.at(positional_idx);
-                    m_parsePositionalValue(positional, arg, idx, vArgc, vArgv);
+                    if (!m_parsePositionalValue(positional, arg, idx, vArgc, vArgv)) {
+                        return false;
+                    }
                     ++positional_idx;
-                }
-                // Puis les sous-positionals de la commande active
-                else if (m_ActiveCommand != nullptr) {
+                } else if (m_ActiveCommand != nullptr) {
                     size_t sub_pos_idx = positional_idx - m_Positionals.size();
                     if (sub_pos_idx < m_ActiveCommand->m_subPositionals.size()) {
                         auto &positional = m_ActiveCommand->m_subPositionals.at(sub_pos_idx);
-                        m_parsePositionalValue(positional, arg, idx, vArgc, vArgv);
+                        if (!m_parsePositionalValue(positional, arg, idx, vArgc, vArgv)) {
+                            return false;
+                        }
                         ++positional_idx;
                     } else {
                         m_addError("Unknown argument: " + arg);
@@ -733,7 +541,7 @@ public:
             }
         }
 
-        // Validation des positionals globaux
+        // Validate global positionals
         for (const auto &pos : m_Positionals) {
             if (!pos.m_is_present) {
                 m_addError("Positional <" + pos.m_base_args.at(0) + "> not present");
@@ -752,7 +560,7 @@ public:
             }
         }
 
-        // Validation des optionals globaux
+        // Validate global optionals
         for (const auto &opt : m_Optionals) {
             if (opt.m_required && !opt.m_is_present) {
                 m_addError("Optional <" + opt.m_base_args.at(0) + "> not present");
@@ -771,7 +579,7 @@ public:
             }
         }
 
-        // NEW: Validation des sous-arguments de la commande active
+        // Validate active command sub-arguments
         if (m_ActiveCommand != nullptr) {
             for (const auto &pos : m_ActiveCommand->m_subPositionals) {
                 if (!pos.m_is_present) {
@@ -788,57 +596,119 @@ public:
         return m_errors.empty();
     }
 
-    const std::vector<std::string> &getErrors() { return m_errors; }
+    const std::vector<std::string> &getErrors() const { return m_errors; }
+    bool hasErrors() const { return !m_errors.empty(); }
 
 private:
-    const Argument *m_getArgumentPtr(const std::string &vKey, bool vNoExcept = false) const {
-        const Argument *ret = nullptr;
-        for (const auto &arg : m_Positionals) {
-            if (arg.m_full_args.find(vKey) != arg.m_full_args.end()) {
-                ret = &arg;
+    // Search in active command first, then in global arguments
+    const Argument *m_getArgumentPtr(const std::string &vKey) const {
+        if (m_ActiveCommand != nullptr) {
+            for (const auto &opt : m_ActiveCommand->m_subOptionals) {
+                if (opt.m_full_args.find(vKey) != opt.m_full_args.end()) {
+                    return &opt;
+                }
             }
-        }
-        if (ret == nullptr) {
-            for (const auto &arg : m_Optionals) {
-                if (arg.m_full_args.find(vKey) != arg.m_full_args.end()) {
-                    ret = &arg;
+            for (const auto &pos : m_ActiveCommand->m_subPositionals) {
+                if (pos.m_full_args.find(vKey) != pos.m_full_args.end()) {
+                    return &pos;
                 }
             }
         }
-        if (ret == nullptr && vNoExcept == false) {
-            throw std::runtime_error("Argument not found");
+        for (const auto &arg : m_Positionals) {
+            if (arg.m_full_args.find(vKey) != arg.m_full_args.end()) {
+                return &arg;
+            }
         }
-        return ret;
+        for (const auto &arg : m_Optionals) {
+            if (arg.m_full_args.find(vKey) != arg.m_full_args.end()) {
+                return &arg;
+            }
+        }
+        return nullptr;
     }
 
-    Argument *m_getArgumentPtr(const std::string &vKey, bool vNoExcept = false) {
-        return const_cast<Argument *>(static_cast<const Args *>(this)->m_getArgumentPtr(vKey, vNoExcept));
-    }
+    Argument *m_getArgumentPtr(const std::string &vKey) { return const_cast<Argument *>(static_cast<const Args *>(this)->m_getArgumentPtr(vKey)); }
 
     OptionalArgument &m_addOptional(OptionalArgument &vInOutArgument, const std::string &vKey) {
-        if (vKey.empty()) {
-            throw std::runtime_error("optional cant be empty");
-        }
         vInOutArgument.m_base_args = ez::str::splitStringToVector(vKey, '/');
         for (const auto &a : vInOutArgument.m_base_args) {
             vInOutArgument.m_full_args.emplace(a);
+            auto pos = a.find_first_not_of("-");
+            if (pos != std::string::npos) {
+                vInOutArgument.m_full_args.emplace(a.substr(pos));
+            }
+            if (a.size() == 2 && a[0] == '-' && a[1] != '-') {
+                vInOutArgument.one_char_arg = a[1];
+            }
         }
-        for (const auto &arg : vInOutArgument.m_base_args) {
-            vInOutArgument.m_full_args.emplace(m_trim(arg));
-        }
-        vInOutArgument.one_char_arg = (vKey.size() == 1U) ? vKey[0] : 0;
         return vInOutArgument;
     }
 
-    // NEW: Helper pour parser la valeur d'un optional
+    // Check if a char is a known short arg
+    bool m_isShortArg(char c) const {
+        if (m_HelpArgument.one_char_arg == c) {
+            return true;
+        }
+        for (const auto &opt : m_Optionals) {
+            if (opt.one_char_arg == c) {
+                return true;
+            }
+        }
+        if (m_ActiveCommand != nullptr) {
+            for (const auto &opt : m_ActiveCommand->m_subOptionals) {
+                if (opt.one_char_arg == c) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Mark a short arg as present
+    void m_markShortArgPresent(char c) {
+        for (auto &opt : m_Optionals) {
+            if (opt.one_char_arg == c) {
+                opt.m_is_present = true;
+                return;
+            }
+        }
+        if (m_ActiveCommand != nullptr) {
+            for (auto &opt : m_ActiveCommand->m_subOptionals) {
+                if (opt.one_char_arg == c) {
+                    opt.m_is_present = true;
+                    return;
+                }
+            }
+        }
+    }
+
+    // Match an optional argument
+    bool m_matchOptional(OptionalArgument &arg_ref, std::string &token, std::string &value) {
+        if (arg_ref.m_delimiter != 0 && arg_ref.m_delimiter != ' ') {
+            if (token.find(arg_ref.m_delimiter) != std::string::npos) {
+                auto arr = ez::str::splitStringToVector(token, arg_ref.m_delimiter);
+                if (arr.size() == 2) {
+                    token = arr.at(0);
+                    value = arr.at(1);
+                }
+            }
+        }
+        if (arg_ref.one_char_arg != 0 && token.size() == 1 && token[0] == arg_ref.one_char_arg) {
+            return true;
+        }
+        if (arg_ref.m_full_args.find(token) != arg_ref.m_full_args.end()) {
+            return true;
+        }
+        return false;
+    }
+
     void m_parseOptionalValue(OptionalArgument *opt, int32_t &idx, int32_t vArgc, char **vArgv, const std::string &value) {
         if (opt->m_is_array) {
             size_t count = 0;
             if (opt->m_delimiter == ' ') {
                 while ((idx + 1) < vArgc && count < opt->m_array_max_count) {
                     std::string nextArg = m_trim(vArgv[idx + 1]);
-                    // Vérifier si c'est un autre argument connu
-                    if (m_isKnownArgument(nextArg)) {
+                    if (m_isKnownArgument(nextArg) || m_isKnownArgument(vArgv[idx + 1])) {
                         break;
                     }
                     opt->m_array_values.push_back(vArgv[++idx]);
@@ -856,7 +726,7 @@ private:
             if (opt->m_delimiter == ' ') {
                 if ((idx + 1) < vArgc) {
                     std::string nextArg = m_trim(vArgv[idx + 1]);
-                    if (!m_isKnownArgument(nextArg)) {
+                    if (!m_isKnownArgument(nextArg) && !m_isKnownArgument(vArgv[idx + 1])) {
                         opt->m_value = vArgv[++idx];
                         opt->m_has_value = true;
                     }
@@ -868,15 +738,23 @@ private:
         }
     }
 
-    // NEW: Helper pour parser un positional
-    void m_parsePositionalValue(PositionalArgument &pos, const std::string &arg, int32_t &idx, int32_t vArgc, char **vArgv) {
+    bool m_parsePositionalValue(PositionalArgument &pos, const std::string &arg, int32_t &idx, int32_t vArgc, char **vArgv) {
+        if (!arg.empty() && arg[0] == '-') {
+            m_addError("Unexpected option in positional argument: " + arg);
+            return false;
+        }
         pos.m_is_present = true;
         if (pos.m_is_array) {
             pos.m_array_values.push_back(arg);
             size_t count = 1;
             while ((idx + 1) < vArgc && count < pos.m_array_max_count) {
+                std::string next = vArgv[idx + 1];
+                if (!next.empty() && next[0] == '-') {
+                    break;
+                }
+
                 std::string next_arg = m_trim(vArgv[idx + 1]);
-                if (m_isKnownArgument(next_arg)) {
+                if (m_isKnownArgument(next_arg) || m_isKnownArgument(vArgv[idx + 1])) {
                     break;
                 }
                 pos.m_array_values.push_back(vArgv[++idx]);
@@ -888,32 +766,38 @@ private:
             pos.m_value = arg;
             pos.m_has_value = true;
         }
+        return true;
     }
 
-    // NEW: Vérifie si un argument est connu (optional, command, etc.)
     bool m_isKnownArgument(const std::string &arg) const {
-        // Vérifier les optionals globaux
+        // Check combined short args like -blm
+        if (arg.size() > 2 && arg[0] == '-' && arg[1] != '-') {
+            for (size_t i = 1; i < arg.size(); ++i) {
+                if (m_isShortArg(arg[i])) {
+                    return true;  // At least one valid short arg
+                }
+            }
+        }
+
+        std::string trimmed = m_trim(arg);
         for (const auto &opt : m_Optionals) {
-            if (opt.m_full_args.find(arg) != opt.m_full_args.end()) {
+            if (opt.m_full_args.find(trimmed) != opt.m_full_args.end()) {
                 return true;
             }
         }
-        // Vérifier les commandes
         for (const auto &cmd : m_Commands) {
-            if (cmd.m_full_args.find(arg) != cmd.m_full_args.end()) {
+            if (cmd.m_full_args.find(trimmed) != cmd.m_full_args.end()) {
                 return true;
             }
         }
-        // Vérifier les sous-optionals de la commande active
         if (m_ActiveCommand != nullptr) {
             for (const auto &opt : m_ActiveCommand->m_subOptionals) {
-                if (opt.m_full_args.find(arg) != opt.m_full_args.end()) {
+                if (opt.m_full_args.find(trimmed) != opt.m_full_args.end()) {
                     return true;
                 }
             }
         }
-        // Vérifier le help
-        if (m_HelpArgument.m_full_args.find(arg) != m_HelpArgument.m_full_args.end()) {
+        if (m_HelpArgument.m_full_args.find(trimmed) != m_HelpArgument.m_full_args.end()) {
             return true;
         }
         return false;
@@ -950,7 +834,7 @@ private:
 
     std::string m_getCmdLineHelp() const {
         std::stringstream ss;
-        ss << " Usage : " << m_AppName;
+        ss << "usage : " << m_AppName;
         m_getCmdLineOptional(m_HelpArgument, ss);
         for (const auto &arg : m_Optionals) {
             m_getCmdLineOptional(arg, ss);
@@ -959,59 +843,63 @@ private:
             m_getCmdLinePositional(arg, ss);
         }
         if (!m_Commands.empty()) {
-            ss << " <command> [options]";
+            ss << " <command> [<options>]";
         }
         return ss.str();
     }
 
-    void m_clearErrors() { m_errors.clear(); }
     void m_addError(const std::string &vError) { m_errors.push_back("Error : " + vError); }
 
-    std::string m_getHelpDetails(  //
-        const std::string &vPositionalHeader,
-        const std::string &vOptionalHeader,
-        const std::string &vCommandHeader = "Commands") const {
-        // collect infos with padding
+    std::string m_getHelpDetails(const std::string &vIndent, const std::string &vPositionalHeader, const std::string &vOptionalHeader, const std::string &vCommandHeader)
+        const {
         size_t first_col_size = 0U;
+
+        // right column sizes
         std::vector<Argument::HelpCnt> cnt_pos;
         for (const auto &arg : m_Positionals) {
-            cnt_pos.push_back(arg.m_getHelp(true, first_col_size));
+            cnt_pos.push_back(arg.m_getHelp(true, first_col_size, vIndent));
         }
         std::vector<Argument::HelpCnt> cnt_opt;
         for (const auto &opt : m_Optionals) {
-            cnt_opt.push_back(opt.m_getHelp(false, first_col_size));
+            cnt_opt.push_back(opt.m_getHelp(false, first_col_size, vIndent));
         }
-        // NEW: Collecter les commandes
         std::vector<Argument::HelpCnt> cnt_cmd;
         for (const auto &cmd : m_Commands) {
-            cnt_cmd.push_back(cmd.m_getHelp(false, first_col_size));
+            cnt_cmd.push_back(cmd.m_getHelp(false, first_col_size, vIndent));
+            // Include sub-arguments in size calculation
+            for (const auto &pos : cmd.m_subPositionals) {
+                pos.m_getHelp(true, first_col_size, vIndent);
+            }
+            for (const auto &opt : cmd.m_subOptionals) {
+                opt.m_getHelp(false, first_col_size, vIndent);
+            }
         }
 
-        // display
+        // space between columns
         first_col_size += 4U;
+
+        // left column
         std::stringstream ss;
         if (!cnt_pos.empty()) {
-            ss << std::endl << " " << vPositionalHeader << " : " << std::endl;
+            ss << std::endl << vPositionalHeader << " :" << std::endl;
             for (const auto &it : cnt_pos) {
-                ss << it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
+                ss <<  it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
             }
         }
         if (!cnt_opt.empty()) {
-            ss << std::endl << " " << vOptionalHeader << " : " << std::endl;
+            ss << std::endl << vOptionalHeader << " :" << std::endl;
             for (const auto &it : cnt_opt) {
-                ss << it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
+                ss <<  it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
             }
         }
-        // NEW: Afficher les commandes avec leurs sous-arguments
         if (!cnt_cmd.empty()) {
-            ss << std::endl << " " << vCommandHeader << " : " << std::endl;
+            ss << std::endl << vCommandHeader << " :" << std::endl;
             size_t cmd_idx = 0;
             for (const auto &it : cnt_cmd) {
-                ss << it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
-                // Afficher les sous-arguments de cette commande
+                ss <<  it.first << std::string(first_col_size - it.first.size(), ' ') << it.second << std::endl;
                 const auto &cmd = m_Commands.at(cmd_idx);
                 if (!cmd.m_subPositionals.empty() || !cmd.m_subOptionals.empty()) {
-                    ss << cmd.getCommandHelp(first_col_size);
+                    ss << cmd.getCommandHelp(first_col_size, vIndent);
                 }
                 ++cmd_idx;
             }
@@ -1019,8 +907,7 @@ private:
         return ss.str();
     }
 
-    // remove the first '-' of a token
-    std::string m_trim(const std::string &vToken) {
+    std::string m_trim(const std::string &vToken) const {
         auto short_last_minus = vToken.find_first_not_of("-");
         if (short_last_minus != std::string::npos) {
             return vToken.substr(short_last_minus);
@@ -1032,21 +919,14 @@ private:
     T m_convertString(const std::string &str) const {
         std::istringstream iss(str);
         T value;
-        if (!(iss >> value)) {
-            throw std::runtime_error("Conversion failed");
-        }
+        iss >> value;
         return value;
     }
 };
 
 template <>
 inline bool Args::m_convertString<bool>(const std::string &str) const {
-    if (str == "true" || str == "1") {
-        return true;
-    } else if (str == "false" || str == "0") {
-        return false;
-    }
-    throw std::runtime_error("Invalid boolean string");
+    return (str == "true" || str == "1");
 }
 
 }  // namespace ez
