@@ -1,0 +1,1 @@
+/home/runner/work/ezLibs/.codeql-scratch/dbs/cpp/working/autobuild/bin/clang++ -O3 -DNDEBUG -Xlinker --dependency-file=CMakeFiles/EzLibs_TestOpengl.dir/link.d CMakeFiles/EzLibs_TestOpengl.dir/TestEzGLUniforms.cpp.o CMakeFiles/EzLibs_TestOpengl.dir/main.cpp.o -o EzLibs_TestOpengl  libglad.a -ldl

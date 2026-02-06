@@ -1,0 +1,1 @@
+/home/runner/work/ezLibs/.codeql-scratch/dbs/cpp/working/autobuild/bin/clang++ -O3 -DNDEBUG -Xlinker --dependency-file=CMakeFiles/EzLibs_TestGeo.dir/link.d CMakeFiles/EzLibs_TestGeo.dir/TestEzFormats.cpp.o CMakeFiles/EzLibs_TestGeo.dir/TestEzGeo.cpp.o CMakeFiles/EzLibs_TestGeo.dir/TestEzTile.cpp.o CMakeFiles/EzLibs_TestGeo.dir/main.cpp.o -o EzLibs_TestGeo

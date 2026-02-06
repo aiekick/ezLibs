@@ -1,0 +1,1 @@
+/home/runner/work/ezLibs/.codeql-scratch/dbs/cpp/working/autobuild/bin/clang++ -O3 -DNDEBUG -Xlinker --dependency-file=CMakeFiles/ezBuildInc.dir/link.d CMakeFiles/ezBuildInc.dir/main.cpp.o -o ezBuildInc
