@@ -10,6 +10,13 @@ bool TestTime(const std::string& vTest) {
     IfTestCollectionExist(TestEzGeo);
     else IfTestCollectionExist(TestEzTile);
     else IfTestCollectionExist(TestEzFormats);
+    // Check for format-specific tests that don't include "TestEzFormats" in their name
+    else if (vTest.find("TestEzDemAsc") != std::string::npos ||
+             vTest.find("TestEzDemBin") != std::string::npos ||
+             vTest.find("TestEzHgt") != std::string::npos ||
+             vTest.find("TestEzShp") != std::string::npos) {
+        return TestEzFormats(vTest);
+    }
     return false;
 }
 

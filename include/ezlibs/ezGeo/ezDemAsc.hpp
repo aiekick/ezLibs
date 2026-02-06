@@ -60,7 +60,9 @@ private:
 
 public:
     bool load(const std::string& vName, const std::string& vBuffer) {
-        if (!vBuffer.empty() && checkDemFileName(vName, m_datas.latStr, m_datas.lonStr)) {
+        // Extract base name (first 7 characters: N00E000) from filename
+        const std::string baseName = (vName.size() >= 7) ? vName.substr(0, 7) : vName;
+        if (!vBuffer.empty() && checkDemFileName(baseName, m_datas.latStr, m_datas.lonStr)) {
             const auto lines = ez::str::splitStringToVector(vBuffer, '\n');
             size_t idx{};
             auto& tileDatas = m_datas.tile.getDatasRef();
@@ -80,7 +82,7 @@ public:
                     } else if (idx == 5 && values.at(0) == "NODATA_value") {
                         m_datas.NODATA_value = strtol(values.at(1).c_str(), nullptr, 10);
                     } else {
-                        if (idx <= 5) {
+                        if (idx < 6) {
                             break;
                         }
                         std::vector<int16_t> rowValues(values.size());
