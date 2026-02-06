@@ -179,13 +179,13 @@ bool TestEzMat2Inverse() {
     ez::mat2<T> identity = m * inv;
     // Use a more lenient epsilon for accumulated floating-point errors in matrix multiplication
     T tolerance = static_cast<T>(1e-5);
-    if (std::fabs(identity(0, 0) - static_cast<T>(1)) > tolerance)
+    if (ez::isDifferent(identity(0, 0), static_cast<T>(1), tolerance))
         return false;
-    if (std::fabs(identity(1, 1) - static_cast<T>(1)) > tolerance)
+    if (ez::isDifferent(identity(1, 1), static_cast<T>(1), tolerance))
         return false;
-    if (std::fabs(identity(0, 1) - static_cast<T>(0)) > tolerance)
+    if (ez::isDifferent(identity(0, 1), static_cast<T>(0), tolerance))
         return false;
-    if (std::fabs(identity(1, 0) - static_cast<T>(0)) > tolerance)
+    if (ez::isDifferent(identity(1, 0), static_cast<T>(0), tolerance))
         return false;
 
     return true;

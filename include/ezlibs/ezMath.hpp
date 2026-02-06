@@ -97,6 +97,14 @@ inline bool isDifferent(double vA, double vB) {
     return std::abs(vA - vB) > std::numeric_limits<double>::epsilon();
 }
 
+// Checks if two numbers are different using a custom epsilon tolerance.
+// Useful for accumulated floating-point errors in complex calculations.
+template <typename T>
+inline bool isDifferent(T vA, T vB, T vEpsilon) {
+    static_assert(std::is_floating_point<T>::value, "isDifferent with custom epsilon is only valid for floating point types");
+    return std::fabs(vA - vB) > vEpsilon;
+}
+
 // Checks if two numbers are equal according to epsilon precision.
 template <typename T>
 inline bool isEqual(T vA, T vB) {

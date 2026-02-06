@@ -105,28 +105,28 @@ AddTest("TestEzTile_AllPos_Continuous_Wrap")
 ##########################################################
 
 # ezDemAsc tests
-AddTest("TestEzDemAsc_Load_ValidFile")
-AddTest("TestEzDemAsc_Save_RoundTrip")
-AddTest("TestEzDemAsc_Load_InvalidFilename")
-AddTest("TestEzDemAsc_Load_EmptyBuffer")
+AddTest("TestEzFormats_DemAsc_Load_ValidFile")
+AddTest("TestEzFormats_DemAsc_Save_RoundTrip")
+AddTest("TestEzFormats_DemAsc_Load_InvalidFilename")
+AddTest("TestEzFormats_DemAsc_Load_EmptyBuffer")
 
 # ezDemBin tests
-AddTest("TestEzDemBin_Load_ValidFile")
-AddTest("TestEzDemBin_Save_RoundTrip")
-AddTest("TestEzDemBin_Load_InvalidFilename")
-AddTest("TestEzDemBin_Load_EmptyBuffer")
+AddTest("TestEzFormats_DemBin_Load_ValidFile")
+AddTest("TestEzFormats_DemBin_Save_RoundTrip")
+AddTest("TestEzFormats_DemBin_Load_InvalidFilename")
+AddTest("TestEzFormats_DemBin_Load_EmptyBuffer")
 
 # ezHgt tests
-AddTest("TestEzHgt_Load_SRTM1")
-AddTest("TestEzHgt_Load_SRTM3")
-AddTest("TestEzHgt_Save_RoundTrip")
-AddTest("TestEzHgt_Load_EmptyBuffer")
+AddTest("TestEzFormats_Hgt_Load_SRTM1")
+AddTest("TestEzFormats_Hgt_Load_SRTM3")
+AddTest("TestEzFormats_Hgt_Save_RoundTrip")
+AddTest("TestEzFormats_Hgt_Load_EmptyBuffer")
 
 # ezShp tests
-AddTest("TestEzShp_Point_Creation")
-AddTest("TestEzShp_PointZ_Creation")
-AddTest("TestEzShp_PointM_Creation")
-AddTest("TestEzShp_MultiPoint_Creation")
-AddTest("TestEzShp_PolyTruc_Creation")
-AddTest("TestEzShp_ShapeType_Values")
-AddTest("TestEzShp_PartType_Values")
+AddTest("TestEzFormats_Shp_Point_Creation")
+AddTest("TestEzFormats_Shp_PointZ_Creation")
+AddTest("TestEzFormats_Shp_PointM_Creation")
+AddTest("TestEzFormats_Shp_MultiPoint_Creation")
+AddTest("TestEzFormats_Shp_PolyTruc_Creation")
+AddTest("TestEzFormats_Shp_ShapeType_Values")
+AddTest("TestEzFormats_Shp_PartType_Values")

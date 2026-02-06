@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // Test ezDemAsc load functionality
-bool TestEzDemAsc_Load_ValidFile() {
+bool TestEzFormats_DemAsc_Load_ValidFile() {
     ez::geo::DemAsc demAsc;
 
     // Create a valid DEM ASCII buffer
@@ -53,7 +53,7 @@ bool TestEzDemAsc_Load_ValidFile() {
 }
 
 // Test ezDemAsc save functionality
-bool TestEzDemAsc_Save_RoundTrip() {
+bool TestEzFormats_DemAsc_Save_RoundTrip() {
     ez::geo::DemAsc demAsc;
 
     // Load original
@@ -90,7 +90,7 @@ bool TestEzDemAsc_Save_RoundTrip() {
 }
 
 // Test ezDemAsc with invalid filename
-bool TestEzDemAsc_Load_InvalidFilename() {
+bool TestEzFormats_DemAsc_Load_InvalidFilename() {
     ez::geo::DemAsc demAsc;
     std::string buffer = "nrows 2\nncols 2\n";
 
@@ -102,7 +102,7 @@ bool TestEzDemAsc_Load_InvalidFilename() {
 }
 
 // Test ezDemAsc with empty buffer
-bool TestEzDemAsc_Load_EmptyBuffer() {
+bool TestEzFormats_DemAsc_Load_EmptyBuffer() {
     ez::geo::DemAsc demAsc;
     std::string buffer = "";
 
@@ -117,7 +117,7 @@ bool TestEzDemAsc_Load_EmptyBuffer() {
 ////////////////////////////////////////////////////////////////////////////
 
 // Test ezDemBin load functionality
-bool TestEzDemBin_Load_ValidFile() {
+bool TestEzFormats_DemBin_Load_ValidFile() {
     ez::geo::DemBin demBin;
 
     // Create a valid binary DEM buffer
@@ -165,7 +165,7 @@ bool TestEzDemBin_Load_ValidFile() {
 }
 
 // Test ezDemBin save functionality
-bool TestEzDemBin_Save_RoundTrip() {
+bool TestEzFormats_DemBin_Save_RoundTrip() {
     ez::geo::DemBin demBin;
 
     // Setup data manually
@@ -204,7 +204,7 @@ bool TestEzDemBin_Save_RoundTrip() {
 }
 
 // Test ezDemBin with invalid filename
-bool TestEzDemBin_Load_InvalidFilename() {
+bool TestEzFormats_DemBin_Load_InvalidFilename() {
     ez::geo::DemBin demBin;
     std::vector<uint8_t> bytes = {0x01, 0x02, 0x03};
 
@@ -215,7 +215,7 @@ bool TestEzDemBin_Load_InvalidFilename() {
 }
 
 // Test ezDemBin with empty buffer
-bool TestEzDemBin_Load_EmptyBuffer() {
+bool TestEzFormats_DemBin_Load_EmptyBuffer() {
     ez::geo::DemBin demBin;
     std::vector<uint8_t> bytes;
 
@@ -230,7 +230,7 @@ bool TestEzDemBin_Load_EmptyBuffer() {
 ////////////////////////////////////////////////////////////////////////////
 
 // Test ezHgt load functionality with SRTM1 size (3601x3601)
-bool TestEzHgt_Load_SRTM1() {
+bool TestEzFormats_Hgt_Load_SRTM1() {
     ez::geo::hgt hgtFile;
 
     // SRTM1 has 3601x3601 samples = 12,967,201 int16 values = 25,934,402 bytes
@@ -256,7 +256,7 @@ bool TestEzHgt_Load_SRTM1() {
 }
 
 // Test ezHgt load functionality with SRTM3 size (1201x1201)
-bool TestEzHgt_Load_SRTM3() {
+bool TestEzFormats_Hgt_Load_SRTM3() {
     ez::geo::hgt hgtFile;
 
     // SRTM3 has 1201x1201 samples = 1,442,401 int16 values = 2,884,802 bytes
@@ -278,7 +278,7 @@ bool TestEzHgt_Load_SRTM3() {
 }
 
 // Test ezHgt save functionality
-bool TestEzHgt_Save_RoundTrip() {
+bool TestEzFormats_Hgt_Save_RoundTrip() {
     ez::geo::hgt hgtFile;
 
     // Setup small test data (1201x1201 for SRTM3)
@@ -305,7 +305,7 @@ bool TestEzHgt_Save_RoundTrip() {
 }
 
 // Test ezHgt with empty buffer
-bool TestEzHgt_Load_EmptyBuffer() {
+bool TestEzFormats_Hgt_Load_EmptyBuffer() {
     ez::geo::hgt hgtFile;
     std::vector<uint8_t> bytes;
 
@@ -320,7 +320,7 @@ bool TestEzHgt_Load_EmptyBuffer() {
 ////////////////////////////////////////////////////////////////////////////
 
 // Test ezShp Point structure
-bool TestEzShp_Point_Creation() {
+bool TestEzFormats_Shp_Point_Creation() {
     ez::Shp::Point pt;
     pt.x = 10.5;
     pt.y = 20.3;
@@ -332,7 +332,7 @@ bool TestEzShp_Point_Creation() {
 }
 
 // Test ezShp PointZ structure
-bool TestEzShp_PointZ_Creation() {
+bool TestEzFormats_Shp_PointZ_Creation() {
     ez::Shp::PointZ ptz;
     ptz.x = 10.5;
     ptz.y = 20.3;
@@ -348,7 +348,7 @@ bool TestEzShp_PointZ_Creation() {
 }
 
 // Test ezShp PointM structure
-bool TestEzShp_PointM_Creation() {
+bool TestEzFormats_Shp_PointM_Creation() {
     ez::Shp::PointM ptm;
     ptm.x = 10.5;
     ptm.y = 20.3;
@@ -362,7 +362,7 @@ bool TestEzShp_PointM_Creation() {
 }
 
 // Test ezShp MultiPoint structure
-bool TestEzShp_MultiPoint_Creation() {
+bool TestEzFormats_Shp_MultiPoint_Creation() {
     ez::Shp::MultiPoint mp;
     mp.box = {0.0, 0.0, 100.0, 100.0};
     mp.numPoints = 3;
@@ -380,7 +380,7 @@ bool TestEzShp_MultiPoint_Creation() {
 }
 
 // Test ezShp PolyTruc structure (base for polyline/polygon)
-bool TestEzShp_PolyTruc_Creation() {
+bool TestEzFormats_Shp_PolyTruc_Creation() {
     ez::Shp::PolyTruc poly;
     poly.box = {0.0, 0.0, 100.0, 100.0};
     poly.numParts = 1;
@@ -402,7 +402,7 @@ bool TestEzShp_PolyTruc_Creation() {
 }
 
 // Test ezShp ShapeType enum values
-bool TestEzShp_ShapeType_Values() {
+bool TestEzFormats_Shp_ShapeType_Values() {
     CTEST_ASSERT(static_cast<uint32_t>(ez::Shp::ShapeType::Null) == 0);
     CTEST_ASSERT(static_cast<uint32_t>(ez::Shp::ShapeType::Point) == 1);
     CTEST_ASSERT(static_cast<uint32_t>(ez::Shp::ShapeType::PolyLine) == 3);
@@ -416,7 +416,7 @@ bool TestEzShp_ShapeType_Values() {
 }
 
 // Test ezShp PartType enum values
-bool TestEzShp_PartType_Values() {
+bool TestEzFormats_Shp_PartType_Values() {
     CTEST_ASSERT(static_cast<uint32_t>(ez::Shp::PartType::TriangleStrip) == 0);
     CTEST_ASSERT(static_cast<uint32_t>(ez::Shp::PartType::TriangleFan) == 1);
     CTEST_ASSERT(static_cast<uint32_t>(ez::Shp::PartType::OuterRing) == 2);
@@ -437,31 +437,31 @@ bool TestEzShp_PartType_Values() {
 
 bool TestEzFormats(const std::string& vTest) {
     // ezDemAsc tests
-    IfTestExist(TestEzDemAsc_Load_ValidFile);
-    else IfTestExist(TestEzDemAsc_Save_RoundTrip);
-    else IfTestExist(TestEzDemAsc_Load_InvalidFilename);
-    else IfTestExist(TestEzDemAsc_Load_EmptyBuffer);
+    IfTestExist(TestEzFormats_DemAsc_Load_ValidFile);
+    else IfTestExist(TestEzFormats_DemAsc_Save_RoundTrip);
+    else IfTestExist(TestEzFormats_DemAsc_Load_InvalidFilename);
+    else IfTestExist(TestEzFormats_DemAsc_Load_EmptyBuffer);
 
     // ezDemBin tests
-    IfTestExist(TestEzDemBin_Load_ValidFile);
-    else IfTestExist(TestEzDemBin_Save_RoundTrip);
-    else IfTestExist(TestEzDemBin_Load_InvalidFilename);
-    else IfTestExist(TestEzDemBin_Load_EmptyBuffer);
+    IfTestExist(TestEzFormats_DemBin_Load_ValidFile);
+    else IfTestExist(TestEzFormats_DemBin_Save_RoundTrip);
+    else IfTestExist(TestEzFormats_DemBin_Load_InvalidFilename);
+    else IfTestExist(TestEzFormats_DemBin_Load_EmptyBuffer);
 
     // ezHgt tests
-    IfTestExist(TestEzHgt_Load_SRTM1);
-    else IfTestExist(TestEzHgt_Load_SRTM3);
-    else IfTestExist(TestEzHgt_Save_RoundTrip);
-    else IfTestExist(TestEzHgt_Load_EmptyBuffer);
+    IfTestExist(TestEzFormats_Hgt_Load_SRTM1);
+    else IfTestExist(TestEzFormats_Hgt_Load_SRTM3);
+    else IfTestExist(TestEzFormats_Hgt_Save_RoundTrip);
+    else IfTestExist(TestEzFormats_Hgt_Load_EmptyBuffer);
 
     // ezShp tests
-    IfTestExist(TestEzShp_Point_Creation);
-    else IfTestExist(TestEzShp_PointZ_Creation);
-    else IfTestExist(TestEzShp_PointM_Creation);
-    else IfTestExist(TestEzShp_MultiPoint_Creation);
-    else IfTestExist(TestEzShp_PolyTruc_Creation);
-    else IfTestExist(TestEzShp_ShapeType_Values);
-    else IfTestExist(TestEzShp_PartType_Values);
+    IfTestExist(TestEzFormats_Shp_Point_Creation);
+    else IfTestExist(TestEzFormats_Shp_PointZ_Creation);
+    else IfTestExist(TestEzFormats_Shp_PointM_Creation);
+    else IfTestExist(TestEzFormats_Shp_MultiPoint_Creation);
+    else IfTestExist(TestEzFormats_Shp_PolyTruc_Creation);
+    else IfTestExist(TestEzFormats_Shp_ShapeType_Values);
+    else IfTestExist(TestEzFormats_Shp_PartType_Values);
 
     return false;
 }
