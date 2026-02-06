@@ -15,16 +15,17 @@ file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE
 	${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX Src FILES ${PROJECT_TEST_SRC_RECURSE})
 
-file(GLOB SRC_RECURSE 
+file(GLOB SRC_RECURSE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezExpr.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezMath.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezVec2.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezVec3.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezVec4.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezMat2.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezQuat.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezPlane.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezAABB.hpp
-	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezAABBCCC.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezAABBCC.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezVariant.hpp)
 source_group(TREE ${EZ_LIBS_INCLUDE_DIR}/ezlibs PREFIX Libs FILES ${SRC_RECURSE})
 
@@ -823,3 +824,70 @@ AddTest("TestEzVec4Division<int32_t>")
 AddTest("TestEzVec4Division<uint32_t>")
 AddTest("TestEzVec4Division<int64_t>")
 AddTest("TestEzVec4Division<uint64_t>")
+
+##########################################################
+##### TESTS EzMat2 ########################################
+##########################################################
+
+AddTest("TestEzMat2DefaultConstructor<float>")
+AddTest("TestEzMat2DefaultConstructor<double>")
+AddTest("TestEzMat2DiagonalConstructor<float>")
+AddTest("TestEzMat2DiagonalConstructor<double>")
+AddTest("TestEzMat2ElementConstructor<float>")
+AddTest("TestEzMat2ElementConstructor<double>")
+AddTest("TestEzMat2Identity<float>")
+AddTest("TestEzMat2Identity<double>")
+AddTest("TestEzMat2Zero<float>")
+AddTest("TestEzMat2Zero<double>")
+AddTest("TestEzMat2Multiplication<float>")
+AddTest("TestEzMat2Multiplication<double>")
+AddTest("TestEzMat2MulVec<float>")
+AddTest("TestEzMat2MulVec<double>")
+AddTest("TestEzMat2Transpose<float>")
+AddTest("TestEzMat2Transpose<double>")
+AddTest("TestEzMat2Determinant<float>")
+AddTest("TestEzMat2Determinant<double>")
+AddTest("TestEzMat2Inverse<float>")
+AddTest("TestEzMat2Inverse<double>")
+AddTest("TestEzMat2InverseSingular<float>")
+AddTest("TestEzMat2InverseSingular<double>")
+
+##########################################################
+##### TESTS EzQuat ########################################
+##########################################################
+
+AddTest("TestEzQuatDefaultConstructor<float>")
+AddTest("TestEzQuatDefaultConstructor<double>")
+AddTest("TestEzQuatParameterConstructor<float>")
+AddTest("TestEzQuatParameterConstructor<double>")
+AddTest("TestEzQuatAdd<float>")
+AddTest("TestEzQuatAdd<double>")
+AddTest("TestEzQuatSub<float>")
+AddTest("TestEzQuatSub<double>")
+AddTest("TestEzQuatMul<float>")
+AddTest("TestEzQuatMul<double>")
+AddTest("TestEzQuatConjugate<float>")
+AddTest("TestEzQuatConjugate<double>")
+AddTest("TestEzQuatScale<float>")
+AddTest("TestEzQuatScale<double>")
+AddTest("TestEzQuatGetT<float>")
+AddTest("TestEzQuatGetT<double>")
+
+##########################################################
+##### TESTS EzAABB ########################################
+##########################################################
+
+AddTest("TestEzAABBDefaultConstructor<float>")
+AddTest("TestEzAABBDefaultConstructor<double>")
+AddTest("TestEzAABBVec2Constructor<float>")
+AddTest("TestEzAABBVec2Constructor<double>")
+AddTest("TestEzAABBVec4Constructor<float>")
+AddTest("TestEzAABBVec4Constructor<double>")
+AddTest("TestEzAABBAddVec<float>")
+AddTest("TestEzAABBAddVec<double>")
+AddTest("TestEzAABBSubVec<float>")
+AddTest("TestEzAABBSubVec<double>")
+AddTest("TestEzAABBMulScalar<float>")
+AddTest("TestEzAABBMulScalar<double>")
+AddTest("TestEzAABBDivScalar<float>")
+AddTest("TestEzAABBDivScalar<double>")

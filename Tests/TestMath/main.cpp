@@ -3,6 +3,9 @@
 #include <TestEzVec3.h>
 #include <TestEzVec4.h>
 #include <TestEzAABBCC.h>
+#include <TestEzMat2.h>
+#include <TestEzQuat.h>
+#include <TestEzAABB.h>
 #include <TestEzExpr.h>
 
 #include <limits>
@@ -18,6 +21,9 @@ bool TestMisc(const std::string& vTest) {
     IfTestCollectionExist(TestEzVec2);
     IfTestCollectionExist(TestEzVec3);
     IfTestCollectionExist(TestEzVec4);
+    IfTestCollectionExist(TestEzMat2);
+    IfTestCollectionExist(TestEzQuat);
+    IfTestCollectionExist(TestEzAABB);
     IfTestCollectionExist(TestEzExpr);
     return false;
 }
