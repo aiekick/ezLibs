@@ -43,3 +43,4 @@
 /TestResults
 /*.gcov
 /test.log
+/_codeql_build_dir

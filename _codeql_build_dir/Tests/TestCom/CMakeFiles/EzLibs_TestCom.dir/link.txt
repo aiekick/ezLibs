@@ -1,1 +1,0 @@
-/home/runner/work/ezLibs/.codeql-scratch/dbs/cpp/working/autobuild/bin/clang++ -O3 -DNDEBUG -Xlinker --dependency-file=CMakeFiles/EzLibs_TestCom.dir/link.d CMakeFiles/EzLibs_TestCom.dir/TestEzNamedPipe.cpp.o CMakeFiles/EzLibs_TestCom.dir/main.cpp.o -o EzLibs_TestCom
