@@ -54,7 +54,9 @@ private:
 
 public:
     bool load(const std::string& vName, const std::vector<uint8_t> vBytes) {
-        if (vBytes.empty() && checkDemFileName(vName, m_datas.latStr, m_datas.lonStr)) {
+        // Extract base name (first 7 characters: N00E000) from filename
+        const std::string baseName = (vName.size() >= 7) ? vName.substr(0, 7) : vName;
+        if (!vBytes.empty() && checkDemFileName(baseName, m_datas.latStr, m_datas.lonStr)) {
             m_datas.lat = parseDemCoordinate(m_datas.latStr);
             m_datas.lon = parseDemCoordinate(m_datas.lonStr);
             const auto side = m_computeSizeFromBufferSize(vBytes.size());
