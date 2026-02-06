@@ -8,8 +8,6 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
-      with:
-        ref: master
     - name: Install Dependencies
       run : brew update
     - name: configure
@@ -23,5 +21,5 @@ jobs:
     - name: upload test results artifact
       uses: actions/upload-artifact@v4
       with:
-        name: tests_results.zip
+        name: tests_results_osx.zip
         path: ./tests_results.zip
