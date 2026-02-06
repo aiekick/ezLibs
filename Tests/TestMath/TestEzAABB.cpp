@@ -1,5 +1,5 @@
-#include <ezlibs/ezAABB.hpp>
 #include <ezlibs/ezMath.hpp>
+#include <ezlibs/ezAABB.hpp>
 
 #ifdef _MSC_VER
 #pragma warning(push)
