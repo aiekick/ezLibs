@@ -120,15 +120,15 @@ bool TestEzTime_GetTicks() {
     uint64_t ticks1 = getTicks();
 
     // Wait a small amount
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
 
     uint64_t ticks2 = getTicks();
 
     // Second call should return a larger value
     CTEST_ASSERT(ticks2 > ticks1);
 
-    // Difference should be at least 10ms (accounting for some variation)
-    CTEST_ASSERT((ticks2 - ticks1) >= 5);
+    // Difference should be at least 1ms (accounting for some variation)
+    CTEST_ASSERT((ticks2 - ticks1) >= 1);
 
     return true;
 }
@@ -139,12 +139,12 @@ bool TestEzTime_ScopedTimer() {
     {
         ScopedTimer timer(measured_time);
         // Simulate some work
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    // Should have measured some time (at least 40ms to account for variation)
-    CTEST_ASSERT(measured_time >= 40.0);
-    CTEST_ASSERT(measured_time < 200.0); // Should not be too large
+    // Should have measured some time (at least 5ms to account for variation)
+    CTEST_ASSERT(measured_time >= 5.0);
+    CTEST_ASSERT(measured_time < 100.0); // Should not be too large
 
     return true;
 }
@@ -154,13 +154,13 @@ bool TestEzTime_GetTimeInterval() {
     float interval1 = getTimeInterval();
 
     // Wait a bit
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
     // Second call should return the interval
     float interval2 = getTimeInterval();
 
-    // Should have measured some time (at least 0.015 seconds)
-    CTEST_ASSERT(interval2 >= 0.015f);
+    // Should have measured some time (at least 0.003 seconds)
+    CTEST_ASSERT(interval2 >= 0.003f);
     CTEST_ASSERT(interval2 < 0.5f); // Should not be too large
 
     return true;
@@ -174,11 +174,11 @@ bool TestEzTime_ActionTime_Basic() {
     CTEST_ASSERT(initial >= 0);
 
     // Wait a bit
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
 
     // Should have elapsed some time
     uint64_t elapsed = timer.get();
-    CTEST_ASSERT(elapsed >= 5);
+    CTEST_ASSERT(elapsed >= 1);
 
     return true;
 }
@@ -187,13 +187,13 @@ bool TestEzTime_ActionTime_GetTime() {
     ActionTime timer;
 
     // Wait a bit
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     // Get time in seconds
     double timeInSeconds = timer.getTime();
 
-    // Should be at least 0.04 seconds
-    CTEST_ASSERT(timeInSeconds >= 0.04);
+    // Should be at least 0.005 seconds
+    CTEST_ASSERT(timeInSeconds >= 0.005);
     CTEST_ASSERT(timeInSeconds < 0.5);
 
     return true;
@@ -203,7 +203,7 @@ bool TestEzTime_ActionTime_Fix() {
     ActionTime timer;
 
     // Wait a bit
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
     // Fix the timer
     timer.fix();
@@ -247,14 +247,14 @@ bool TestEzTime_ActionTime_PauseResume() {
     ActionTime timer;
 
     // Wait a bit
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
     // Pause
     timer.pause();
     uint64_t pausedTime = timer.get();
 
     // Wait more while paused
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     // Time should not have changed much
     uint64_t stillPausedTime = timer.get();
@@ -265,11 +265,11 @@ bool TestEzTime_ActionTime_PauseResume() {
     timer.resume();
 
     // Wait a bit more
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
     // Time should have increased again
     uint64_t resumedTime = timer.get();
-    CTEST_ASSERT(resumedTime > pausedTime + 10);
+    CTEST_ASSERT(resumedTime > pausedTime + 2);
 
     return true;
 }
@@ -277,17 +277,17 @@ bool TestEzTime_ActionTime_PauseResume() {
 bool TestEzTime_ActionTime_IsTimeToAct() {
     ActionTime timer;
 
-    // Immediately, should not be time to act for 100ms
-    CTEST_ASSERT(timer.isTimeToAct(100, false) == false);
+    // Immediately, should not be time to act for 20ms
+    CTEST_ASSERT(timer.isTimeToAct(20, false) == false);
 
-    // Wait 150ms
-    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    // Wait 30ms
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
     // Now it should be time to act
-    CTEST_ASSERT(timer.isTimeToAct(100, true) == true);
+    CTEST_ASSERT(timer.isTimeToAct(20, true) == true);
 
     // After fix, should not be time to act again immediately
-    CTEST_ASSERT(timer.isTimeToAct(100, false) == false);
+    CTEST_ASSERT(timer.isTimeToAct(20, false) == false);
 
     return true;
 }
@@ -332,14 +332,14 @@ bool TestEzTime_MeasureOperationUs_WithWork() {
 bool TestEzTime_WaitUntil_Success() {
     int counter = 0;
 
-    // Start a thread that will set counter to 5 after 50ms
+    // Start a thread that will set counter to 5 after 10ms
     std::thread t([&counter]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         counter = 5;
     });
 
-    // Wait for counter to be 5
-    bool result = waitUntil([&counter]() { return counter == 5; }, 200, 10);
+    // Wait for counter to be 5 (max 100ms, check every 5ms)
+    bool result = waitUntil([&counter]() { return counter == 5; }, 100, 5);
 
     CTEST_ASSERT(result == true);
     CTEST_ASSERT(counter == 5);
@@ -352,8 +352,8 @@ bool TestEzTime_WaitUntil_Success() {
 bool TestEzTime_WaitUntil_Timeout() {
     int counter = 0;
 
-    // Wait for something that will never happen
-    bool result = waitUntil([&counter]() { return counter == 100; }, 50, 10);
+    // Wait for something that will never happen (reduced timeout)
+    bool result = waitUntil([&counter]() { return counter == 100; }, 20, 5);
 
     // Should timeout and return false
     CTEST_ASSERT(result == false);
@@ -363,7 +363,7 @@ bool TestEzTime_WaitUntil_Timeout() {
 
 bool TestEzTime_WaitUntil_ImmediateTrue() {
     // Condition is already true
-    bool result = waitUntil([]() { return true; }, 100, 10);
+    bool result = waitUntil([]() { return true; }, 50, 5);
 
     // Should return immediately
     CTEST_ASSERT(result == true);
