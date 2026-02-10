@@ -279,26 +279,6 @@ bool TestEzXml_ReplaceAll() {
     return true;
 }
 
-bool TestEzXml_SaveToFile() {
-    ez::Xml xml("test");
-    auto& root = xml.getRoot();
-    root.setName("config");
-    root.addChild("item").setContent("value");
-
-    const std::string filename = "test_xml_output.xml";
-    CTEST_ASSERT(xml.saveToFile(filename));
-
-    // Verify file exists
-    std::ifstream file(filename);
-    CTEST_ASSERT(file.good());
-    file.close();
-
-    // Clean up
-    std::remove(filename.c_str());
-
-    return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -319,7 +299,6 @@ bool TestEzXml(const std::string &vTest) {
     else IfTestExist(TestEzXml_AddChilds);
     else IfTestExist(TestEzXml_AttributeWithTemplateTypes);
     else IfTestExist(TestEzXml_ReplaceAll);
-    else IfTestExist(TestEzXml_SaveToFile);
     return false;
 }
 

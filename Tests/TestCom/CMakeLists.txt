@@ -37,4 +37,8 @@ StageBuildInc()
 ##########################################################
 
 AddTest(TestEzNamedPipe_Basis)
+AddTest(TestEzNamedPipe_GetActivePipes)
+AddTest(TestEzNamedPipe_BufferCommunication)
+AddTest(TestEzNamedPipe_MultipleMessages)
+AddTest(TestEzNamedPipe_EmptyMessage)
 

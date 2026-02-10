@@ -130,6 +130,14 @@ AddTest("TestEzCnt_TwoTypename")
 AddTest("TestEzXml_ParsingOK")
 AddTest("TestEzXml_ParsingNOK_0")
 AddTest("TestEzXml_ParsingNOK_1")
+AddTest("TestEzXml_Writing_1")
+AddTest("TestEzXml_EscapeUnescapeXml")
+AddTest("TestEzXml_NodeOperations")
+AddTest("TestEzXml_GetOrAddChild")
+AddTest("TestEzXml_GetChildNull")
+AddTest("TestEzXml_AddChilds")
+AddTest("TestEzXml_AttributeWithTemplateTypes")
+AddTest("TestEzXml_ReplaceAll")
 
 ##########################################################
 ##### TESTS EzFigFont ####################################
@@ -176,6 +184,11 @@ AddTest("TestEzSqlite_SyntaxError_ParensUnbalancedOpen")
 AddTest("TestEzSqlite_SyntaxError_ParensUnbalancedClose")
 AddTest("TestEzSqlite_SyntaxError_SelectTrailingCommaBeforeFrom")
 AddTest("TestEzSqlite_SyntaxError_MultiLine_ShowLocation")
+AddTest("TestEzSqlite_QueryBuilder_InsertQuery")
+AddTest("TestEzSqlite_QueryBuilder_UpdateQuery")
+AddTest("TestEzSqlite_QueryBuilder_InsertIfNotExist")
+AddTest("TestEzSqlite_QueryBuilder_WithSubQuery")
+AddTest("TestEzSqlite_QueryBuilder_MultipleWhereConditions")
 
 ##########################################################
 ##### TESTS EzScreen #####################################
