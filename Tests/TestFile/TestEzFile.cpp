@@ -312,6 +312,62 @@ bool TestEzFile_saveBinToFileWithTimestamp() {
     return true;
 }
 
+bool TestEzFile_PathInfos_GetFPNE() {
+    ez::file::PathInfos info("mypath", "myfile", "txt");
+    CTEST_ASSERT(info.isOk);
+    std::string fpne = info.GetFPNE();
+    CTEST_ASSERT(fpne.find("myfile") != std::string::npos);
+    CTEST_ASSERT(fpne.find(".txt") != std::string::npos);
+    return true;
+}
+
+bool TestEzFile_PathInfos_GetFPNE_WithPath() {
+    ez::file::PathInfos info("oldpath", "file", "txt");
+    std::string fpne = info.GetFPNE_WithPath("newpath");
+    CTEST_ASSERT(fpne.find("newpath") != std::string::npos);
+    CTEST_ASSERT(fpne.find("file") != std::string::npos);
+    return true;
+}
+
+bool TestEzFile_PathInfos_GetFPNE_WithName() {
+    ez::file::PathInfos info("path", "oldname", "txt");
+    std::string fpne = info.GetFPNE_WithName("newname");
+    CTEST_ASSERT(fpne.find("newname") != std::string::npos);
+    CTEST_ASSERT(fpne.find(".txt") != std::string::npos);
+    return true;
+}
+
+bool TestEzFile_PathInfos_GetFPNE_WithExt() {
+    ez::file::PathInfos info("path", "file", "oldext");
+    std::string fpne = info.GetFPNE_WithExt("newext");
+    CTEST_ASSERT(fpne.find("file") != std::string::npos);
+    CTEST_ASSERT(fpne.find(".newext") != std::string::npos);
+    return true;
+}
+
+bool TestEzFile_PathInfos_GetFPNE_WithPathName() {
+    ez::file::PathInfos info("oldpath", "oldname", "txt");
+    std::string fpne = info.GetFPNE_WithPathName("newpath", "newname");
+    CTEST_ASSERT(fpne.find("newpath") != std::string::npos);
+    CTEST_ASSERT(fpne.find("newname") != std::string::npos);
+    return true;
+}
+
+bool TestEzFile_PathInfos_GetFPNE_WithNameExt() {
+    ez::file::PathInfos info("path", "oldname", "oldext");
+    std::string fpne = info.GetFPNE_WithNameExt("newname", "newext");
+    CTEST_ASSERT(fpne.find("newname") != std::string::npos);
+    CTEST_ASSERT(fpne.find(".newext") != std::string::npos);
+    return true;
+}
+
+bool TestEzFile_PathInfos_ExtensionInName() {
+    ez::file::PathInfos info("path", "file.tar", "");
+    CTEST_ASSERT(info.ext == "tar");
+    CTEST_ASSERT(info.name == "file");
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -341,6 +397,13 @@ bool TestEzFile(const std::string& vTest) {
     else IfTestExist(TestEzFile_correctSlashTypeEdgeCases);
     else IfTestExist(TestEzFile_saveStringToFileWithTimestamp);
     else IfTestExist(TestEzFile_saveBinToFileWithTimestamp);
+    else IfTestExist(TestEzFile_PathInfos_GetFPNE);
+    else IfTestExist(TestEzFile_PathInfos_GetFPNE_WithPath);
+    else IfTestExist(TestEzFile_PathInfos_GetFPNE_WithName);
+    else IfTestExist(TestEzFile_PathInfos_GetFPNE_WithExt);
+    else IfTestExist(TestEzFile_PathInfos_GetFPNE_WithPathName);
+    else IfTestExist(TestEzFile_PathInfos_GetFPNE_WithNameExt);
+    else IfTestExist(TestEzFile_PathInfos_ExtensionInName);
     return false;
 }
 

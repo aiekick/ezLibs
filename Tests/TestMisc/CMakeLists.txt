@@ -21,6 +21,7 @@ file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStackString.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezLog.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezSha.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezTemplater.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp
@@ -141,6 +142,21 @@ AddTest("TestEzFigFont_LoadAndPrint")
 ##########################################################
 
 AddTest("TestEzSha_0")
+
+##########################################################
+##### TESTS EzLog #########################################
+##########################################################
+
+AddTest("TestEzLog_LogSimpleString")
+AddTest("TestEzLog_LogSimpleStringByType")
+AddTest("TestEzLog_LogStringWithFunction")
+AddTest("TestEzLog_LogStringByTypeWithFunction")
+AddTest("TestEzLog_VerboseMode")
+AddTest("TestEzLog_LogMacros")
+AddTest("TestEzLog_LogLightMacros")
+AddTest("TestEzLog_LogDebugMacros")
+AddTest("TestEzLog_CustomLogFunctor")
+AddTest("TestEzLog_CloseAndReopen")
 
 ##########################################################
 ##### TESTS EzSqlite #####################################
