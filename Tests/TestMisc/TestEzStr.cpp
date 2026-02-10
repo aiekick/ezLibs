@@ -191,6 +191,216 @@ bool TestEzStrExtractWildcardsFromPattern() {
     return true;
 }
 
+bool TestEzStrToStr() {
+    std::string result = ez::str::toStr("Hello %s", "World");
+    CTEST_ASSERT(result == "Hello World");
+
+    result = ez::str::toStr("Number: %d", 42);
+    CTEST_ASSERT(result == "Number: 42");
+
+    result = ez::str::toStr("Float: %.2f", 3.14159);
+    CTEST_ASSERT(result == "Float: 3.14");
+
+    return true;
+}
+
+bool TestEzStrToStrFromArray() {
+    int arr[] = {1, 2, 3, 4};
+    std::string result = ez::str::toStrFromArray(arr, 4);
+    CTEST_ASSERT(result == "1;2;3;4");
+
+    result = ez::str::toStrFromArray(arr, 4, ',');
+    CTEST_ASSERT(result == "1,2,3,4");
+
+    float farr[] = {1.5f, 2.5f, 3.5f};
+    result = ez::str::toStrFromArray(farr, 3);
+    CTEST_ASSERT(!result.empty());
+
+    return true;
+}
+
+bool TestEzStrToStrTemplate() {
+    std::string result = ez::str::toStr(42);
+    CTEST_ASSERT(result == "42");
+
+    result = ez::str::toStr(3.14);
+    CTEST_ASSERT(!result.empty());
+
+    result = ez::str::toStr(true);
+    CTEST_ASSERT(result == "1");
+
+    return true;
+}
+
+bool TestEzStrSplitStringToListInversion() {
+    auto result = ez::str::splitStringToList("a,b,c", ",", false, true);
+    CTEST_ASSERT(result.size() == 3);
+    auto it = result.begin();
+    CTEST_ASSERT(*it++ == "c");
+    CTEST_ASSERT(*it++ == "b");
+    CTEST_ASSERT(*it++ == "a");
+
+    return true;
+}
+
+bool TestEzStrSplitStringToListEmpty() {
+    auto result = ez::str::splitStringToList("", ",");
+    CTEST_ASSERT(result.empty());
+
+    result = ez::str::splitStringToList("single", ",");
+    CTEST_ASSERT(result.size() == 1);
+    CTEST_ASSERT(result.front() == "single");
+
+    return true;
+}
+
+bool TestEzStrSplitStringToVectorEmpty() {
+    auto result = ez::str::splitStringToVector("", ";");
+    CTEST_ASSERT(result.empty());
+
+    result = ez::str::splitStringToVector("a;;b", ";", true);
+    CTEST_ASSERT(result.size() == 3);
+    CTEST_ASSERT(result[0] == "a");
+    CTEST_ASSERT(result[1].empty());
+    CTEST_ASSERT(result[2] == "b");
+
+    return true;
+}
+
+bool TestEzStrSplitStringToSetEmpty() {
+    auto result = ez::str::splitStringToSet("", ",");
+    CTEST_ASSERT(result.empty());
+
+    result = ez::str::splitStringToSet("a,b,a,b,c", ",");
+    CTEST_ASSERT(result.size() == 3);
+
+    return true;
+}
+
+bool TestEzStrStringToNumberEdgeCases() {
+    int intVal = 0;
+    CTEST_ASSERT(ez::str::stringToNumber("0", intVal));
+    CTEST_ASSERT(intVal == 0);
+
+    CTEST_ASSERT(ez::str::stringToNumber("-42", intVal));
+    CTEST_ASSERT(intVal == -42);
+
+    double doubleVal = 0.0;
+    CTEST_ASSERT(ez::str::stringToNumber("1.23456", doubleVal));
+    CTEST_ASSERT(doubleVal > 1.23 && doubleVal < 1.24);
+
+    return true;
+}
+
+bool TestEzStrStringToNumberVectorEmpty() {
+    auto result = ez::str::stringToNumberVector<int>("", ',');
+    CTEST_ASSERT(result.empty());
+
+    result = ez::str::stringToNumberVector<int>("42", ',');
+    CTEST_ASSERT(result.size() == 1);
+    CTEST_ASSERT(result[0] == 42);
+
+    return true;
+}
+
+bool TestEzStrToHexEdgeCases() {
+    CTEST_ASSERT(ez::str::toHex("ABC") == "414243");
+    CTEST_ASSERT(ez::str::toHex(" ") == "20");
+
+    return true;
+}
+
+bool TestEzStrToHexStrEdgeCases() {
+    CTEST_ASSERT(ez::str::toHexStr(0) == "0");
+    CTEST_ASSERT(ez::str::toHexStr(15) == "f");
+    CTEST_ASSERT(ez::str::toHexStr(256) == "100");
+
+    return true;
+}
+
+bool TestEzStrToDecStrEdgeCases() {
+    CTEST_ASSERT(ez::str::toDecStr(-1) == "-1");
+    CTEST_ASSERT(ez::str::toDecStr(999) == "999");
+
+    return true;
+}
+
+bool TestEzStrStrContainsEdgeCases() {
+    auto result = ez::str::strContains("", "test");
+    CTEST_ASSERT(result.empty());
+
+    result = ez::str::strContains("test", "");
+    CTEST_ASSERT(result.empty());
+
+    result = ez::str::strContains("aaa", "aa");
+    CTEST_ASSERT(result.size() == 2);
+    CTEST_ASSERT(result[0] == 0);
+    CTEST_ASSERT(result[1] == 1);
+
+    return true;
+}
+
+bool TestEzStrReplaceStringEdgeCases() {
+    std::string str = "";
+    CTEST_ASSERT(!ez::str::replaceString(str, "hello", "hi"));
+    CTEST_ASSERT(str.empty());
+
+    str = "aaa";
+    CTEST_ASSERT(ez::str::replaceString(str, "a", "b"));
+    CTEST_ASSERT(str == "bbb");
+
+    str = "test";
+    CTEST_ASSERT(ez::str::replaceString(str, "", "x") == false);
+
+    return true;
+}
+
+bool TestEzStrGetCountOccurenceEdgeCases() {
+    CTEST_ASSERT(ez::str::getCountOccurence("", "test") == 0);
+    CTEST_ASSERT(ez::str::getCountOccurence("test", "") == 0);
+    CTEST_ASSERT(ez::str::getCountOccurence("", 'x') == 0);
+
+    return true;
+}
+
+bool TestEzStrGetCountOccurenceInSectionEdgeCases() {
+    CTEST_ASSERT(ez::str::getCountOccurenceInSection("hello", 10, 20, "l") == 0);
+    CTEST_ASSERT(ez::str::getCountOccurenceInSection("hello", 0, 0, "l") == 0);
+    CTEST_ASSERT(ez::str::getCountOccurenceInSection("hello", 2, 4, 'l') == 1);
+
+    return true;
+}
+
+bool TestEzStrGetDigitsCountOfAIntegralNumberEdgeCases() {
+    CTEST_ASSERT(ez::str::getDigitsCountOfAIntegralNumber(-999) == 4);
+    CTEST_ASSERT(ez::str::getDigitsCountOfAIntegralNumber(999) == 3);
+    CTEST_ASSERT(ez::str::getDigitsCountOfAIntegralNumber(-10) == 3);
+
+    return true;
+}
+
+bool TestEzStrSearchForPatternWithWildcardsEdgeCases() {
+    std::string buffer = "TEST";
+    CTEST_ASSERT(ez::str::searchForPatternWithWildcards(buffer, "TEST") == "TEST");
+    CTEST_ASSERT(ez::str::searchForPatternWithWildcards(buffer, "T*T") == "TEST");
+    CTEST_ASSERT(ez::str::searchForPatternWithWildcards(buffer, "*E*") == "TEST");
+    CTEST_ASSERT(ez::str::searchForPatternWithWildcards("", "TEST").empty());
+
+    return true;
+}
+
+bool TestEzStrExtractWildcardsFromPatternEdgeCases() {
+    const auto arr = ez::str::extractWildcardsFromPattern("ABC", "*A*B*C*");
+    CTEST_ASSERT(arr.size() == 2U);
+    CTEST_ASSERT(arr.at(0).empty());
+    CTEST_ASSERT(arr.at(1).empty());
+
+    const auto arr2 = ez::str::extractWildcardsFromPattern("", "*test*");
+    CTEST_ASSERT(arr2.empty());
+
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -217,6 +427,25 @@ bool TestEzStr(const std::string& vTest) {
     else IfTestExist(TestEzStrGetDigitsCountOfAIntegralNumber);
     else IfTestExist(TestEzStrSearchForPatternWithWildcards);
     else IfTestExist(TestEzStrExtractWildcardsFromPattern);
+    else IfTestExist(TestEzStrToStr);
+    else IfTestExist(TestEzStrToStrFromArray);
+    else IfTestExist(TestEzStrToStrTemplate);
+    else IfTestExist(TestEzStrSplitStringToListInversion);
+    else IfTestExist(TestEzStrSplitStringToListEmpty);
+    else IfTestExist(TestEzStrSplitStringToVectorEmpty);
+    else IfTestExist(TestEzStrSplitStringToSetEmpty);
+    else IfTestExist(TestEzStrStringToNumberEdgeCases);
+    else IfTestExist(TestEzStrStringToNumberVectorEmpty);
+    else IfTestExist(TestEzStrToHexEdgeCases);
+    else IfTestExist(TestEzStrToHexStrEdgeCases);
+    else IfTestExist(TestEzStrToDecStrEdgeCases);
+    else IfTestExist(TestEzStrStrContainsEdgeCases);
+    else IfTestExist(TestEzStrReplaceStringEdgeCases);
+    else IfTestExist(TestEzStrGetCountOccurenceEdgeCases);
+    else IfTestExist(TestEzStrGetCountOccurenceInSectionEdgeCases);
+    else IfTestExist(TestEzStrGetDigitsCountOfAIntegralNumberEdgeCases);
+    else IfTestExist(TestEzStrSearchForPatternWithWildcardsEdgeCases);
+    else IfTestExist(TestEzStrExtractWildcardsFromPatternEdgeCases);
     return false;
 }
 
