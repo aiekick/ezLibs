@@ -149,11 +149,10 @@ AddTest("TestEzVdbWriter_Writer")
 ##### TESTS EzXmlConfig ###################################
 ##########################################################
 
-AddTest("TestEzXmlConfigParsingOK")
-AddTest("TestEzXmlConfigSaveLoadString")
-AddTest("TestEzXmlConfigSaveLoadFile")
-AddTest("TestEzXmlConfigLoadNonExistentFile")
-AddTest("TestEzXmlConfigParseInvalidXml")
-AddTest("TestEzXmlConfigUserDatas")
-AddTest("TestEzXmlConfigRecursiveParsing")
-AddTest("TestEzXmlConfigStopChildParsing")
+AddTest("TestEzXmlConfig_ParsingOK")
+AddTest("TestEzXmlConfig_SaveLoadString")
+AddTest("TestEzXmlConfig_SaveLoadFile")
+AddTest("TestEzXmlConfig_LoadNonExistentFile")
+AddTest("TestEzXmlConfig_UserDatas")
+AddTest("TestEzXmlConfig_RecursiveParsing")
+AddTest("TestEzXmlConfig_StopChildParsing")

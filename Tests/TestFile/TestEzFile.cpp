@@ -23,7 +23,7 @@ bool TestEzFile_saveStringToFile() {
     CTEST_ASSERT(ez::file::saveStringToFile(content, file));
     CTEST_ASSERT(ez::file::isFileExist(file));
     CTEST_ASSERT(ez::file::loadFileToString(file) == content);
-    ez::file::destroyFile(file);
+    CTEST_ASSERT(ez::file::destroyFile(file));
     return true;
 }
 
@@ -35,7 +35,7 @@ bool TestEzFile_saveBinToFile() {
     CTEST_ASSERT(ez::file::isFileExist(file));
     auto out = ez::file::loadFileToBin(file);
     CTEST_ASSERT(out == bin);
-    ez::file::destroyFile(file);
+    CTEST_ASSERT(ez::file::destroyFile(file));
     return true;
 }
 
@@ -87,17 +87,17 @@ bool TestEzFile_correctSlashTypeForFilePathName() {
 
 bool TestEzFile_createDirectoryIfNotExist() {
     const std::string dir = "test_temp_dir";
-    ez::file::destroyFile(dir);  // just in case it's a file
-    ez::file::destroyDir(dir);
+    CTEST_ASSERT(ez::file::destroyFile(dir));  // just in case it's a file
+    CTEST_ASSERT(ez::file::destroyDir(dir,false));
 
     CTEST_ASSERT(!ez::file::isDirectoryExist(dir));
     CTEST_ASSERT(ez::file::createDirectoryIfNotExist(dir));
     CTEST_ASSERT(ez::file::isDirectoryExist(dir));
     CTEST_ASSERT(!ez::file::createDirectoryIfNotExist(dir));
-    ez::file::destroyDir(dir);
+    CTEST_ASSERT(ez::file::destroyDir(dir, false));
     CTEST_ASSERT(ez::file::createDirectoryIfNotExist(dir));
 
-    ez::file::destroyDir(dir);
+    CTEST_ASSERT(ez::file::destroyDir(dir, false));
     return true;
 }
 
@@ -114,7 +114,7 @@ bool TestEzFile_loadFileToString() {
     std::string nonexist = ez::file::loadFileToString("nonexistent_12345.txt");
     CTEST_ASSERT(nonexist.empty());
 
-    ez::file::destroyFile(file);
+    CTEST_ASSERT(ez::file::destroyFile(file));
     return true;
 }
 
@@ -131,7 +131,7 @@ bool TestEzFile_loadFileToBin() {
     auto nonexist = ez::file::loadFileToBin("nonexistent_12345.bin");
     CTEST_ASSERT(nonexist.empty());
 
-    ez::file::destroyFile(file);
+    CTEST_ASSERT(ez::file::destroyFile(file));
     return true;
 }
 
@@ -139,7 +139,7 @@ bool TestEzFile_isFileExist() {
     const std::string file = "test_exist.txt";
 
     // File should not exist initially
-    ez::file::destroyFile(file);
+    CTEST_ASSERT(ez::file::destroyFile(file));
     CTEST_ASSERT(!ez::file::isFileExist(file));
 
     // Create file and check
@@ -147,7 +147,7 @@ bool TestEzFile_isFileExist() {
     CTEST_ASSERT(ez::file::isFileExist(file));
 
     // Cleanup
-    ez::file::destroyFile(file);
+    CTEST_ASSERT(ez::file::destroyFile(file));
     CTEST_ASSERT(!ez::file::isFileExist(file));
 
     return true;
@@ -157,7 +157,7 @@ bool TestEzFile_isDirectoryExist() {
     const std::string dir = "test_dir_exist";
 
     // Directory should not exist initially
-    ez::file::destroyDir(dir);
+    CTEST_ASSERT(ez::file::destroyDir(dir, false));
     CTEST_ASSERT(!ez::file::isDirectoryExist(dir));
 
     // Create directory and check
@@ -165,7 +165,7 @@ bool TestEzFile_isDirectoryExist() {
     CTEST_ASSERT(ez::file::isDirectoryExist(dir));
 
     // Cleanup
-    ez::file::destroyDir(dir);
+    CTEST_ASSERT(ez::file::destroyDir(dir, false));
     CTEST_ASSERT(!ez::file::isDirectoryExist(dir));
 
     return true;
@@ -180,8 +180,8 @@ bool TestEzFile_destroyFile() {
     CTEST_ASSERT(ez::file::destroyFile(file));
     CTEST_ASSERT(!ez::file::isFileExist(file));
 
-    // Destroying nonexistent file should not fail
-    CTEST_ASSERT(!ez::file::destroyFile("nonexistent_12345.txt"));
+    // Destroying nonexistent file, should not fail
+    CTEST_ASSERT(ez::file::destroyFile("nonexistent_12345.txt"));
 
     return true;
 }
@@ -192,11 +192,11 @@ bool TestEzFile_destroyDir() {
     // Create and destroy
     CTEST_ASSERT(ez::file::createDirectoryIfNotExist(dir));
     CTEST_ASSERT(ez::file::isDirectoryExist(dir));
-    CTEST_ASSERT(ez::file::destroyDir(dir));
+    CTEST_ASSERT(ez::file::destroyDir(dir, false));
     CTEST_ASSERT(!ez::file::isDirectoryExist(dir));
 
-    // Destroying nonexistent dir should not fail
-    CTEST_ASSERT(!ez::file::destroyDir("nonexistent_dir_12345"));
+    // Destroying nonexistent dir, should not fail
+    CTEST_ASSERT(ez::file::destroyDir("nonexistent_dir_12345", false));
 
     return true;
 }
@@ -205,14 +205,14 @@ bool TestEzFile_createPathIfNotExist() {
     const std::string path = "test_dir1/test_dir2/test_dir3";
 
     // Clean up first
-    ez::file::destroyDir("test_dir1");
+    CTEST_ASSERT(ez::file::destroyDir("test_dir1", true));
 
     // Create nested path
     CTEST_ASSERT(ez::file::createPathIfNotExist(path));
     CTEST_ASSERT(ez::file::isDirectoryExist(path));
 
     // Cleanup
-    ez::file::destroyDir("test_dir1");
+    CTEST_ASSERT(ez::file::destroyDir("test_dir1", true));
     CTEST_ASSERT(!ez::file::isDirectoryExist(path));
 
     return true;

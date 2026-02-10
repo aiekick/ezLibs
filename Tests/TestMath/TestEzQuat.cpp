@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-bool TestEzQuatDefaultConstructor() {
+bool TestEzQuat_DefaultConstructor() {
     ez::quat<T> q;
     // Default: identity quaternion (0,0,0,1)
     if (!ez::isEqual(q.x, static_cast<T>(0)))
@@ -29,7 +29,7 @@ bool TestEzQuatDefaultConstructor() {
 }
 
 template <typename T>
-bool TestEzQuatParameterConstructor() {
+bool TestEzQuat_ParameterConstructor() {
     ez::quat<T> q(1, 2, 3, 4);
     if (!ez::isEqual(q.x, static_cast<T>(1)))
         return false;
@@ -43,7 +43,7 @@ bool TestEzQuatParameterConstructor() {
 }
 
 template <typename T>
-bool TestEzQuatAdd() {
+bool TestEzQuat_Add() {
     ez::quat<T> q1(1, 2, 3, 4);
     ez::quat<T> q2(5, 6, 7, 8);
     q1.add(q2);
@@ -59,7 +59,7 @@ bool TestEzQuatAdd() {
 }
 
 template <typename T>
-bool TestEzQuatSub() {
+bool TestEzQuat_Sub() {
     ez::quat<T> q1(10, 20, 30, 40);
     ez::quat<T> q2(5, 6, 7, 8);
     q1.sub(q2);
@@ -75,7 +75,7 @@ bool TestEzQuatSub() {
 }
 
 template <typename T>
-bool TestEzQuatMul() {
+bool TestEzQuat_Mul() {
     ez::quat<T> q1(1, 0, 0, 1);
     ez::quat<T> q2(0, 1, 0, 1);
     q1.mul(q2);
@@ -86,7 +86,7 @@ bool TestEzQuatMul() {
 }
 
 template <typename T>
-bool TestEzQuatConjugate() {
+bool TestEzQuat_Conjugate() {
     ez::quat<T> q1(1, 2, 3, 4);
     ez::quat<T> q2;
     q2.conjugate(q1);
@@ -102,7 +102,7 @@ bool TestEzQuatConjugate() {
 }
 
 template <typename T>
-bool TestEzQuatScale() {
+bool TestEzQuat_Scale() {
     ez::quat<T> q(1, 2, 3, 4);
     q.scale(2);
     if (!ez::isEqual(q.x, static_cast<T>(2)))
@@ -117,7 +117,7 @@ bool TestEzQuatScale() {
 }
 
 template <typename T>
-bool TestEzQuatGetT() {
+bool TestEzQuat_GetT() {
     ez::quat<T> q(2, 3, 4, 5);
     if (!ez::isEqual(q.getTx(), static_cast<T>(10)))
         return false;
@@ -135,29 +135,29 @@ bool TestEzQuatGetT() {
     return v()
 
 bool TestEzQuat(const std::string& vTest) {
-    IfTestExist(TestEzQuatDefaultConstructor<float>);
-    else IfTestExist(TestEzQuatDefaultConstructor<double>);
+    IfTestExist(TestEzQuat_DefaultConstructor<float>);
+    else IfTestExist(TestEzQuat_DefaultConstructor<double>);
 
-    IfTestExist(TestEzQuatParameterConstructor<float>);
-    else IfTestExist(TestEzQuatParameterConstructor<double>);
+    IfTestExist(TestEzQuat_ParameterConstructor<float>);
+    else IfTestExist(TestEzQuat_ParameterConstructor<double>);
 
-    IfTestExist(TestEzQuatAdd<float>);
-    else IfTestExist(TestEzQuatAdd<double>);
+    IfTestExist(TestEzQuat_Add<float>);
+    else IfTestExist(TestEzQuat_Add<double>);
 
-    IfTestExist(TestEzQuatSub<float>);
-    else IfTestExist(TestEzQuatSub<double>);
+    IfTestExist(TestEzQuat_Sub<float>);
+    else IfTestExist(TestEzQuat_Sub<double>);
 
-    IfTestExist(TestEzQuatMul<float>);
-    else IfTestExist(TestEzQuatMul<double>);
+    IfTestExist(TestEzQuat_Mul<float>);
+    else IfTestExist(TestEzQuat_Mul<double>);
 
-    IfTestExist(TestEzQuatConjugate<float>);
-    else IfTestExist(TestEzQuatConjugate<double>);
+    IfTestExist(TestEzQuat_Conjugate<float>);
+    else IfTestExist(TestEzQuat_Conjugate<double>);
 
-    IfTestExist(TestEzQuatScale<float>);
-    else IfTestExist(TestEzQuatScale<double>);
+    IfTestExist(TestEzQuat_Scale<float>);
+    else IfTestExist(TestEzQuat_Scale<double>);
 
-    IfTestExist(TestEzQuatGetT<float>);
-    else IfTestExist(TestEzQuatGetT<double>);
+    IfTestExist(TestEzQuat_GetT<float>);
+    else IfTestExist(TestEzQuat_GetT<double>);
 
     return false;
 }

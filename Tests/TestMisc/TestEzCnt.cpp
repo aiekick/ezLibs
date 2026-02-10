@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzCntGeneric() {
+bool TestEzCnt_Generic() {
     return true;
 }
 
-bool TestEzCntOneTypename() {
+bool TestEzCnt_OneTypename() {
     ez::cnt::DicoVector<std::string> dico;
     CTEST_ASSERT(dico.tryAdd("toto") == true);
     CTEST_ASSERT(dico.tryAdd("toto", "tata") == false);
@@ -29,7 +29,7 @@ bool TestEzCntOneTypename() {
     return true;
 }
 
-bool TestEzCntTwoTypename() {
+bool TestEzCnt_TwoTypename() {
     ez::cnt::DicoVector<std::string, int32_t> dico;
     CTEST_ASSERT(dico.tryAdd("toto", 2));
     return true;
@@ -44,9 +44,9 @@ bool TestEzCntTwoTypename() {
     return v()
 
 bool TestEzCnt(const std::string& vTest) {
-    IfTestExist(TestEzCntGeneric);
-    else IfTestExist(TestEzCntOneTypename);
-    else IfTestExist(TestEzCntTwoTypename);
+    IfTestExist(TestEzCnt_Generic);
+    else IfTestExist(TestEzCnt_OneTypename);
+    else IfTestExist(TestEzCnt_TwoTypename);
     return false;
 }
 

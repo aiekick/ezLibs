@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzXmlParsingOK() {
+bool TestEzXml_ParsingOK() {
     const auto &doc =
             u8R"(
  < config > 
@@ -119,7 +119,7 @@ bool TestEzXmlParsingOK() {
 }
 
 // all attributes value must be some strings
-bool TestEzXmlParsingNOK_0() {
+bool TestEzXml_ParsingNOK_0() {
     const auto &doc =
             u8R"(
 <config>
@@ -134,7 +134,7 @@ bool TestEzXmlParsingNOK_0() {
 }
 
 // to tag end
-bool TestEzXmlParsingNOK_1() {
+bool TestEzXml_ParsingNOK_1() {
     const auto &doc =
             u8R"(
 <config>
@@ -147,7 +147,7 @@ bool TestEzXmlParsingNOK_1() {
     return true;
 }
 
-bool TestEzXmlWriting_1() {
+bool TestEzXml_Writing_1() {
     ez::Xml xml("test");
     auto &rootNode = xml.getRoot();
     rootNode.setName("config");
@@ -193,10 +193,10 @@ bool TestEzXmlWriting_1() {
     return v()
 
 bool TestEzXml(const std::string &vTest) {
-    IfTestExist(TestEzXmlParsingOK);
-    else IfTestExist(TestEzXmlParsingNOK_0);
-    else IfTestExist(TestEzXmlParsingNOK_1);
-    else IfTestExist(TestEzXmlWriting_1);
+    IfTestExist(TestEzXml_ParsingOK);
+    else IfTestExist(TestEzXml_ParsingNOK_0);
+    else IfTestExist(TestEzXml_ParsingNOK_1);
+    else IfTestExist(TestEzXml_Writing_1);
     return false;
 }
 

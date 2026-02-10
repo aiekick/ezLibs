@@ -36,5 +36,5 @@ StageBuildInc()
 ## TESTS NAMED PIPE ######################################
 ##########################################################
 
-AddTest(TestEzNamedPipeBasis)
+AddTest(TestEzNamedPipe_Basis)
 

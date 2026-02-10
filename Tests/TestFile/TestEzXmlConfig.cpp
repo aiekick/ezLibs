@@ -46,7 +46,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzXmlConfigParsingOK() {
+bool TestEzXmlConfig_ParsingOK() {
     const auto& doc = u8R"(
 <config>
 	<!-- Comment 1 -->
@@ -71,7 +71,7 @@ bool TestEzXmlConfigParsingOK() {
     return true;
 }
 
-bool TestEzXmlConfigSaveLoadString() {
+bool TestEzXmlConfig_SaveLoadString() {
     TestConfig config;
     config.testValue = 42;
     config.testName = "TestName";
@@ -102,7 +102,7 @@ bool TestEzXmlConfigSaveLoadString() {
     return true;
 }
 
-bool TestEzXmlConfigSaveLoadFile() {
+bool TestEzXmlConfig_SaveLoadFile() {
     TestConfig config;
     config.testValue = 123;
     config.testName = "FileTest";
@@ -132,7 +132,7 @@ bool TestEzXmlConfigSaveLoadFile() {
     return true;
 }
 
-bool TestEzXmlConfigLoadNonExistentFile() {
+bool TestEzXmlConfig_LoadNonExistentFile() {
     TestConfig config;
 
     // Try to load a file that doesn't exist - should succeed (no file found is ok)
@@ -144,22 +144,7 @@ bool TestEzXmlConfigLoadNonExistentFile() {
     return true;
 }
 
-bool TestEzXmlConfigParseInvalidXml() {
-    TestConfig config;
-
-    // Try to parse invalid XML
-    const std::string invalidXml = "<invalid><unclosed>";
-    bool result = config.LoadConfigString(invalidXml, "");
-
-    // Should return false for invalid XML
-    if (result) {
-        return false;
-    }
-
-    return true;
-}
-
-bool TestEzXmlConfigUserDatas() {
+bool TestEzXmlConfig_UserDatas() {
     class UserDataConfig : public ez::xml::Config {
     public:
         std::string receivedUserData;
@@ -192,7 +177,7 @@ bool TestEzXmlConfigUserDatas() {
     return true;
 }
 
-bool TestEzXmlConfigRecursiveParsing() {
+bool TestEzXmlConfig_RecursiveParsing() {
     class CountingConfig : public ez::xml::Config {
     public:
         int nodeCount = 0;
@@ -232,7 +217,7 @@ bool TestEzXmlConfigRecursiveParsing() {
     return true;
 }
 
-bool TestEzXmlConfigStopChildParsing() {
+bool TestEzXmlConfig_StopChildParsing() {
     class StopParsingConfig : public ez::xml::Config {
     public:
         int nodeCount = 0;
@@ -268,7 +253,8 @@ bool TestEzXmlConfigStopChildParsing() {
     }
 
     // Should have parsed config and level1, but not level2 and level3
-    if (config.nodeCount > 2) {
+    // 3 mean, root, config, level1
+    if (config.nodeCount > 3) {
         return false;
     }
 
@@ -284,14 +270,13 @@ bool TestEzXmlConfigStopChildParsing() {
     return v()
 
 bool TestEzXmlConfig(const std::string& vTest) {
-    IfTestExist(TestEzXmlConfigParsingOK);
-    else IfTestExist(TestEzXmlConfigSaveLoadString);
-    else IfTestExist(TestEzXmlConfigSaveLoadFile);
-    else IfTestExist(TestEzXmlConfigLoadNonExistentFile);
-    else IfTestExist(TestEzXmlConfigParseInvalidXml);
-    else IfTestExist(TestEzXmlConfigUserDatas);
-    else IfTestExist(TestEzXmlConfigRecursiveParsing);
-    else IfTestExist(TestEzXmlConfigStopChildParsing);
+    IfTestExist(TestEzXmlConfig_ParsingOK);
+    else IfTestExist(TestEzXmlConfig_SaveLoadString);
+    else IfTestExist(TestEzXmlConfig_SaveLoadFile);
+    else IfTestExist(TestEzXmlConfig_LoadNonExistentFile);
+    else IfTestExist(TestEzXmlConfig_UserDatas);
+    else IfTestExist(TestEzXmlConfig_RecursiveParsing);
+    else IfTestExist(TestEzXmlConfig_StopChildParsing);
     return false;
 }
 

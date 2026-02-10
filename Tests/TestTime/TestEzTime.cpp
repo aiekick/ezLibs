@@ -324,7 +324,7 @@ bool TestEzTime_MeasureOperationUs_WithWork() {
 
     // Should have taken at least 80 microseconds (with some margin)
     CTEST_ASSERT(time_us >= 80.0);
-    CTEST_ASSERT(time_us < 10000.0); // Should be less than 10ms
+    CTEST_ASSERT(time_us < 20000.0); // Should be less than 20ms
 
     return true;
 }

@@ -219,12 +219,15 @@ public:
     }
     
     uint64_t get() const {
+        if (!m_Play) {
+            return m_PauseTick - m_LastTick;
+        }
         return getTicks() - m_LastTick;
     }
     
     double getTime() const {
         static double secMult = 1e-3;
-        return (getTicks() - m_LastTick) * secMult;
+        return get() * secMult;
     }
 
     void setTime(double vValue){  // set le temps

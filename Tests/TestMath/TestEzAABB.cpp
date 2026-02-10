@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-bool TestEzAABBDefaultConstructor() {
+bool TestEzAABB_DefaultConstructor() {
     ez::AABB<T> aabb;
     if (!ez::isEqual(aabb.lowerBound.x, static_cast<T>(0)))
         return false;
@@ -28,7 +28,7 @@ bool TestEzAABBDefaultConstructor() {
 }
 
 template <typename T>
-bool TestEzAABBVec2Constructor() {
+bool TestEzAABB_Vec2Constructor() {
     ez::vec2<T> lower(1, 2);
     ez::vec2<T> upper(5, 6);
     ez::AABB<T> aabb(lower, upper);
@@ -44,7 +44,7 @@ bool TestEzAABBVec2Constructor() {
 }
 
 template <typename T>
-bool TestEzAABBVec4Constructor() {
+bool TestEzAABB_Vec4Constructor() {
     ez::vec4<T> v(1, 2, 5, 6);
     ez::AABB<T> aabb(v);
     if (!ez::isEqual(aabb.lowerBound.x, static_cast<T>(1)))
@@ -59,7 +59,7 @@ bool TestEzAABBVec4Constructor() {
 }
 
 template <typename T>
-bool TestEzAABBAddVec() {
+bool TestEzAABB_AddVec() {
     ez::vec2<T> lower(1, 2);
     ez::vec2<T> upper(5, 6);
     ez::AABB<T> aabb(lower, upper);
@@ -77,7 +77,7 @@ bool TestEzAABBAddVec() {
 }
 
 template <typename T>
-bool TestEzAABBSubVec() {
+bool TestEzAABB_SubVec() {
     ez::vec2<T> lower(10, 20);
     ez::vec2<T> upper(50, 60);
     ez::AABB<T> aabb(lower, upper);
@@ -95,7 +95,7 @@ bool TestEzAABBSubVec() {
 }
 
 template <typename T>
-bool TestEzAABBMulScalar() {
+bool TestEzAABB_MulScalar() {
     ez::vec2<T> lower(1, 2);
     ez::vec2<T> upper(5, 6);
     ez::AABB<T> aabb(lower, upper);
@@ -112,7 +112,7 @@ bool TestEzAABBMulScalar() {
 }
 
 template <typename T>
-bool TestEzAABBDivScalar() {
+bool TestEzAABB_DivScalar() {
     ez::vec2<T> lower(10, 20);
     ez::vec2<T> upper(50, 60);
     ez::AABB<T> aabb(lower, upper);
@@ -135,26 +135,26 @@ bool TestEzAABBDivScalar() {
     return v()
 
 bool TestEzAABB(const std::string& vTest) {
-    IfTestExist(TestEzAABBDefaultConstructor<float>);
-    else IfTestExist(TestEzAABBDefaultConstructor<double>);
+    IfTestExist(TestEzAABB_DefaultConstructor<float>);
+    else IfTestExist(TestEzAABB_DefaultConstructor<double>);
 
-    IfTestExist(TestEzAABBVec2Constructor<float>);
-    else IfTestExist(TestEzAABBVec2Constructor<double>);
+    IfTestExist(TestEzAABB_Vec2Constructor<float>);
+    else IfTestExist(TestEzAABB_Vec2Constructor<double>);
 
-    IfTestExist(TestEzAABBVec4Constructor<float>);
-    else IfTestExist(TestEzAABBVec4Constructor<double>);
+    IfTestExist(TestEzAABB_Vec4Constructor<float>);
+    else IfTestExist(TestEzAABB_Vec4Constructor<double>);
 
-    IfTestExist(TestEzAABBAddVec<float>);
-    else IfTestExist(TestEzAABBAddVec<double>);
+    IfTestExist(TestEzAABB_AddVec<float>);
+    else IfTestExist(TestEzAABB_AddVec<double>);
 
-    IfTestExist(TestEzAABBSubVec<float>);
-    else IfTestExist(TestEzAABBSubVec<double>);
+    IfTestExist(TestEzAABB_SubVec<float>);
+    else IfTestExist(TestEzAABB_SubVec<double>);
 
-    IfTestExist(TestEzAABBMulScalar<float>);
-    else IfTestExist(TestEzAABBMulScalar<double>);
+    IfTestExist(TestEzAABB_MulScalar<float>);
+    else IfTestExist(TestEzAABB_MulScalar<double>);
 
-    IfTestExist(TestEzAABBDivScalar<float>);
-    else IfTestExist(TestEzAABBDivScalar<double>);
+    IfTestExist(TestEzAABB_DivScalar<float>);
+    else IfTestExist(TestEzAABB_DivScalar<double>);
 
     return false;
 }
