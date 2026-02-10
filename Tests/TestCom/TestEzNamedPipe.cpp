@@ -23,12 +23,12 @@
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool TestEzNamedPipeBasis() {
+bool TestEzNamedPipe_Basis() {
     const std::string message1 = "HELLO";
-    auto serverPtr = ez::NamedPipe::Server::create("TestEzNamedPipeBasis", 512);
+    auto serverPtr = ez::NamedPipe::Server::create("TestEzNamedPipe_Basis", 512);
     CTEST_ASSERT_MESSAGE(serverPtr != nullptr, "server init ?");
     std::this_thread::sleep_for(std::chrono::milliseconds(100));  // Give server time to start
-    auto clientPtr = ez::NamedPipe::Client::create("TestEzNamedPipeBasis");
+    auto clientPtr = ez::NamedPipe::Client::create("TestEzNamedPipe_Basis");
     CTEST_ASSERT_MESSAGE(clientPtr != nullptr, "client init ?");
     CTEST_ASSERT_MESSAGE(clientPtr->writeString(message1), "client sending ?");
     CTEST_ASSERT_MESSAGE(serverPtr->isMessageReceived(), "server received a message ?");
@@ -60,7 +60,7 @@ bool TestEzNamedPipeBasis() {
     return v()
 
 bool TestEzNamedPipe(const std::string& vTest) {
-    IfTestExist(TestEzNamedPipeBasis);
+    IfTestExist(TestEzNamedPipe_Basis);
     return false;
 }
 

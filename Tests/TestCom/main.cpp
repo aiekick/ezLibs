@@ -22,5 +22,5 @@ int main(int argc, char** argv) {
         return TestCom(argv[1]) ? 0 : 1;
     }
     // User testing
-    return TestCom("TestEzNamedPipeBasis") ? 0 : 1;
+    return TestCom("TestEzNamedPipe_Basis") ? 0 : 1;
 }

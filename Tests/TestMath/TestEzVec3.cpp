@@ -23,7 +23,7 @@
 
 // Test for Offset function
 template <typename T>
-bool TestEzVec3Offset() {
+bool TestEzVec3_Offset() {
     ez::vec3<T> v(1, 2, 3);
     ez::vec3<T> offsetResult = v.Offset(1, 1, 1);
     if (offsetResult.x != 2)
@@ -37,7 +37,7 @@ bool TestEzVec3Offset() {
 
 // Test for Set function
 template <typename T>
-bool TestEzVec3Set() {
+bool TestEzVec3_Set() {
     ez::vec3<T> v;
     v.Set(4, 5, 6);
     if (v.x != 4)
@@ -51,7 +51,7 @@ bool TestEzVec3Set() {
 
 // Test for Negate operator
 template <typename T>
-bool TestEzVec3Negate() {
+bool TestEzVec3_Negate() {
     ez::vec3<T> v(1, -2, 3);
     ez::vec3<T> negateResult = -v;
     if (negateResult.x != -1)
@@ -65,7 +65,7 @@ bool TestEzVec3Negate() {
 
 // Test for logical NOT operator
 template <typename T>
-bool TestEzVec3LogicalNot() {
+bool TestEzVec3_LogicalNot() {
     ez::vec3<T> v(1, 0, 3);
     ez::vec3<T> notResult = !v;
     if (notResult.x != 0)
@@ -79,7 +79,7 @@ bool TestEzVec3LogicalNot() {
 
 // Test for xy function
 template <typename T>
-bool TestEzVec3XY() {
+bool TestEzVec3_XY() {
     ez::vec3<T> v(1, 2, 3);
     ez::vec2<T> xyResult = v.xy();
     if (xyResult.x != 1)
@@ -91,7 +91,7 @@ bool TestEzVec3XY() {
 
 // Test for xz function
 template <typename T>
-bool TestEzVec3XZ() {
+bool TestEzVec3_XZ() {
     ez::vec3<T> v(1, 2, 3);
     ez::vec2<T> xzResult = v.xz();
     if (xzResult.x != 1)
@@ -103,7 +103,7 @@ bool TestEzVec3XZ() {
 
 // Test for yz function
 template <typename T>
-bool TestEzVec3YZ() {
+bool TestEzVec3_YZ() {
     ez::vec3<T> v(1, 2, 3);
     ez::vec2<T> yzResult = v.yz();
     if (yzResult.x != 2)
@@ -115,7 +115,7 @@ bool TestEzVec3YZ() {
 
 // Test for yzx function
 template <typename T>
-bool TestEzVec3YZX() {
+bool TestEzVec3_YZX() {
     ez::vec3<T> v(1, 2, 3);
     ez::vec3<T> yzxResult = v.yzx();
     if (yzxResult.x != 2)
@@ -129,7 +129,7 @@ bool TestEzVec3YZX() {
 
 // Test for Increment operator
 template <typename T>
-bool TestEzVec3Increment() {
+bool TestEzVec3_Increment() {
     ez::vec3<T> v(1, 2, 3);
     ++v;
     if (v.x != 2)
@@ -143,7 +143,7 @@ bool TestEzVec3Increment() {
 
 // Test for Decrement operator
 template <typename T>
-bool TestEzVec3Decrement() {
+bool TestEzVec3_Decrement() {
     ez::vec3<T> v(1, 2, 3);
     --v;
     if (v.x != 0)
@@ -157,7 +157,7 @@ bool TestEzVec3Decrement() {
 
 // Test for Length function
 template <typename T>
-bool TestEzVec3Length() {
+bool TestEzVec3_Length() {
     ez::vec3<T> v(3, 4, 0);
     T len = v.length();
     if (len != 5)
@@ -166,7 +166,7 @@ bool TestEzVec3Length() {
 }
 
 template <>
-bool TestEzVec3Length<float>() {
+bool TestEzVec3_Length<float>() {
     ez::vec3<float> v(3.0f, 4.0f, 0.0f);
     float len = v.length();
     if (ez::abs(len - 5.0f) > 0.0001f)
@@ -176,7 +176,7 @@ bool TestEzVec3Length<float>() {
 
 // Test for Normalize function
 template <typename T>
-bool TestEzVec3Normalize() {
+bool TestEzVec3_Normalize() {
     ez::vec3<T> v(3, 4, 0);
     v.normalize();
     if (ez::isDifferent(v.length(), static_cast<T>(1.0)))
@@ -185,18 +185,18 @@ bool TestEzVec3Normalize() {
 }
 
 template <>
-bool TestEzVec3Normalize<int32_t>() {
+bool TestEzVec3_Normalize<int32_t>() {
     return false;  // Normalization is invalid for integer types
 }
 
 template <>
-bool TestEzVec3Normalize<int64_t>() {
+bool TestEzVec3_Normalize<int64_t>() {
     return false;  // Normalization is invalid for integer types
 }
 
 // Test for Sum function
 template <typename T>
-bool TestEzVec3Sum() {
+bool TestEzVec3_Sum() {
     ez::vec3<T> v(1, 2, 3);
     T sum = v.sum();
     if (sum != 6)
@@ -206,7 +206,7 @@ bool TestEzVec3Sum() {
 
 // Test for SumAbs function
 template <typename T>
-bool TestEzVec3SumAbs() {
+bool TestEzVec3_SumAbs() {
     ez::vec3<T> v(1, -2, 3);
     T sumAbs = v.sumAbs();
     if (sumAbs != 6)
@@ -216,7 +216,7 @@ bool TestEzVec3SumAbs() {
 
 // Test for EmptyAND function
 template <typename T>
-bool TestEzVec3EmptyAND() {
+bool TestEzVec3_EmptyAND() {
     ez::vec3<T> v(0, 0, 0);
     if (!v.emptyAND())
         return false;
@@ -228,7 +228,7 @@ bool TestEzVec3EmptyAND() {
 
 // Test for EmptyOR function
 template <typename T>
-bool TestEzVec3EmptyOR() {
+bool TestEzVec3_EmptyOR() {
     ez::vec3<T> v(0, 1, 1);
     if (!v.emptyOR())
         return false;
@@ -240,7 +240,7 @@ bool TestEzVec3EmptyOR() {
 
 // Test for String conversion
 template <typename T>
-bool TestEzVec3String() {
+bool TestEzVec3_String() {
     ez::vec3<T> v(1, 2, 3);
     std::string str = v.string();
     if (str != "1;2;3")
@@ -250,7 +250,7 @@ bool TestEzVec3String() {
 
 // Test for Mini function
 template <typename T>
-bool TestEzVec3Mini() {
+bool TestEzVec3_Mini() {
     ez::vec3<T> v(1, 2, 3);
     if (ez::isDifferent(v.mini(), static_cast<T>(1)))
         return false;
@@ -259,7 +259,7 @@ bool TestEzVec3Mini() {
 
 // Test for Maxi function
 template <typename T>
-bool TestEzVec3Maxi() {
+bool TestEzVec3_Maxi() {
     ez::vec3<T> v(1, 2, 3);
     if (ez::isDifferent(v.maxi(), static_cast<T>(3)))
         return false;
@@ -268,7 +268,7 @@ bool TestEzVec3Maxi() {
 
 // Test for Equality operator
 template <typename T>
-bool TestEzVec3Equality() {
+bool TestEzVec3_Equality() {
     ez::vec3<T> v1(1, 2, 3);
     ez::vec3<T> v2(1, 2, 3);
     if (!(v1 == v2))
@@ -281,7 +281,7 @@ bool TestEzVec3Equality() {
 
 // Test for Arithmetic operators
 template <typename T>
-bool TestEzVec3Addition() {
+bool TestEzVec3_Addition() {
     ez::vec3<T> v1(1, 2, 3);
     ez::vec3<T> v2(4, 5, 6);
     ez::vec3<T> result = v1 + v2;
@@ -295,7 +295,7 @@ bool TestEzVec3Addition() {
 }
 
 template <typename T>
-bool TestEzVec3Subtraction() {
+bool TestEzVec3_Subtraction() {
     ez::vec3<T> v1(4, 5, 6);
     ez::vec3<T> v2(1, 2, 3);
     ez::vec3<T> result = v1 - v2;
@@ -309,7 +309,7 @@ bool TestEzVec3Subtraction() {
 }
 
 template <typename T>
-bool TestEzVec3Multiplication() {
+bool TestEzVec3_Multiplication() {
     ez::vec3<T> v(1, 2, 3);
     ez::vec3<T> result = v * static_cast<T>(2);
     if (result.x != 2)
@@ -322,7 +322,7 @@ bool TestEzVec3Multiplication() {
 }
 
 template <typename T>
-bool TestEzVec3Division() {
+bool TestEzVec3_Division() {
     ez::vec3<T> v(4, 6, 8);
     ez::vec3<T> result = v / static_cast<T>(2);
     if (result.x != 2)
@@ -339,157 +339,157 @@ bool TestEzVec3Division() {
     return v()
 
 bool TestEzVec3(const std::string& vTest) {
-    IfTestExist(TestEzVec3Offset<float>);
-    else IfTestExist(TestEzVec3Offset<double>);
-    else IfTestExist(TestEzVec3Offset<int32_t>);
-    else IfTestExist(TestEzVec3Offset<int64_t>);
-    else IfTestExist(TestEzVec3Offset<uint32_t>);
-    else IfTestExist(TestEzVec3Offset<uint64_t>);
+    IfTestExist(TestEzVec3_Offset<float>);
+    else IfTestExist(TestEzVec3_Offset<double>);
+    else IfTestExist(TestEzVec3_Offset<int32_t>);
+    else IfTestExist(TestEzVec3_Offset<int64_t>);
+    else IfTestExist(TestEzVec3_Offset<uint32_t>);
+    else IfTestExist(TestEzVec3_Offset<uint64_t>);
 
-    IfTestExist(TestEzVec3Set<float>);
-    else IfTestExist(TestEzVec3Set<double>);
-    else IfTestExist(TestEzVec3Set<int32_t>);
-    else IfTestExist(TestEzVec3Set<uint32_t>);
-    else IfTestExist(TestEzVec3Set<int64_t>);
-    else IfTestExist(TestEzVec3Set<uint64_t>);
+    IfTestExist(TestEzVec3_Set<float>);
+    else IfTestExist(TestEzVec3_Set<double>);
+    else IfTestExist(TestEzVec3_Set<int32_t>);
+    else IfTestExist(TestEzVec3_Set<uint32_t>);
+    else IfTestExist(TestEzVec3_Set<int64_t>);
+    else IfTestExist(TestEzVec3_Set<uint64_t>);
 
-    IfTestExist(TestEzVec3Negate<float>);
-    else IfTestExist(TestEzVec3Negate<double>);
-    else IfTestExist(TestEzVec3Negate<int32_t>);
-    else IfTestExist(TestEzVec3Negate<int64_t>);
+    IfTestExist(TestEzVec3_Negate<float>);
+    else IfTestExist(TestEzVec3_Negate<double>);
+    else IfTestExist(TestEzVec3_Negate<int32_t>);
+    else IfTestExist(TestEzVec3_Negate<int64_t>);
 
-    IfTestExist(TestEzVec3LogicalNot<int32_t>);
-    else IfTestExist(TestEzVec3LogicalNot<int64_t>);
+    IfTestExist(TestEzVec3_LogicalNot<int32_t>);
+    else IfTestExist(TestEzVec3_LogicalNot<int64_t>);
 
-    IfTestExist(TestEzVec3XY<float>);
-    else IfTestExist(TestEzVec3XY<double>);
-    else IfTestExist(TestEzVec3XY<int32_t>);
-    else IfTestExist(TestEzVec3XY<uint32_t>);
-    else IfTestExist(TestEzVec3XY<int64_t>);
-    else IfTestExist(TestEzVec3XY<uint64_t>);
+    IfTestExist(TestEzVec3_XY<float>);
+    else IfTestExist(TestEzVec3_XY<double>);
+    else IfTestExist(TestEzVec3_XY<int32_t>);
+    else IfTestExist(TestEzVec3_XY<uint32_t>);
+    else IfTestExist(TestEzVec3_XY<int64_t>);
+    else IfTestExist(TestEzVec3_XY<uint64_t>);
 
-    IfTestExist(TestEzVec3XZ<float>);
-    else IfTestExist(TestEzVec3XZ<double>);
-    else IfTestExist(TestEzVec3XZ<int32_t>);
-    else IfTestExist(TestEzVec3XZ<uint32_t>);
-    else IfTestExist(TestEzVec3XZ<int64_t>);
-    else IfTestExist(TestEzVec3XZ<uint64_t>);
+    IfTestExist(TestEzVec3_XZ<float>);
+    else IfTestExist(TestEzVec3_XZ<double>);
+    else IfTestExist(TestEzVec3_XZ<int32_t>);
+    else IfTestExist(TestEzVec3_XZ<uint32_t>);
+    else IfTestExist(TestEzVec3_XZ<int64_t>);
+    else IfTestExist(TestEzVec3_XZ<uint64_t>);
 
-    IfTestExist(TestEzVec3YZ<float>);
-    else IfTestExist(TestEzVec3YZ<double>);
-    else IfTestExist(TestEzVec3YZ<int32_t>);
-    else IfTestExist(TestEzVec3YZ<uint32_t>);
-    else IfTestExist(TestEzVec3YZ<int64_t>);
-    else IfTestExist(TestEzVec3YZ<uint64_t>);
+    IfTestExist(TestEzVec3_YZ<float>);
+    else IfTestExist(TestEzVec3_YZ<double>);
+    else IfTestExist(TestEzVec3_YZ<int32_t>);
+    else IfTestExist(TestEzVec3_YZ<uint32_t>);
+    else IfTestExist(TestEzVec3_YZ<int64_t>);
+    else IfTestExist(TestEzVec3_YZ<uint64_t>);
 
-    IfTestExist(TestEzVec3YZX<float>);
-    else IfTestExist(TestEzVec3YZX<double>);
-    else IfTestExist(TestEzVec3YZX<int32_t>);
-    else IfTestExist(TestEzVec3YZX<uint32_t>);
-    else IfTestExist(TestEzVec3YZX<int64_t>);
-    else IfTestExist(TestEzVec3YZX<uint64_t>);
+    IfTestExist(TestEzVec3_YZX<float>);
+    else IfTestExist(TestEzVec3_YZX<double>);
+    else IfTestExist(TestEzVec3_YZX<int32_t>);
+    else IfTestExist(TestEzVec3_YZX<uint32_t>);
+    else IfTestExist(TestEzVec3_YZX<int64_t>);
+    else IfTestExist(TestEzVec3_YZX<uint64_t>);
 
-    IfTestExist(TestEzVec3Increment<float>);
-    else IfTestExist(TestEzVec3Increment<double>);
-    else IfTestExist(TestEzVec3Increment<int32_t>);
-    else IfTestExist(TestEzVec3Increment<uint32_t>);
-    else IfTestExist(TestEzVec3Increment<int64_t>);
-    else IfTestExist(TestEzVec3Increment<uint64_t>);
+    IfTestExist(TestEzVec3_Increment<float>);
+    else IfTestExist(TestEzVec3_Increment<double>);
+    else IfTestExist(TestEzVec3_Increment<int32_t>);
+    else IfTestExist(TestEzVec3_Increment<uint32_t>);
+    else IfTestExist(TestEzVec3_Increment<int64_t>);
+    else IfTestExist(TestEzVec3_Increment<uint64_t>);
 
-    IfTestExist(TestEzVec3Decrement<float>);
-    else IfTestExist(TestEzVec3Decrement<double>);
-    else IfTestExist(TestEzVec3Decrement<int32_t>);
-    else IfTestExist(TestEzVec3Decrement<uint32_t>);
-    else IfTestExist(TestEzVec3Decrement<int64_t>);
-    else IfTestExist(TestEzVec3Decrement<uint64_t>);
+    IfTestExist(TestEzVec3_Decrement<float>);
+    else IfTestExist(TestEzVec3_Decrement<double>);
+    else IfTestExist(TestEzVec3_Decrement<int32_t>);
+    else IfTestExist(TestEzVec3_Decrement<uint32_t>);
+    else IfTestExist(TestEzVec3_Decrement<int64_t>);
+    else IfTestExist(TestEzVec3_Decrement<uint64_t>);
 
-    IfTestExist(TestEzVec3Length<float>);
-    else IfTestExist(TestEzVec3Length<double>);
+    IfTestExist(TestEzVec3_Length<float>);
+    else IfTestExist(TestEzVec3_Length<double>);
 
-    IfTestExist(TestEzVec3Normalize<float>);
-    else IfTestExist(TestEzVec3Normalize<double>);
+    IfTestExist(TestEzVec3_Normalize<float>);
+    else IfTestExist(TestEzVec3_Normalize<double>);
 
-    IfTestExist(TestEzVec3Sum<float>);
-    else IfTestExist(TestEzVec3Sum<double>);
-    else IfTestExist(TestEzVec3Sum<int32_t>);
-    else IfTestExist(TestEzVec3Sum<uint32_t>);
-    else IfTestExist(TestEzVec3Sum<int64_t>);
-    else IfTestExist(TestEzVec3Sum<uint64_t>);
+    IfTestExist(TestEzVec3_Sum<float>);
+    else IfTestExist(TestEzVec3_Sum<double>);
+    else IfTestExist(TestEzVec3_Sum<int32_t>);
+    else IfTestExist(TestEzVec3_Sum<uint32_t>);
+    else IfTestExist(TestEzVec3_Sum<int64_t>);
+    else IfTestExist(TestEzVec3_Sum<uint64_t>);
 
-    IfTestExist(TestEzVec3SumAbs<float>);
-    else IfTestExist(TestEzVec3SumAbs<double>);
-    else IfTestExist(TestEzVec3SumAbs<int32_t>);
-    else IfTestExist(TestEzVec3SumAbs<int64_t>);
+    IfTestExist(TestEzVec3_SumAbs<float>);
+    else IfTestExist(TestEzVec3_SumAbs<double>);
+    else IfTestExist(TestEzVec3_SumAbs<int32_t>);
+    else IfTestExist(TestEzVec3_SumAbs<int64_t>);
 
-    IfTestExist(TestEzVec3EmptyAND<float>);
-    else IfTestExist(TestEzVec3EmptyAND<double>);
-    else IfTestExist(TestEzVec3EmptyAND<int32_t>);
-    else IfTestExist(TestEzVec3EmptyAND<uint32_t>);
-    else IfTestExist(TestEzVec3EmptyAND<int64_t>);
-    else IfTestExist(TestEzVec3EmptyAND<uint64_t>);
+    IfTestExist(TestEzVec3_EmptyAND<float>);
+    else IfTestExist(TestEzVec3_EmptyAND<double>);
+    else IfTestExist(TestEzVec3_EmptyAND<int32_t>);
+    else IfTestExist(TestEzVec3_EmptyAND<uint32_t>);
+    else IfTestExist(TestEzVec3_EmptyAND<int64_t>);
+    else IfTestExist(TestEzVec3_EmptyAND<uint64_t>);
 
-    IfTestExist(TestEzVec3EmptyOR<float>);
-    else IfTestExist(TestEzVec3EmptyOR<double>);
-    else IfTestExist(TestEzVec3EmptyOR<int32_t>);
-    else IfTestExist(TestEzVec3EmptyOR<uint32_t>);
-    else IfTestExist(TestEzVec3EmptyOR<int64_t>);
-    else IfTestExist(TestEzVec3EmptyOR<uint64_t>);
+    IfTestExist(TestEzVec3_EmptyOR<float>);
+    else IfTestExist(TestEzVec3_EmptyOR<double>);
+    else IfTestExist(TestEzVec3_EmptyOR<int32_t>);
+    else IfTestExist(TestEzVec3_EmptyOR<uint32_t>);
+    else IfTestExist(TestEzVec3_EmptyOR<int64_t>);
+    else IfTestExist(TestEzVec3_EmptyOR<uint64_t>);
 
-    IfTestExist(TestEzVec3String<float>);
-    else IfTestExist(TestEzVec3String<double>);
-    else IfTestExist(TestEzVec3String<int32_t>);
-    else IfTestExist(TestEzVec3String<uint32_t>);
-    else IfTestExist(TestEzVec3String<int64_t>);
-    else IfTestExist(TestEzVec3String<uint64_t>);
+    IfTestExist(TestEzVec3_String<float>);
+    else IfTestExist(TestEzVec3_String<double>);
+    else IfTestExist(TestEzVec3_String<int32_t>);
+    else IfTestExist(TestEzVec3_String<uint32_t>);
+    else IfTestExist(TestEzVec3_String<int64_t>);
+    else IfTestExist(TestEzVec3_String<uint64_t>);
 
-    IfTestExist(TestEzVec3Mini<float>);
-    else IfTestExist(TestEzVec3Mini<double>);
-    else IfTestExist(TestEzVec3Mini<int32_t>);
-    else IfTestExist(TestEzVec3Mini<uint32_t>);
-    else IfTestExist(TestEzVec3Mini<int64_t>);
-    else IfTestExist(TestEzVec3Mini<uint64_t>);
+    IfTestExist(TestEzVec3_Mini<float>);
+    else IfTestExist(TestEzVec3_Mini<double>);
+    else IfTestExist(TestEzVec3_Mini<int32_t>);
+    else IfTestExist(TestEzVec3_Mini<uint32_t>);
+    else IfTestExist(TestEzVec3_Mini<int64_t>);
+    else IfTestExist(TestEzVec3_Mini<uint64_t>);
 
-    IfTestExist(TestEzVec3Maxi<float>);
-    else IfTestExist(TestEzVec3Maxi<double>);
-    else IfTestExist(TestEzVec3Maxi<int32_t>);
-    else IfTestExist(TestEzVec3Maxi<uint32_t>);
-    else IfTestExist(TestEzVec3Maxi<int64_t>);
-    else IfTestExist(TestEzVec3Maxi<uint64_t>);
+    IfTestExist(TestEzVec3_Maxi<float>);
+    else IfTestExist(TestEzVec3_Maxi<double>);
+    else IfTestExist(TestEzVec3_Maxi<int32_t>);
+    else IfTestExist(TestEzVec3_Maxi<uint32_t>);
+    else IfTestExist(TestEzVec3_Maxi<int64_t>);
+    else IfTestExist(TestEzVec3_Maxi<uint64_t>);
 
-    IfTestExist(TestEzVec3Equality<float>);
-    else IfTestExist(TestEzVec3Equality<double>);
-    else IfTestExist(TestEzVec3Equality<int32_t>);
-    else IfTestExist(TestEzVec3Equality<uint32_t>);
-    else IfTestExist(TestEzVec3Equality<int64_t>);
-    else IfTestExist(TestEzVec3Equality<uint64_t>);
+    IfTestExist(TestEzVec3_Equality<float>);
+    else IfTestExist(TestEzVec3_Equality<double>);
+    else IfTestExist(TestEzVec3_Equality<int32_t>);
+    else IfTestExist(TestEzVec3_Equality<uint32_t>);
+    else IfTestExist(TestEzVec3_Equality<int64_t>);
+    else IfTestExist(TestEzVec3_Equality<uint64_t>);
 
-    IfTestExist(TestEzVec3Addition<float>);
-    else IfTestExist(TestEzVec3Addition<double>);
-    else IfTestExist(TestEzVec3Addition<int32_t>);
-    else IfTestExist(TestEzVec3Addition<uint32_t>);
-    else IfTestExist(TestEzVec3Addition<int64_t>);
-    else IfTestExist(TestEzVec3Addition<uint64_t>);
+    IfTestExist(TestEzVec3_Addition<float>);
+    else IfTestExist(TestEzVec3_Addition<double>);
+    else IfTestExist(TestEzVec3_Addition<int32_t>);
+    else IfTestExist(TestEzVec3_Addition<uint32_t>);
+    else IfTestExist(TestEzVec3_Addition<int64_t>);
+    else IfTestExist(TestEzVec3_Addition<uint64_t>);
 
-    IfTestExist(TestEzVec3Subtraction<float>);
-    else IfTestExist(TestEzVec3Subtraction<double>);
-    else IfTestExist(TestEzVec3Subtraction<int32_t>);
-    else IfTestExist(TestEzVec3Subtraction<uint32_t>);
-    else IfTestExist(TestEzVec3Subtraction<int64_t>);
-    else IfTestExist(TestEzVec3Subtraction<uint64_t>);
+    IfTestExist(TestEzVec3_Subtraction<float>);
+    else IfTestExist(TestEzVec3_Subtraction<double>);
+    else IfTestExist(TestEzVec3_Subtraction<int32_t>);
+    else IfTestExist(TestEzVec3_Subtraction<uint32_t>);
+    else IfTestExist(TestEzVec3_Subtraction<int64_t>);
+    else IfTestExist(TestEzVec3_Subtraction<uint64_t>);
 
-    IfTestExist(TestEzVec3Multiplication<float>);
-    else IfTestExist(TestEzVec3Multiplication<double>);
-    else IfTestExist(TestEzVec3Multiplication<int32_t>);
-    else IfTestExist(TestEzVec3Multiplication<uint32_t>);
-    else IfTestExist(TestEzVec3Multiplication<int64_t>);
-    else IfTestExist(TestEzVec3Multiplication<uint64_t>);
+    IfTestExist(TestEzVec3_Multiplication<float>);
+    else IfTestExist(TestEzVec3_Multiplication<double>);
+    else IfTestExist(TestEzVec3_Multiplication<int32_t>);
+    else IfTestExist(TestEzVec3_Multiplication<uint32_t>);
+    else IfTestExist(TestEzVec3_Multiplication<int64_t>);
+    else IfTestExist(TestEzVec3_Multiplication<uint64_t>);
 
-    IfTestExist(TestEzVec3Division<float>);
-    else IfTestExist(TestEzVec3Division<double>);
-    else IfTestExist(TestEzVec3Division<int32_t>);
-    else IfTestExist(TestEzVec3Division<uint32_t>);
-    else IfTestExist(TestEzVec3Division<int64_t>);
-    else IfTestExist(TestEzVec3Division<uint64_t>);
+    IfTestExist(TestEzVec3_Division<float>);
+    else IfTestExist(TestEzVec3_Division<double>);
+    else IfTestExist(TestEzVec3_Division<int32_t>);
+    else IfTestExist(TestEzVec3_Division<uint32_t>);
+    else IfTestExist(TestEzVec3_Division<int64_t>);
+    else IfTestExist(TestEzVec3_Division<uint64_t>);
 
     return false;  // Return false if the test case is not found
 }

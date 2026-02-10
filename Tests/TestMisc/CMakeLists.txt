@@ -62,23 +62,42 @@ AddTest("TestEzGraph_Evaluation")
 ##### TESTS EzStr ########################################
 ##########################################################
 
-AddTest("TestEzStrSplitStringToList")
-AddTest("TestEzStrSplitStringToVector")
-AddTest("TestEzStrSplitStringToSet")
-AddTest("TestEzStrStringToNumber")
-AddTest("TestEzStrStringToNumberVector")
-AddTest("TestEzStrToUpper")
-AddTest("TestEzStrToLower")
-AddTest("TestEzStrToHex")
-AddTest("TestEzStrToHexStr")
-AddTest("TestEzStrToDecStr")
-AddTest("TestEzStrStrContains")
-AddTest("TestEzStrReplaceString")
-AddTest("TestEzStrGetCountOccurence")
-AddTest("TestEzStrGetCountOccurenceInSection")
-AddTest("TestEzStrGetDigitsCountOfAIntegralNumber")
-AddTest("TestEzStrSearchForPatternWithWildcards")
-AddTest("TestEzStrExtractWildcardsFromPattern")
+AddTest("TestEzStr_SplitStringToList")
+AddTest("TestEzStr_SplitStringToVector")
+AddTest("TestEzStr_SplitStringToSet")
+AddTest("TestEzStr_StringToNumber")
+AddTest("TestEzStr_StringToNumberVector")
+AddTest("TestEzStr_ToUpper")
+AddTest("TestEzStr_ToLower")
+AddTest("TestEzStr_ToHex")
+AddTest("TestEzStr_ToHexStr")
+AddTest("TestEzStr_ToDecStr")
+AddTest("TestEzStr_StrContains")
+AddTest("TestEzStr_ReplaceString")
+AddTest("TestEzStr_GetCountOccurence")
+AddTest("TestEzStr_GetCountOccurenceInSection")
+AddTest("TestEzStr_GetDigitsCountOfAIntegralNumber")
+AddTest("TestEzStr_SearchForPatternWithWildcards")
+AddTest("TestEzStr_ExtractWildcardsFromPattern")
+AddTest("TestEzStr_ToStr")
+AddTest("TestEzStr_ToStrFromArray")
+AddTest("TestEzStr_ToStrTemplate")
+AddTest("TestEzStr_SplitStringToListInversion")
+AddTest("TestEzStr_SplitStringToListEmpty")
+AddTest("TestEzStr_SplitStringToVectorEmpty")
+AddTest("TestEzStr_SplitStringToSetEmpty")
+AddTest("TestEzStr_StringToNumberEdgeCases")
+AddTest("TestEzStr_StringToNumberVectorEmpty")
+AddTest("TestEzStr_ToHexEdgeCases")
+AddTest("TestEzStr_ToHexStrEdgeCases")
+AddTest("TestEzStr_ToDecStrEdgeCases")
+AddTest("TestEzStr_StrContainsEdgeCases")
+AddTest("TestEzStr_ReplaceStringEdgeCases")
+AddTest("TestEzStr_GetCountOccurenceEdgeCases")
+AddTest("TestEzStr_GetCountOccurenceInSectionEdgeCases")
+AddTest("TestEzStr_GetDigitsCountOfAIntegralNumberEdgeCases")
+AddTest("TestEzStr_SearchForPatternWithWildcardsEdgeCases")
+AddTest("TestEzStr_ExtractWildcardsFromPatternEdgeCases")
 
 ##########################################################
 ##### TESTS EzStackString ################################
@@ -99,23 +118,23 @@ AddTest("TestEzStackString_HeapDisabled")
 ##### TESTS EzCnt ########################################
 ##########################################################
 
-AddTest("TestEzCntGeneric")
-AddTest("TestEzCntOneTypename")
-AddTest("TestEzCntTwoTypename")
+AddTest("TestEzCnt_Generic")
+AddTest("TestEzCnt_OneTypename")
+AddTest("TestEzCnt_TwoTypename")
 
 ##########################################################
 ##### TESTS EzXml ########################################
 ##########################################################
 
-AddTest("TestEzXmlParsingOK")
-AddTest("TestEzXmlParsingNOK_0")
-AddTest("TestEzXmlParsingNOK_1")
+AddTest("TestEzXml_ParsingOK")
+AddTest("TestEzXml_ParsingNOK_0")
+AddTest("TestEzXml_ParsingNOK_1")
 
 ##########################################################
 ##### TESTS EzFigFont ####################################
 ##########################################################
 
-AddTest("TestEzFigFontLoadAndPrint")
+AddTest("TestEzFigFont_LoadAndPrint")
 
 ##########################################################
 ##### TESTS EzSha ########################################

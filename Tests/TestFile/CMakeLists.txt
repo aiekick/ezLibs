@@ -63,6 +63,19 @@ AddTest("TestEzFile_simplifyFilePath")
 AddTest("TestEzFile_composePath")
 AddTest("TestEzFile_correctSlashTypeForFilePathName")
 AddTest("TestEzFile_createDirectoryIfNotExist")
+AddTest("TestEzFile_loadFileToString")
+AddTest("TestEzFile_loadFileToBin")
+AddTest("TestEzFile_isFileExist")
+AddTest("TestEzFile_isDirectoryExist")
+AddTest("TestEzFile_destroyFile")
+AddTest("TestEzFile_destroyDir")
+AddTest("TestEzFile_createPathIfNotExist")
+AddTest("TestEzFile_composePathEdgeCases")
+AddTest("TestEzFile_parsePathFileNameEdgeCases")
+AddTest("TestEzFile_simplifyFilePathEdgeCases")
+AddTest("TestEzFile_correctSlashTypeEdgeCases")
+AddTest("TestEzFile_saveStringToFileWithTimestamp")
+AddTest("TestEzFile_saveBinToFileWithTimestamp")
 
 ##########################################################
 ##### TESTS EzBinBuf #####################################
@@ -131,3 +144,15 @@ AddTest("TestEzVoxWriter_Writer")
 ##########################################################
 
 AddTest("TestEzVdbWriter_Writer")
+
+##########################################################
+##### TESTS EzXmlConfig ###################################
+##########################################################
+
+AddTest("TestEzXmlConfig_ParsingOK")
+AddTest("TestEzXmlConfig_SaveLoadString")
+AddTest("TestEzXmlConfig_SaveLoadFile")
+AddTest("TestEzXmlConfig_LoadNonExistentFile")
+AddTest("TestEzXmlConfig_UserDatas")
+AddTest("TestEzXmlConfig_RecursiveParsing")
+AddTest("TestEzXmlConfig_StopChildParsing")
