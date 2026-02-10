@@ -34,7 +34,7 @@ public:
 
     virtual bool setFromXmlNodes(const ez::xml::Node& vNode, const ez::xml::Node& vParent, const std::string& vUserDatas) final {
         if (vNode.getName() == "TestValue") {
-            testValue = vNode.getContentInt(0);
+            testValue = vNode.getContent<int>();
         } else if (vNode.getName() == "TestName") {
             testName = vNode.getContent();
         }
