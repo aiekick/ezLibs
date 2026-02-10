@@ -184,6 +184,101 @@ bool TestEzXml_Writing_1() {
     return true;
 }
 
+bool TestEzXml_EscapeUnescapeXml() {
+    std::string input = "<tag>Value&\"'</tag>";
+    std::string escaped = ez::xml::Node::escapeXml(input);
+    CTEST_ASSERT(escaped.find("&lt;") != std::string::npos);
+    CTEST_ASSERT(escaped.find("&gt;") != std::string::npos);
+    CTEST_ASSERT(escaped.find("&amp;") != std::string::npos);
+    CTEST_ASSERT(escaped.find("&quot;") != std::string::npos);
+    CTEST_ASSERT(escaped.find("&apos;") != std::string::npos);
+
+    std::string unescaped = ez::xml::Node::unEscapeXml(escaped);
+    CTEST_ASSERT(unescaped == input);
+    return true;
+}
+
+bool TestEzXml_NodeOperations() {
+    ez::xml::Node node("testNode");
+    node.setContent("TestContent");
+    CTEST_ASSERT(node.getName() == "testNode");
+    CTEST_ASSERT(node.getContent() == "TestContent");
+
+    node.addAttribute("attr1", "value1");
+    CTEST_ASSERT(node.isAttributeExist("attr1"));
+    CTEST_ASSERT(node.getAttribute("attr1") == "value1");
+    CTEST_ASSERT(!node.isAttributeExist("nonexistent"));
+
+    return true;
+}
+
+bool TestEzXml_GetOrAddChild() {
+    ez::xml::Node parent("parent");
+    auto& child1 = parent.addChild("child");
+    auto& child2 = parent.getOrAddChild("child");
+
+    // Should return the existing child
+    CTEST_ASSERT(&child1 == &child2);
+
+    // Should create a new child
+    auto& newChild = parent.getOrAddChild("newChild");
+    CTEST_ASSERT(newChild.getName() == "newChild");
+
+    return true;
+}
+
+bool TestEzXml_GetChildNull() {
+    ez::xml::Node parent("parent");
+    parent.addChild("child1");
+
+    auto* found = parent.getChild("child1");
+    CTEST_ASSERT(found != nullptr);
+
+    auto* notFound = parent.getChild("nonexistent");
+    CTEST_ASSERT(notFound == nullptr);
+
+    return true;
+}
+
+bool TestEzXml_AddChilds() {
+    ez::xml::Node parent("parent");
+    ez::xml::Nodes children;
+    children.push_back(ez::xml::Node("child1"));
+    children.push_back(ez::xml::Node("child2"));
+    children.push_back(ez::xml::Node("child3"));
+
+    parent.addChilds(children);
+    CTEST_ASSERT(parent.getChildren().size() == 3);
+
+    return true;
+}
+
+bool TestEzXml_AttributeWithTemplateTypes() {
+    ez::xml::Node node("test");
+    node.addAttribute("intAttr", 42);
+    node.addAttribute("floatAttr", 3.14f);
+    node.addAttribute("doubleAttr", 2.718);
+
+    CTEST_ASSERT(node.getAttribute<int>("intAttr") == 42);
+    float f = node.getAttribute<float>("floatAttr");
+    CTEST_ASSERT(f > 3.13f && f < 3.15f);
+
+    return true;
+}
+
+bool TestEzXml_ReplaceAll() {
+    std::string str = "hello world hello";
+    ez::xml::Node::replaceAll(str, "hello", "hi");
+    CTEST_ASSERT(str == "hi world hi");
+
+    // Test with empty string
+    std::string str2 = "test";
+    ez::xml::Node::replaceAll(str2, "", "x");
+    CTEST_ASSERT(str2 == "test");
+
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -197,6 +292,13 @@ bool TestEzXml(const std::string &vTest) {
     else IfTestExist(TestEzXml_ParsingNOK_0);
     else IfTestExist(TestEzXml_ParsingNOK_1);
     else IfTestExist(TestEzXml_Writing_1);
+    else IfTestExist(TestEzXml_EscapeUnescapeXml);
+    else IfTestExist(TestEzXml_NodeOperations);
+    else IfTestExist(TestEzXml_GetOrAddChild);
+    else IfTestExist(TestEzXml_GetChildNull);
+    else IfTestExist(TestEzXml_AddChilds);
+    else IfTestExist(TestEzXml_AttributeWithTemplateTypes);
+    else IfTestExist(TestEzXml_ReplaceAll);
     return false;
 }
 

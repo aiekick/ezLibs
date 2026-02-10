@@ -1,0 +1,1 @@
+/usr/bin/clang++ -O3 -DNDEBUG -Xlinker --dependency-file=CMakeFiles/EzLibs_TestApp.dir/link.d CMakeFiles/EzLibs_TestApp.dir/TestEzApp.cpp.o CMakeFiles/EzLibs_TestApp.dir/TestEzArgs.cpp.o CMakeFiles/EzLibs_TestApp.dir/TestEzBuildInc.cpp.o CMakeFiles/EzLibs_TestApp.dir/main.cpp.o -o EzLibs_TestApp

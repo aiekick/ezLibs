@@ -117,3 +117,16 @@ AddTest("TestEzArgs_ff_when_only_f_defined")
 ##########################################################
 
 AddTest("TestEzBuildInc_base")
+
+##########################################################
+##### EzApp ###############################################
+##########################################################
+
+AddTest("TestEzApp_DefaultConstructor")
+AddTest("TestEzApp_SetAppPath")
+AddTest("TestEzApp_SetAppPathWithBackslash")
+AddTest("TestEzApp_SetAppPathEmpty")
+AddTest("TestEzApp_GetCurDirectory")
+AddTest("TestEzApp_SetCurDirectory")
+AddTest("TestEzApp_MiniFunction")
+AddTest("TestEzApp_ConstructorWithArgv")

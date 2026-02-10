@@ -76,6 +76,13 @@ AddTest("TestEzFile_simplifyFilePathEdgeCases")
 AddTest("TestEzFile_correctSlashTypeEdgeCases")
 AddTest("TestEzFile_saveStringToFileWithTimestamp")
 AddTest("TestEzFile_saveBinToFileWithTimestamp")
+AddTest("TestEzFile_PathInfos_GetFPNE")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithPath")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithName")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithExt")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithPathName")
+AddTest("TestEzFile_PathInfos_GetFPNE_WithNameExt")
+AddTest("TestEzFile_PathInfos_ExtensionInName")
 
 ##########################################################
 ##### TESTS EzBinBuf #####################################

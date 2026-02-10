@@ -21,6 +21,7 @@ file(GLOB EZ_LIBS_SOURCE
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezStackString.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezCnt.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezXml.hpp
+	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezLog.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezSha.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezTemplater.hpp
 	${EZ_LIBS_INCLUDE_DIR}/ezlibs/ezFigFont.hpp
@@ -129,6 +130,14 @@ AddTest("TestEzCnt_TwoTypename")
 AddTest("TestEzXml_ParsingOK")
 AddTest("TestEzXml_ParsingNOK_0")
 AddTest("TestEzXml_ParsingNOK_1")
+AddTest("TestEzXml_Writing_1")
+AddTest("TestEzXml_EscapeUnescapeXml")
+AddTest("TestEzXml_NodeOperations")
+AddTest("TestEzXml_GetOrAddChild")
+AddTest("TestEzXml_GetChildNull")
+AddTest("TestEzXml_AddChilds")
+AddTest("TestEzXml_AttributeWithTemplateTypes")
+AddTest("TestEzXml_ReplaceAll")
 
 ##########################################################
 ##### TESTS EzFigFont ####################################
@@ -141,6 +150,21 @@ AddTest("TestEzFigFont_LoadAndPrint")
 ##########################################################
 
 AddTest("TestEzSha_0")
+
+##########################################################
+##### TESTS EzLog #########################################
+##########################################################
+
+AddTest("TestEzLog_LogSimpleString")
+AddTest("TestEzLog_LogSimpleStringByType")
+AddTest("TestEzLog_LogStringWithFunction")
+AddTest("TestEzLog_LogStringByTypeWithFunction")
+AddTest("TestEzLog_VerboseMode")
+AddTest("TestEzLog_LogMacros")
+AddTest("TestEzLog_LogLightMacros")
+AddTest("TestEzLog_LogDebugMacros")
+AddTest("TestEzLog_CustomLogFunctor")
+AddTest("TestEzLog_CloseAndReopen")
 
 ##########################################################
 ##### TESTS EzSqlite #####################################
@@ -160,6 +184,11 @@ AddTest("TestEzSqlite_SyntaxError_ParensUnbalancedOpen")
 AddTest("TestEzSqlite_SyntaxError_ParensUnbalancedClose")
 AddTest("TestEzSqlite_SyntaxError_SelectTrailingCommaBeforeFrom")
 AddTest("TestEzSqlite_SyntaxError_MultiLine_ShowLocation")
+AddTest("TestEzSqlite_QueryBuilder_InsertQuery")
+AddTest("TestEzSqlite_QueryBuilder_UpdateQuery")
+AddTest("TestEzSqlite_QueryBuilder_InsertIfNotExist")
+AddTest("TestEzSqlite_QueryBuilder_WithSubQuery")
+AddTest("TestEzSqlite_QueryBuilder_MultipleWhereConditions")
 
 ##########################################################
 ##### TESTS EzScreen #####################################
