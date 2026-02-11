@@ -69,7 +69,7 @@ StageBuildInc()
 ##########################################################
 ##########################################################
 
-## ez::gl::Uniforms
+## ez::gl::Uniforms - Original Tests
 AddTest("TestEzGL_Uniforms_Parsing_Good_Syntax_0")
 AddTest("TestEzGL_Uniforms_Parsing_Good_Syntax_1")
 AddTest("TestEzGL_Uniforms_Parsing_Good_Syntax_2")
@@ -93,3 +93,39 @@ AddTest("TestEzGL_Uniforms_Parsing_Bad_Syntax_7")
 AddTest("TestEzGL_Uniforms_Parsing_Time_Widget_0")
 AddTest("TestEzGL_Uniforms_Parsing_Buffer_Widget_0")
 AddTest("TestEzGL_Uniforms_Parsing_Slider_Widget_0")
+
+## ez::gl::Core - Extended Uniform Tests
+# Widget tests with vec types
+AddTest("TestEzGL_Uniforms_Widget_Vec2_0")
+AddTest("TestEzGL_Uniforms_Widget_Vec3_0")
+AddTest("TestEzGL_Uniforms_Widget_Vec4_0")
+AddTest("TestEzGL_Uniforms_Widget_Int_0")
+AddTest("TestEzGL_Uniforms_Widget_Mat3_0")
+AddTest("TestEzGL_Uniforms_Widget_Mat4_0")
+AddTest("TestEzGL_Uniforms_Widget_Sampler2D_0")
+AddTest("TestEzGL_Uniforms_Widget_Sampler3D_0")
+AddTest("TestEzGL_Uniforms_Widget_SamplerCube_0")
+
+# Complex widget tests
+AddTest("TestEzGL_Uniforms_Widget_Multiple_Params_0")
+AddTest("TestEzGL_Uniforms_Widget_Numeric_Params_0")
+
+# Comment extraction and code generation
+AddTest("TestEzGL_Uniforms_Comment_Extraction_0")
+AddTest("TestEzGL_Uniforms_GetFinalCode_0")
+AddTest("TestEzGL_Uniforms_GetFinalCode_1")
+
+# Additional GLSL types with widgets
+AddTest("TestEzGL_Uniforms_Widget_Double_0")
+AddTest("TestEzGL_Uniforms_Widget_Ivec2_0")
+AddTest("TestEzGL_Uniforms_Widget_Ivec3_0")
+AddTest("TestEzGL_Uniforms_Widget_Ivec4_0")
+AddTest("TestEzGL_Uniforms_Widget_Uvec2_0")
+AddTest("TestEzGL_Uniforms_Widget_Uvec3_0")
+AddTest("TestEzGL_Uniforms_Widget_Uvec4_0")
+AddTest("TestEzGL_Uniforms_Widget_Bool_0")
+AddTest("TestEzGL_Uniforms_Widget_Bvec2_0")
+AddTest("TestEzGL_Uniforms_Widget_Bvec3_0")
+AddTest("TestEzGL_Uniforms_Widget_Bvec4_0")
+AddTest("TestEzGL_Uniforms_Widget_Mat2_0")
+AddTest("TestEzGL_Uniforms_Widget_Sampler2DArray_0")
