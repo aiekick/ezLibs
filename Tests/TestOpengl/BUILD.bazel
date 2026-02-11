@@ -1,0 +1,34 @@
+# Tests for OpenGL libraries
+
+# GLAD library for OpenGL loading
+cc_library(
+    name = "glad",
+    srcs = ["3rdparty/glad/src/glad.c"],
+    hdrs = glob(["3rdparty/glad/include/**/*.h"]),
+    includes = ["3rdparty/glad/include"],
+    linkopts = select({
+        "@platforms//os:linux": ["-ldl"],
+        "//conditions:default": [],
+    }),
+)
+
+cc_test(
+    name = "TestOpengl",
+    size = "small",
+    srcs = glob([
+        "*.cpp",
+        "*.h",
+    ]),
+    copts = [
+        "-std=c++11",
+        '-DOPENGL_LOADER="glad/glad.h"',
+    ],
+    defines = [
+        'RESULTS_PATH="TestResults/ezLibs/"',
+        'SAMPLES_PATH="samples/"',
+    ],
+    deps = [
+        ":glad",
+        "//:ezGL",
+    ],
+)

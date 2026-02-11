@@ -1,0 +1,365 @@
+# ezLibs - Header-only C++11 library collection
+
+package(default_visibility = ["//visibility:public"])
+
+# Main header-only library target
+cc_library(
+    name = "ezlibs",
+    hdrs = glob([
+        "include/ezlibs.hpp",
+        "include/ezlibs/*.hpp",
+    ]),
+    includes = ["include"],
+    copts = [
+        "-std=c++11",
+    ],
+)
+
+# Individual library targets for selective inclusion
+cc_library(
+    name = "ezAABB",
+    hdrs = ["include/ezlibs/ezAABB.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezAABBCC",
+    hdrs = ["include/ezlibs/ezAABBCC.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezActions",
+    hdrs = ["include/ezlibs/ezActions.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezApp",
+    hdrs = ["include/ezlibs/ezApp.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezArgs",
+    hdrs = ["include/ezlibs/ezArgs.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezBinBuf",
+    hdrs = ["include/ezlibs/ezBinBuf.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezBmp",
+    hdrs = ["include/ezlibs/ezBmp.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezBuildInc",
+    hdrs = ["include/ezlibs/ezBuildInc.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezCTest",
+    hdrs = ["include/ezlibs/ezCTest.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezClass",
+    hdrs = ["include/ezlibs/ezClass.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezCmdProc",
+    hdrs = ["include/ezlibs/ezCmdProc.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezCnt",
+    hdrs = ["include/ezlibs/ezCnt.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezCron",
+    hdrs = ["include/ezlibs/ezCron.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezCsv",
+    hdrs = ["include/ezlibs/ezCsv.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezDate",
+    hdrs = ["include/ezlibs/ezDate.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezEmbed",
+    hdrs = ["include/ezlibs/ezEmbed.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezExpr",
+    hdrs = ["include/ezlibs/ezExpr.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezFdGraph",
+    hdrs = ["include/ezlibs/ezFdGraph.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezFigFont",
+    hdrs = ["include/ezlibs/ezFigFont.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezFile",
+    hdrs = ["include/ezlibs/ezFile.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezFmt",
+    hdrs = ["include/ezlibs/ezFmt.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezGraph",
+    hdrs = ["include/ezlibs/ezGraph.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezImGui",
+    hdrs = ["include/ezlibs/ezImGui.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezIni",
+    hdrs = ["include/ezlibs/ezIni.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezLog",
+    hdrs = ["include/ezlibs/ezLog.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezMat2",
+    hdrs = ["include/ezlibs/ezMat2.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezMat3",
+    hdrs = ["include/ezlibs/ezMat3.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezMat4",
+    hdrs = ["include/ezlibs/ezMat4.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezMath",
+    hdrs = ["include/ezlibs/ezMath.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezNamedPipe",
+    hdrs = ["include/ezlibs/ezNamedPipe.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezNet",
+    hdrs = ["include/ezlibs/ezNet.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezGL",
+    hdrs = ["include/ezlibs/ezGL.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezGeo",
+    hdrs = ["include/ezlibs/ezGeo.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezOS",
+    hdrs = ["include/ezlibs/ezOS.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezPlane",
+    hdrs = ["include/ezlibs/ezPlane.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezPlugin",
+    hdrs = ["include/ezlibs/ezPlugin.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezQuadTree",
+    hdrs = ["include/ezlibs/ezQuadTree.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezQuat",
+    hdrs = ["include/ezlibs/ezQuat.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezScreen",
+    hdrs = ["include/ezlibs/ezScreen.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezSerial",
+    hdrs = ["include/ezlibs/ezSerial.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezSha",
+    hdrs = ["include/ezlibs/ezSha.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezSingleton",
+    hdrs = ["include/ezlibs/ezSingleton.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezSqlite",
+    hdrs = ["include/ezlibs/ezSqlite.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezStackString",
+    hdrs = ["include/ezlibs/ezStackString.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezStr",
+    hdrs = ["include/ezlibs/ezStr.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezTemplater",
+    hdrs = ["include/ezlibs/ezTemplater.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezTile",
+    hdrs = ["include/ezlibs/ezTile.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezTime",
+    hdrs = ["include/ezlibs/ezTime.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezTools",
+    hdrs = ["include/ezlibs/ezTools.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezVariant",
+    hdrs = ["include/ezlibs/ezVariant.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezVdbWriter",
+    hdrs = ["include/ezlibs/ezVdbWriter.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezVec2",
+    hdrs = ["include/ezlibs/ezVec2.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezVec3",
+    hdrs = ["include/ezlibs/ezVec3.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezVec4",
+    hdrs = ["include/ezlibs/ezVec4.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezVoxWriter",
+    hdrs = ["include/ezlibs/ezVoxWriter.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezWorkerThread",
+    hdrs = ["include/ezlibs/ezWorkerThread.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezXml",
+    hdrs = ["include/ezlibs/ezXml.hpp"],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "ezXmlConfig",
+    hdrs = ["include/ezlibs/ezXmlConfig.hpp"],
+    includes = ["include"],
+)

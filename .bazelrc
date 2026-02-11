@@ -1,0 +1,23 @@
+# Common build configuration for ezLibs
+
+# C++ standard
+build --cxxopt=-std=c++11
+build --host_cxxopt=-std=c++11
+
+# Enable C++11 standard required
+build --cxxopt=-std=c++11
+
+# Platform-specific configurations
+build:linux --cxxopt=-fPIC
+build:windows --cxxopt=/std:c++11
+
+# Test output configuration
+test --test_output=errors
+test --test_summary=detailed
+
+# Color output
+common --color=yes
+
+# Use clang on Linux (matching CMakeLists.txt behavior)
+build:linux --repo_env=CC=clang
+build:linux --repo_env=CXX=clang++

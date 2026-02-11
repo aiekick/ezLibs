@@ -1,0 +1,30 @@
+# Tests for Miscellaneous libraries
+
+cc_test(
+    name = "TestMisc",
+    size = "small",
+    srcs = glob([
+        "*.cpp",
+        "*.h",
+    ]),
+    copts = ["-std=c++11"],
+    data = glob(["res/**/*"]),
+    defines = [
+        'RESULTS_PATH="TestResults/ezLibs/"',
+        'SAMPLES_PATH="samples/"',
+    ],
+    deps = [
+        "//:ezCmdProc",
+        "//:ezGraph",
+        "//:ezStr",
+        "//:ezSqlite",
+        "//:ezStackString",
+        "//:ezCnt",
+        "//:ezXml",
+        "//:ezLog",
+        "//:ezSha",
+        "//:ezTemplater",
+        "//:ezFigFont",
+        "//:ezScreen",
+    ],
+)

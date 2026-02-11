@@ -1,0 +1,20 @@
+# Tests for Time libraries
+
+cc_test(
+    name = "TestTime",
+    size = "small",
+    srcs = glob([
+        "*.cpp",
+        "*.h",
+    ]),
+    copts = ["-std=c++11"],
+    defines = [
+        'RESULTS_PATH="TestResults/ezLibs/"',
+        'SAMPLES_PATH="samples/"',
+    ],
+    deps = [
+        "//:ezCron",
+        "//:ezTime",
+        "//:ezDate",
+    ],
+)

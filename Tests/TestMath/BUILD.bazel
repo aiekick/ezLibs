@@ -1,0 +1,28 @@
+# Tests for Math libraries
+
+cc_test(
+    name = "TestMath",
+    size = "small",
+    srcs = glob([
+        "*.cpp",
+        "*.h",
+    ]),
+    copts = ["-std=c++11"],
+    defines = [
+        'RESULTS_PATH="TestResults/ezLibs/"',
+        'SAMPLES_PATH="samples/"',
+    ],
+    deps = [
+        "//:ezExpr",
+        "//:ezMath",
+        "//:ezVec2",
+        "//:ezVec3",
+        "//:ezVec4",
+        "//:ezMat2",
+        "//:ezQuat",
+        "//:ezPlane",
+        "//:ezAABB",
+        "//:ezAABBCC",
+        "//:ezVariant",
+    ],
+)

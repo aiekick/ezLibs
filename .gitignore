@@ -43,3 +43,6 @@
 /TestResults
 /*.gcov
 /test.log
+
+# Bazel
+/bazel-*

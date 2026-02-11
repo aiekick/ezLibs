@@ -1,0 +1,16 @@
+# Tests for Compression libraries
+
+cc_test(
+    name = "TestComp",
+    size = "small",
+    srcs = glob([
+        "*.cpp",
+        "*.h",
+    ]),
+    copts = ["-std=c++11"],
+    defines = [
+        'RESULTS_PATH="TestResults/ezLibs/"',
+        'SAMPLES_PATH="samples/"',
+    ],
+    deps = [],
+)

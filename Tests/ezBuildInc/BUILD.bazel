@@ -1,0 +1,9 @@
+# ezBuildInc tool
+
+cc_binary(
+    name = "ezBuildInc",
+    srcs = ["main.cpp"],
+    copts = ["-std=c++11"],
+    deps = ["//:ezBuildInc"],
+    visibility = ["//visibility:public"],
+)
