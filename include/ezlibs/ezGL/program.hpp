@@ -478,10 +478,10 @@ public:
             }
         }
     }
-#ifdef IMGUI_INCLUDE
+#ifdef IMGUIPACK_INCLUDE
     bool drawUniformWidgetsLight() {
         bool ret = false;
-        ImGui::PushID(m_ProgramName.c_str());
+        ImGuiPack::PushID(m_ProgramName.c_str());
         for (auto& shader_type : m_Uniforms) {
             for (auto& uni : shader_type.second) {
                 if (uni.second.showed && uni.second.used) {
@@ -491,26 +491,26 @@ public:
                 }
             }
         }
-        ImGui::PopID();
+        ImGuiPack::PopID();
         return ret;
     }
     bool drawUniformWidgets(bool vShowCollapsingHeader = true) {
         bool ret = false;
-        ImGui::PushID(m_ProgramName.c_str());
+        ImGuiPack::PushID(m_ProgramName.c_str());
         bool opened = true;
         if (vShowCollapsingHeader) {
-            opened = ImGui::CollapsingHeader(m_ProgramName.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+            opened = ImGuiPack::CollapsingHeader(m_ProgramName.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
         }
         if (opened) {
-            ImGui::Indent();
+            ImGuiPack::Indent();
             for (auto& shader_type : m_Uniforms) {
                 switch (shader_type.first) {
-                    case GL_VERTEX_SHADER: ImGui::Text("%s", "Stage Vertex"); break;
-                    case GL_FRAGMENT_SHADER: ImGui::Text("%s", "Stage Fragment"); break;
-                    case GL_TESS_EVALUATION_SHADER: ImGui::Text("%s", "Stage Tesselation Evaluation"); break;
-                    case GL_TESS_CONTROL_SHADER: ImGui::Text("%s", "Stage Tesselation Control"); break;
+                    case GL_VERTEX_SHADER: ImGuiPack::Text("%s", "Stage Vertex"); break;
+                    case GL_FRAGMENT_SHADER: ImGuiPack::Text("%s", "Stage Fragment"); break;
+                    case GL_TESS_EVALUATION_SHADER: ImGuiPack::Text("%s", "Stage Tesselation Evaluation"); break;
+                    case GL_TESS_CONTROL_SHADER: ImGuiPack::Text("%s", "Stage Tesselation Control"); break;
                 }
-                ImGui::Indent();
+                ImGuiPack::Indent();
                 for (auto& uni : shader_type.second) {
                     if (uni.second.showed && uni.second.used) {
                         if (uni.second.widget_functor != nullptr) {
@@ -519,35 +519,35 @@ public:
                             if (uni.second.datas_f != nullptr) {
                                 for (GLuint i = 0; i < uni.second.elements; ++i) {
                                     switch (uni.second.channels) {
-                                        case 1U: ret |= ImGui::DragFloat(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 2U: ret |= ImGui::DragFloat2(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 3U: ret |= ImGui::DragFloat3(uni.second.name.c_str(), uni.second.datas_f + i); break;
-                                        case 4U: ret |= ImGui::DragFloat4(uni.second.name.c_str(), uni.second.datas_f + i); break;
+                                        case 1U: ret |= ImGuiPack::DragFloat(uni.second.name.c_str(), uni.second.datas_f + i); break;
+                                        case 2U: ret |= ImGuiPack::DragFloat2(uni.second.name.c_str(), uni.second.datas_f + i); break;
+                                        case 3U: ret |= ImGuiPack::DragFloat3(uni.second.name.c_str(), uni.second.datas_f + i); break;
+                                        case 4U: ret |= ImGuiPack::DragFloat4(uni.second.name.c_str(), uni.second.datas_f + i); break;
                                     }
                                 }
                             } else if (uni.second.datas_i != nullptr) {
                                 for (GLuint i = 0; i < uni.second.elements; ++i) {
                                     switch (uni.second.channels) {
-                                        case 1U: ret |= ImGui::DragInt(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 2U: ret |= ImGui::DragInt2(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 3U: ret |= ImGui::DragInt3(uni.second.name.c_str(), uni.second.datas_i + i); break;
-                                        case 4U: ret |= ImGui::DragInt4(uni.second.name.c_str(), uni.second.datas_i + i); break;
+                                        case 1U: ret |= ImGuiPack::DragInt(uni.second.name.c_str(), uni.second.datas_i + i); break;
+                                        case 2U: ret |= ImGuiPack::DragInt2(uni.second.name.c_str(), uni.second.datas_i + i); break;
+                                        case 3U: ret |= ImGuiPack::DragInt3(uni.second.name.c_str(), uni.second.datas_i + i); break;
+                                        case 4U: ret |= ImGuiPack::DragInt4(uni.second.name.c_str(), uni.second.datas_i + i); break;
                                     }
                                 }
                             } else if (uni.second.data_s2d != 0U) {
-                                ImGui::Text("%s", uni.second.name.c_str());
-                                ImGui::Indent();
-                                ImGui::Image((ImTextureID)uni.second.data_s2d, ImVec2(64.0f, 64.0f));
-                                ImGui::Unindent();
+                                ImGuiPack::Text("%s", uni.second.name.c_str());
+                                ImGuiPack::Indent();
+                                ImGuiPack::Image((ImTextureID)uni.second.data_s2d, ImVec2(64.0f, 64.0f));
+                                ImGuiPack::Unindent();
                             }
                         }
                     }
                 }
-                ImGui::Unindent();
+                ImGuiPack::Unindent();
             }
-            ImGui::Unindent();
+            ImGuiPack::Unindent();
         }
-        ImGui::PopID();
+        ImGuiPack::PopID();
         return ret;
     }
 #endif

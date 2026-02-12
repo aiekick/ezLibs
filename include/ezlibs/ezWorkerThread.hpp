@@ -51,7 +51,7 @@ public:
             m_baseTime = std::chrono::high_resolution_clock::now();
         }
 
-        // Non copiable (tient des références)
+        // Non copiable (tient des rï¿½fï¿½rences)
         WorkerIO(const WorkerIO&) = delete;
         WorkerIO& operator=(const WorkerIO&) = delete;
 
@@ -132,7 +132,7 @@ public:
     public:
         BaseIO(Worker& vSelf) : m_self(vSelf) {}
 
-        // Non copiable (tient des références)
+        // Non copiable (tient des rï¿½fï¿½rences)
         BaseIO(const BaseIO&) = delete;
         BaseIO& operator=(const BaseIO&) = delete;
 
@@ -165,8 +165,8 @@ private:
     WorkerFunctor m_workerFunc;
     std::string m_taskTitle;
 
-    // Données possédées par le thread (type effacé)
-    std::shared_ptr<void> m_payload;  // propriétaire
+    // Donnï¿½es possï¿½dï¿½es par le thread (type effacï¿½)
+    std::shared_ptr<void> m_payload;  // propriï¿½taire
     std::type_index m_payloadType{typeid(void)};
 
     // thread shared data (need a mutex lock)
@@ -177,11 +177,11 @@ private:
 public:
     Worker() : aProgress(0.0f), aWorking(false), aGenerationTime(0.0f) {}
 
-    // Démarrage avec transfert de propriété des datas au thread
+    // Dï¿½marrage avec transfert de propriï¿½tï¿½ des datas au thread
     template <typename T>
     void start(
         const std::string& vTaskTitle,
-        T vData,                       // passé par valeur : sera mové/copîé dans m_payload
+        T vData,                       // passï¿½ par valeur : sera movï¿½/copï¿½ï¿½ dans m_payload
         WorkerFunctor vWorkerFunctor,  // (this, progress, working, generationTime)
         BaseFunctor vFinishFunctor = nullptr,
         BaseFunctor vCancelFunctor = nullptr) {
@@ -245,7 +245,7 @@ public:
     void destroy() {
         if (m_workerThread.joinable()) {
             if (std::this_thread::get_id() == m_workerThread.get_id()) {
-                // Ne jamais join() sur soi-même : détacher pour éviter le deadlock.
+                // Ne jamais join() sur soi-mï¿½me : dï¿½tacher pour ï¿½viter le deadlock.
                 m_workerThread.detach();
             } else {
                 m_workerThread.join();
@@ -265,38 +265,38 @@ public:
 
     std::mutex& getMutexRef() { return m_mutex; }
 
-#ifdef IMGUI_API
+#ifdef IMGUIPACK_API
     void drawDialog(const ImVec2& vPos, const float vItemWidth, const float vItemAlign) {
         if (aWorking) {
-            ImGui::OpenPopup(m_taskTitle.c_str());
-            ImGui::SetNextWindowPos(vPos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-            if (ImGui::BeginPopupModal(                      //
+            ImGuiPack::OpenPopup(m_taskTitle.c_str());
+            ImGuiPack::SetNextWindowPos(vPos, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            if (ImGuiPack::BeginPopupModal(                      //
                     m_taskTitle.c_str(),                     //
                     (bool*)nullptr,                          //
                     ImGuiWindowFlags_NoTitleBar |            //
                         ImGuiWindowFlags_NoResize |          //
                         ImGuiWindowFlags_AlwaysAutoResize |  //
                         ImGuiWindowFlags_NoDocking)) {
-                ImGui::Header(m_taskTitle.c_str());
-                ImGui::Separator();
+                ImGuiPack::Header(m_taskTitle.c_str());
+                ImGuiPack::Separator();
                 m_drawDialogPhase(vItemWidth, vItemAlign);
                 m_drawDialogProgressBar(vItemWidth, vItemAlign);
-                ImGui::Separator();
-                if (ImGui::ContrastedButton("Stop")) {
+                ImGuiPack::Separator();
+                if (ImGuiPack::ContrastedButton("Stop")) {
                     cancel();
                 }
-                ImGui::EndPopup();
+                ImGuiPack::EndPopup();
             }
         }
     }
     void drawStatusBar() {
         if (aWorking) {
-            ImGui::Text("%s", m_taskTitle.c_str());
+            ImGuiPack::Text("%s", m_taskTitle.c_str());
             m_drawStatusBarPhase();
             m_drawStatusBarProgressBar();
-            if (ImGui::SmallContrastedButton("Stop")) {
+            if (ImGuiPack::SmallContrastedButton("Stop")) {
                 cancel();
-            }        
+            }
         }
     }
 #endif
@@ -317,7 +317,7 @@ private:
         }
         return *static_cast<const T*>(m_payload.get());
     }
-#ifdef IMGUI_API
+#ifdef IMGUIPACK_API
     void m_setCurrentStepHeader(const std::string& vHeader) {
         std::lock_guard<std::mutex> _{m_mutex};
         m_currentStepHeader = vHeader;

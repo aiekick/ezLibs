@@ -182,7 +182,7 @@ struct AABB  // copy of b2AABB struct
         return vec2<T>(upperBound - lowerBound);
     }
 
-#ifdef USE_IMGUI
+#ifdef USE_IMGUIPACK
     ImVec4 ToImVec4() {
         const ImVec4 v = ImVec4(lowerBound.x, lowerBound.y, upperBound.x, upperBound.y);
         return v;

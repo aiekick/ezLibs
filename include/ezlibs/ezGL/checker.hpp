@@ -247,181 +247,181 @@ struct Infos {
             extentions[std::string((char*)str)] = i;
         }
     }
-#ifdef IMGUI_INCLUDE
+#ifdef IMGUIPACK_INCLUDE
     void drawImGui() {
-        if (ImGui::BeginMenu("Opengl Infos")) {
-            ImGui::Text("Opengl Version %i.%i", majorGLVersion, minorGLVersion);
+        if (ImGuiPack::BeginMenu("Opengl Infos")) {
+            ImGuiPack::Text("Opengl Version %i.%i", majorGLVersion, minorGLVersion);
 
-            if (ImGui::BeginMenu("Driver Infos")) {
-                ImGui::Text("Version :      %s", driverVersion.c_str());
-                ImGui::Text("Vendor :       %s", driverVendor.c_str());
-                ImGui::Text("Renderer :     %s", driverRenderer.c_str());
-                ImGui::Text("GLSL Version : %s", driverGlslsVer.c_str());
+            if (ImGuiPack::BeginMenu("Driver Infos")) {
+                ImGuiPack::Text("Version :      %s", driverVersion.c_str());
+                ImGuiPack::Text("Vendor :       %s", driverVendor.c_str());
+                ImGuiPack::Text("Renderer :     %s", driverRenderer.c_str());
+                ImGuiPack::Text("GLSL Version : %s", driverGlslsVer.c_str());
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Shader Infos")) {
-                if (ImGui::BeginMenu("Storage Infos")) {
-                    ImGui::Text("GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS : %i", maxShaderStorageBufferBindings);
+            if (ImGuiPack::BeginMenu("Shader Infos")) {
+                if (ImGuiPack::BeginMenu("Storage Infos")) {
+                    ImGuiPack::Text("GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS : %i", maxShaderStorageBufferBindings);
 
-                    ImGui::EndMenu();
+                    ImGuiPack::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Uniform Infos")) {
-                    ImGui::Text("GL_MAX_UNIFORM_BUFFER_BINDINGS : %i", maxUniformBufferBindings);
-                    ImGui::Text("GL_MAX_UNIFORM_BLOCK_SIZE :      %i", maxUniformBlockSize);
-                    ImGui::Text("GL_MAX_UNIFORM_LOCATIONS :       %i", maxUniformLocations);
+                if (ImGuiPack::BeginMenu("Uniform Infos")) {
+                    ImGuiPack::Text("GL_MAX_UNIFORM_BUFFER_BINDINGS : %i", maxUniformBufferBindings);
+                    ImGuiPack::Text("GL_MAX_UNIFORM_BLOCK_SIZE :      %i", maxUniformBlockSize);
+                    ImGuiPack::Text("GL_MAX_UNIFORM_LOCATIONS :       %i", maxUniformLocations);
 
-                    ImGui::EndMenu();
+                    ImGuiPack::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Varying Infos")) {
-                    ImGui::Text("GL_MAX_VARYING_COMPONENTS : %i", maxVaryingComponents);
-                    ImGui::Text("GL_MAX_VARYING_VECTORS :    %i", maxVaryingVectors);
-                    ImGui::Text("GL_MAX_VARYING_FLOATS :     %i", maxVaryingFloats);
+                if (ImGuiPack::BeginMenu("Varying Infos")) {
+                    ImGuiPack::Text("GL_MAX_VARYING_COMPONENTS : %i", maxVaryingComponents);
+                    ImGuiPack::Text("GL_MAX_VARYING_VECTORS :    %i", maxVaryingVectors);
+                    ImGuiPack::Text("GL_MAX_VARYING_FLOATS :     %i", maxVaryingFloats);
 
-                    ImGui::EndMenu();
+                    ImGuiPack::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Vertex Infos")) {
-                    ImGui::Text("GL_MAX_VERTEX_ATOMIC_COUNTERS :       %i", maxVertexAtomicCounters);
-                    ImGui::Text("GL_MAX_VERTEX_ATTRIBS :               %i", maxVertexAttribs);
-                    ImGui::Text("GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS : %i", maxVertexShaderStorageBlocks);
-                    ImGui::Text("GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS :   %i", maxVertexTextureImageUnits);
-                    ImGui::Text("GL_MAX_VERTEX_UNIFORM_COMPONENTS :    %i", maxVertexUniformComponents);
-                    ImGui::Text("GL_MAX_VERTEX_UNIFORM_VECTORS :       %i", maxVertexUniformVectors);
-                    ImGui::Text("GL_MAX_VERTEX_OUTPUT_COMPONENTS :     %i", maxVertexOutputComponents);
-                    ImGui::Text("GL_MAX_VERTEX_UNIFORM_BLOCKS :        %i", maxVertexUniformBlocks);
+                if (ImGuiPack::BeginMenu("Vertex Infos")) {
+                    ImGuiPack::Text("GL_MAX_VERTEX_ATOMIC_COUNTERS :       %i", maxVertexAtomicCounters);
+                    ImGuiPack::Text("GL_MAX_VERTEX_ATTRIBS :               %i", maxVertexAttribs);
+                    ImGuiPack::Text("GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS : %i", maxVertexShaderStorageBlocks);
+                    ImGuiPack::Text("GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS :   %i", maxVertexTextureImageUnits);
+                    ImGuiPack::Text("GL_MAX_VERTEX_UNIFORM_COMPONENTS :    %i", maxVertexUniformComponents);
+                    ImGuiPack::Text("GL_MAX_VERTEX_UNIFORM_VECTORS :       %i", maxVertexUniformVectors);
+                    ImGuiPack::Text("GL_MAX_VERTEX_OUTPUT_COMPONENTS :     %i", maxVertexOutputComponents);
+                    ImGuiPack::Text("GL_MAX_VERTEX_UNIFORM_BLOCKS :        %i", maxVertexUniformBlocks);
 
-                    ImGui::EndMenu();
+                    ImGuiPack::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Geometry Infos")) {
-                    ImGui::Text("GL_MAX_GEOMETRY_ATOMIC_COUNTERS :       %i", maxGeometryAtomicCounters);
-                    ImGui::Text("GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS : %i", maxGeometryShaderStorageBlocks);
-                    ImGui::Text("GL_MAX_GEOMETRY_INPUT_COMPONENTS :      %i", maxGeometryInputComponents);
-                    ImGui::Text("GL_MAX_GEOMETRY_OUTPUT_COMPONENTS :     %i", maxGeometryOutputComponents);
-                    ImGui::Text("GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS :   %i", maxGeometryTextureImageUnits);
-                    ImGui::Text("GL_MAX_GEOMETRY_UNIFORM_BLOCKS :        %i", maxGeometryUniformBlocks);
-                    ImGui::Text("GL_MAX_GEOMETRY_UNIFORM_COMPONENTS :    %i", maxGeometryUniformComponent);
+                if (ImGuiPack::BeginMenu("Geometry Infos")) {
+                    ImGuiPack::Text("GL_MAX_GEOMETRY_ATOMIC_COUNTERS :       %i", maxGeometryAtomicCounters);
+                    ImGuiPack::Text("GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS : %i", maxGeometryShaderStorageBlocks);
+                    ImGuiPack::Text("GL_MAX_GEOMETRY_INPUT_COMPONENTS :      %i", maxGeometryInputComponents);
+                    ImGuiPack::Text("GL_MAX_GEOMETRY_OUTPUT_COMPONENTS :     %i", maxGeometryOutputComponents);
+                    ImGuiPack::Text("GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS :   %i", maxGeometryTextureImageUnits);
+                    ImGuiPack::Text("GL_MAX_GEOMETRY_UNIFORM_BLOCKS :        %i", maxGeometryUniformBlocks);
+                    ImGuiPack::Text("GL_MAX_GEOMETRY_UNIFORM_COMPONENTS :    %i", maxGeometryUniformComponent);
 
-                    ImGui::EndMenu();
+                    ImGuiPack::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Tesselation Infos")) {
-                    ImGui::Text("Control");
-                    ImGui::Text("GL_MAX_TESS_CONTROL_ATOMIC_COUNTERS :          %i", maxTesselationControlAtomicCounters);
-                    ImGui::Text("GL_MAX_TESS_CONTROL_SHADER_STORAGE_BLOCKS :    %i", maxTesselationControlShaderStorageBlocks);
-                    ImGui::Text("Evaluation");
-                    ImGui::Text("GL_MAX_TESS_EVALUATION_ATOMIC_COUNTERS :       %i", maxTesselationEvalAtomicCounters);
-                    ImGui::Text("GL_MAX_TESS_EVALUATION_SHADER_STORAGE_BLOCKS : %i", maxTesselationEvalShaderStorageBlocks);
-                    ImGui::Text("Patches");
-                    ImGui::Text("GL_MAX_PATCH_VERTICES :                        %i", maxPatchVertices);
+                if (ImGuiPack::BeginMenu("Tesselation Infos")) {
+                    ImGuiPack::Text("Control");
+                    ImGuiPack::Text("GL_MAX_TESS_CONTROL_ATOMIC_COUNTERS :          %i", maxTesselationControlAtomicCounters);
+                    ImGuiPack::Text("GL_MAX_TESS_CONTROL_SHADER_STORAGE_BLOCKS :    %i", maxTesselationControlShaderStorageBlocks);
+                    ImGuiPack::Text("Evaluation");
+                    ImGuiPack::Text("GL_MAX_TESS_EVALUATION_ATOMIC_COUNTERS :       %i", maxTesselationEvalAtomicCounters);
+                    ImGuiPack::Text("GL_MAX_TESS_EVALUATION_SHADER_STORAGE_BLOCKS : %i", maxTesselationEvalShaderStorageBlocks);
+                    ImGuiPack::Text("Patches");
+                    ImGuiPack::Text("GL_MAX_PATCH_VERTICES :                        %i", maxPatchVertices);
 
-                    ImGui::EndMenu();
+                    ImGuiPack::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Fragment Infos")) {
-                    ImGui::Text("GL_MAX_FRAGMENT_ATOMIC_COUNTERS :       %i", maxFragmentAtomicCounters);
-                    ImGui::Text("GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS : %i", maxFragmentShaderStorageBlocks);
-                    ImGui::Text("GL_MAX_FRAGMENT_INPUT_COMPONENTS :      %i", maxFragmentInputComponents);
-                    ImGui::Text("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS :    %i", maxFragmentUniformComponents);
-                    ImGui::Text("GL_MAX_FRAGMENT_UNIFORM_VECTORS :       %i", maxFragmentUniformVectors);
-                    ImGui::Text("GL_MAX_FRAGMENT_UNIFORM_BLOCKS :        %i", maxFragmentUniformBlocks);
+                if (ImGuiPack::BeginMenu("Fragment Infos")) {
+                    ImGuiPack::Text("GL_MAX_FRAGMENT_ATOMIC_COUNTERS :       %i", maxFragmentAtomicCounters);
+                    ImGuiPack::Text("GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS : %i", maxFragmentShaderStorageBlocks);
+                    ImGuiPack::Text("GL_MAX_FRAGMENT_INPUT_COMPONENTS :      %i", maxFragmentInputComponents);
+                    ImGuiPack::Text("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS :    %i", maxFragmentUniformComponents);
+                    ImGuiPack::Text("GL_MAX_FRAGMENT_UNIFORM_VECTORS :       %i", maxFragmentUniformVectors);
+                    ImGuiPack::Text("GL_MAX_FRAGMENT_UNIFORM_BLOCKS :        %i", maxFragmentUniformBlocks);
 
-                    ImGui::EndMenu();
+                    ImGuiPack::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Compute Infos")) {
-                    ImGui::Text("GL_MAX_COMPUTE_WORK_GROUP_COUNT :       x:%i y:%i z:%i", workgroup_count[0], workgroup_count[1], workgroup_count[2]);
-                    ImGui::Text("GL_MAX_COMPUTE_WORK_GROUP_SIZE :        x:%i y:%i z:%i", workgroup_size[0], workgroup_size[1], workgroup_size[2]);
-                    ImGui::Text("GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS : %i", workgroup_invocations);
+                if (ImGuiPack::BeginMenu("Compute Infos")) {
+                    ImGuiPack::Text("GL_MAX_COMPUTE_WORK_GROUP_COUNT :       x:%i y:%i z:%i", workgroup_count[0], workgroup_count[1], workgroup_count[2]);
+                    ImGuiPack::Text("GL_MAX_COMPUTE_WORK_GROUP_SIZE :        x:%i y:%i z:%i", workgroup_size[0], workgroup_size[1], workgroup_size[2]);
+                    ImGuiPack::Text("GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS : %i", workgroup_invocations);
 
-                    ImGui::EndMenu();
+                    ImGuiPack::EndMenu();
                 }
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Texture Infos")) {
-                ImGui::Text("GL_MAX_TEXTURE_SIZE :           %i", maxTextureSize);
-                ImGui::Text("GL_MAX_3D_TEXTURE_SIZE :        %i", max3DTextureSize);
-                ImGui::Text("GL_MAX_CUBE_MAP_TEXTURE_SIZE :  %i", maxCubeMapTextureSize);
-                ImGui::Text("GL_MAX_ARRAY_TEXTURE_LAYERS :   %i", maxArrayTextureSize);
-                ImGui::Text("GL_MAX_COLOR_TEXTURE_SAMPLES :  %i", maxColorTextureSize);
-                ImGui::Text("GL_MAX_DEPTH_TEXTURE_SAMPLES :  %i", maxDepthTextureSize);
-                ImGui::Text("GL_MAX_RECTANGLE_TEXTURE_SIZE : %i", maxRectTextureSize);
-                ImGui::Text("GL_MAX_TEXTURE_BUFFER_SIZE :    %i", maxTextureBufferSize);
-                ImGui::Text("GL_MAX_TEXTURE_IMAGE_UNITS :    %i", maxTextureImageUnits);
-                ImGui::Text("GL_MAX_TEXTURE_LOD_BIAS :       %i", maxTextureLodBias);
+            if (ImGuiPack::BeginMenu("Texture Infos")) {
+                ImGuiPack::Text("GL_MAX_TEXTURE_SIZE :           %i", maxTextureSize);
+                ImGuiPack::Text("GL_MAX_3D_TEXTURE_SIZE :        %i", max3DTextureSize);
+                ImGuiPack::Text("GL_MAX_CUBE_MAP_TEXTURE_SIZE :  %i", maxCubeMapTextureSize);
+                ImGuiPack::Text("GL_MAX_ARRAY_TEXTURE_LAYERS :   %i", maxArrayTextureSize);
+                ImGuiPack::Text("GL_MAX_COLOR_TEXTURE_SAMPLES :  %i", maxColorTextureSize);
+                ImGuiPack::Text("GL_MAX_DEPTH_TEXTURE_SAMPLES :  %i", maxDepthTextureSize);
+                ImGuiPack::Text("GL_MAX_RECTANGLE_TEXTURE_SIZE : %i", maxRectTextureSize);
+                ImGuiPack::Text("GL_MAX_TEXTURE_BUFFER_SIZE :    %i", maxTextureBufferSize);
+                ImGuiPack::Text("GL_MAX_TEXTURE_IMAGE_UNITS :    %i", maxTextureImageUnits);
+                ImGuiPack::Text("GL_MAX_TEXTURE_LOD_BIAS :       %i", maxTextureLodBias);
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("FrameBuffer Infos")) {
-                ImGui::Text("GL_MAX_FRAMEBUFFER_WIDTH :   %i", maxFramebufferWidth);
-                ImGui::Text("GL_MAX_FRAMEBUFFER_HEIGHT :  %i", maxFramebufferHeight);
-                ImGui::Text("GL_MAX_FRAMEBUFFER_LAYERS :  %i", maxFramebufferLayers);
-                ImGui::Text("GL_MAX_FRAMEBUFFER_SAMPLES : %i", maxFramebufferSampler);
+            if (ImGuiPack::BeginMenu("FrameBuffer Infos")) {
+                ImGuiPack::Text("GL_MAX_FRAMEBUFFER_WIDTH :   %i", maxFramebufferWidth);
+                ImGuiPack::Text("GL_MAX_FRAMEBUFFER_HEIGHT :  %i", maxFramebufferHeight);
+                ImGuiPack::Text("GL_MAX_FRAMEBUFFER_LAYERS :  %i", maxFramebufferLayers);
+                ImGuiPack::Text("GL_MAX_FRAMEBUFFER_SAMPLES : %i", maxFramebufferSampler);
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("RenderBuffer Infos")) {
-                ImGui::Text("GL_MAX_RENDERBUFFER_SIZE : %i", maxRenderbufferSize);
+            if (ImGuiPack::BeginMenu("RenderBuffer Infos")) {
+                ImGuiPack::Text("GL_MAX_RENDERBUFFER_SIZE : %i", maxRenderbufferSize);
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Draw Buffers Infos")) {
-                ImGui::Text("GL_MAX_DRAW_BUFFERS :             %i", maxDrawBuffers);
-                ImGui::Text("GL_MAX_DUAL_SOURCE_DRAW_BUFFERS : %i", maxDualSourceDrawBuffers);
+            if (ImGuiPack::BeginMenu("Draw Buffers Infos")) {
+                ImGuiPack::Text("GL_MAX_DRAW_BUFFERS :             %i", maxDrawBuffers);
+                ImGuiPack::Text("GL_MAX_DUAL_SOURCE_DRAW_BUFFERS : %i", maxDualSourceDrawBuffers);
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Clipping Infos")) {
-                ImGui::Text("GL_MAX_CLIP_DISTANCES : %i", maxClipDistances);
+            if (ImGuiPack::BeginMenu("Clipping Infos")) {
+                ImGuiPack::Text("GL_MAX_CLIP_DISTANCES : %i", maxClipDistances);
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Elements Infos")) {
-                ImGui::Text("GL_MAX_ELEMENTS_INDEXS :  %i", maxElementsIndexs);
-                ImGui::Text("GL_MAX_ELEMENTS_INDICES :  %i", maxElementsIndices);
-                ImGui::Text("GL_MAX_ELEMENTS_VERTICES : %i", maxElementsVertices);
+            if (ImGuiPack::BeginMenu("Elements Infos")) {
+                ImGuiPack::Text("GL_MAX_ELEMENTS_INDEXS :  %i", maxElementsIndexs);
+                ImGuiPack::Text("GL_MAX_ELEMENTS_INDICES :  %i", maxElementsIndices);
+                ImGuiPack::Text("GL_MAX_ELEMENTS_VERTICES : %i", maxElementsVertices);
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("ViewPort Infos")) {
-                ImGui::Text("GL_MAX_VIEWPORTS :         %i", maxViewports);
-                ImGui::Text("GL_VIEWPORT_BOUNDS_RANGE : x:%i y:%i", rangeViewportBounds[0], rangeViewportBounds[1]);
-                ImGui::Text("GL_MAX_VIEWPORT_DIMS :     x:%i y:%i", maxViewportSize[0], maxViewportSize[1]);
+            if (ImGuiPack::BeginMenu("ViewPort Infos")) {
+                ImGuiPack::Text("GL_MAX_VIEWPORTS :         %i", maxViewports);
+                ImGuiPack::Text("GL_VIEWPORT_BOUNDS_RANGE : x:%i y:%i", rangeViewportBounds[0], rangeViewportBounds[1]);
+                ImGuiPack::Text("GL_MAX_VIEWPORT_DIMS :     x:%i y:%i", maxViewportSize[0], maxViewportSize[1]);
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Transform Feedback Infos")) {
-                ImGui::Text("GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS : %i", maxTrasnformFeedbackInterleavedComponents);
-                ImGui::Text("GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS :       %i", maxTrasnformFeedbackSeparateAttribs);
-                ImGui::Text("GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS :    %i", maxTrasnformFeedbackSeparateComponents);
+            if (ImGuiPack::BeginMenu("Transform Feedback Infos")) {
+                ImGuiPack::Text("GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS : %i", maxTrasnformFeedbackInterleavedComponents);
+                ImGuiPack::Text("GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS :       %i", maxTrasnformFeedbackSeparateAttribs);
+                ImGuiPack::Text("GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS :    %i", maxTrasnformFeedbackSeparateComponents);
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Extentions Infos")) {
-                ImGui::Text("Extention Count : %i", maxExtentionCount);
+            if (ImGuiPack::BeginMenu("Extentions Infos")) {
+                ImGuiPack::Text("Extention Count : %i", maxExtentionCount);
 
                 for (auto it = extentions.begin(); it != extentions.end(); ++it) {
-                    ImGui::Text("%s", it->first.c_str());
+                    ImGuiPack::Text("%s", it->first.c_str());
                 }
 
-                ImGui::EndMenu();
+                ImGuiPack::EndMenu();
             }
 
-            ImGui::EndMenu();
+            ImGuiPack::EndMenu();
         }
     }
 #endif

@@ -42,8 +42,8 @@
 #include <functional>
 #include <cassert>
 
-#ifdef IMGUI_INCLUDE
-#include IMGUI_INCLUDE
+#ifdef IMGUIPACK_INCLUDE
+#include IMGUIPACK_INCLUDE
 #endif
 
 namespace gp {

@@ -36,8 +36,8 @@ SOFTWARE.
 
 #include "ezGL.hpp"
 
-#ifdef IMGUI_INCLUDE
-#include IMGUI_INCLUDE
+#ifdef IMGUIPACK_INCLUDE
+#include IMGUIPACK_INCLUDE
 #endif
 
 #include <array>
@@ -312,7 +312,7 @@ public:
         return m_FBOPipeLinePtr->getFrontFBO();
     }
 
-#ifdef IMGUI_INCLUDE
+#ifdef IMGUIPACK_INCLUDE
     bool drawImGuiThumbnail(const float& vSx, const float& vSy, const float& vScaleInv, const bool vUseButton) {
         assert(m_FBOPipeLinePtr != nullptr);
         auto front_fbo_ptr = m_FBOPipeLinePtr->getFrontFBO().lock();
@@ -320,9 +320,9 @@ public:
             const auto texId = front_fbo_ptr->getTextureId();
             if (texId > 0U) {
                 if (vUseButton) {
-                    return ImGui::ImageButton(m_Name.c_str(), (ImTextureID)(size_t)texId, ImVec2(vSx, vSy), ImVec2(0, vScaleInv), ImVec2(vScaleInv, 0));
+                    return ImGuiPack::ImageButton(m_Name.c_str(), (ImTextureID)(size_t)texId, ImVec2(vSx, vSy), ImVec2(0, vScaleInv), ImVec2(vScaleInv, 0));
                 } else {
-                    ImGui::Image((ImTextureID)(size_t)texId, ImVec2(vSx, vSy), ImVec2(0, vScaleInv), ImVec2(vScaleInv, 0));
+                    ImGuiPack::Image((ImTextureID)(size_t)texId, ImVec2(vSx, vSy), ImVec2(0, vScaleInv), ImVec2(vScaleInv, 0));
                 }
             }
         }

@@ -35,8 +35,8 @@ SOFTWARE.
 
 #include "ezGL.hpp"
 
-#ifdef IMGUI_INCLUDE
-#include IMGUI_INCLUDE
+#ifdef IMGUIPACK_INCLUDE
+#include IMGUIPACK_INCLUDE
 #endif
 
 namespace ez {
@@ -232,19 +232,19 @@ public:
             }
         }
     }
-#ifdef IMGUI_INCLUDE
+#ifdef IMGUIPACK_INCLUDE
     void drawUniformWidgets() {
-        ImGui::PushID(m_ProgramAutoName.c_str());
-        if (ImGui::CollapsingHeader(m_ProgramAutoName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::Indent();
+        ImGuiPack::PushID(m_ProgramAutoName.c_str());
+        if (ImGuiPack::CollapsingHeader(m_ProgramAutoName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGuiPack::Indent();
             for (auto& shader_type : m_Uniforms) {
                 switch (shader_type.first) {
-                    case GL_VERTEX_SHADER: ImGui::Text("%s", "Stage Vertex"); break;
-                    case GL_FRAGMENT_SHADER: ImGui::Text("%s", "Stage Fragment"); break;
-                    case GL_TESS_EVALUATION_SHADER: ImGui::Text("%s", "Stage Tesselation Evaluation"); break;
-                    case GL_TESS_CONTROL_SHADER: ImGui::Text("%s", "Stage Tesselation Control"); break;
+                    case GL_VERTEX_SHADER: ImGuiPack::Text("%s", "Stage Vertex"); break;
+                    case GL_FRAGMENT_SHADER: ImGuiPack::Text("%s", "Stage Fragment"); break;
+                    case GL_TESS_EVALUATION_SHADER: ImGuiPack::Text("%s", "Stage Tesselation Evaluation"); break;
+                    case GL_TESS_CONTROL_SHADER: ImGuiPack::Text("%s", "Stage Tesselation Control"); break;
                 }
-                ImGui::Indent();
+                ImGuiPack::Indent();
                 for (auto& uni : shader_type.second) {
                     if (uni.second.showed && uni.second.used) {
                         if (uni.second.widget_functor != nullptr) {
@@ -252,27 +252,27 @@ public:
                         } else {
                             if (uni.second.datas_f != nullptr) {
                                 switch (uni.second.channels) {
-                                    case 1U: ImGui::DragFloat(uni.second.name.c_str(), uni.second.datas_f); break;
-                                    case 2U: ImGui::DragFloat2(uni.second.name.c_str(), uni.second.datas_f); break;
-                                    case 3U: ImGui::DragFloat3(uni.second.name.c_str(), uni.second.datas_f); break;
-                                    case 4U: ImGui::DragFloat4(uni.second.name.c_str(), uni.second.datas_f); break;
+                                    case 1U: ImGuiPack::DragFloat(uni.second.name.c_str(), uni.second.datas_f); break;
+                                    case 2U: ImGuiPack::DragFloat2(uni.second.name.c_str(), uni.second.datas_f); break;
+                                    case 3U: ImGuiPack::DragFloat3(uni.second.name.c_str(), uni.second.datas_f); break;
+                                    case 4U: ImGuiPack::DragFloat4(uni.second.name.c_str(), uni.second.datas_f); break;
                                 }
                             } else if (uni.second.datas_i != nullptr) {
                                 switch (uni.second.channels) {
-                                    case 1U: ImGui::DragInt(uni.second.name.c_str(), uni.second.datas_i); break;
-                                    case 2U: ImGui::DragInt2(uni.second.name.c_str(), uni.second.datas_i); break;
-                                    case 3U: ImGui::DragInt3(uni.second.name.c_str(), uni.second.datas_i); break;
-                                    case 4U: ImGui::DragInt4(uni.second.name.c_str(), uni.second.datas_i); break;
+                                    case 1U: ImGuiPack::DragInt(uni.second.name.c_str(), uni.second.datas_i); break;
+                                    case 2U: ImGuiPack::DragInt2(uni.second.name.c_str(), uni.second.datas_i); break;
+                                    case 3U: ImGuiPack::DragInt3(uni.second.name.c_str(), uni.second.datas_i); break;
+                                    case 4U: ImGuiPack::DragInt4(uni.second.name.c_str(), uni.second.datas_i); break;
                                 }
                             }
                         }
                     }
                 }
-                ImGui::Unindent();
+                ImGuiPack::Unindent();
             }
-            ImGui::Unindent();
+            ImGuiPack::Unindent();
         }
-        ImGui::PopID();
+        ImGuiPack::PopID();
     }
 #endif
     void locateUniforms() {

@@ -167,15 +167,15 @@ public:
     }
     void clearBuffers(const ez::fvec4& vColorPtr) { mp_fboPipeline->clearBuffer({vColorPtr.x, vColorPtr.y, vColorPtr.z, vColorPtr.w}); }
     bool drawUI() {
-#ifdef IMGUI_API
+#ifdef IMGUIPACK_API
 #ifdef _DEBUG
-        if (ImGui::CollapsingHeader("Debug##Renderer")) {
-            ImGui::Text("Origin Px : %f,%f", m_transform.origin.x, m_transform.origin.y);
-            ImGui::Text("FBO Size : %f,%f", m_fboSize.x, m_fboSize.y);
-            ImGui::Text("Scale : %f", m_transform.scale);
-            ImGui::Text("Sclae inv : %f", m_transform.invScale);
-            ImGui::DragFloat2("Offset", &m_uniformTransform.uOffset.x);
-            ImGui::DragFloat2("Scale", &m_uniformTransform.uScale.x);
+        if (ImGuiPack::CollapsingHeader("Debug##Renderer")) {
+            ImGuiPack::Text("Origin Px : %f,%f", m_transform.origin.x, m_transform.origin.y);
+            ImGuiPack::Text("FBO Size : %f,%f", m_fboSize.x, m_fboSize.y);
+            ImGuiPack::Text("Scale : %f", m_transform.scale);
+            ImGuiPack::Text("Sclae inv : %f", m_transform.invScale);
+            ImGuiPack::DragFloat2("Offset", &m_uniformTransform.uOffset.x);
+            ImGuiPack::DragFloat2("Scale", &m_uniformTransform.uScale.x);
         }
 #endif
 #endif

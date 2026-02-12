@@ -59,7 +59,7 @@ namespace implot {}  // namespace implot
     }
 #endif
 
-#ifdef IMGUI_API
+#ifdef IMGUIPACK_API
 enum ImGuiKey : int32_t;
 inline std::istream& operator>>(std::istream& vIn, ImGuiKey& vType) {
     int32_t key{0};
@@ -73,4 +73,4 @@ inline std::ostream& operator<<(std::ostream& vOut, const ImGuiKey vType) {
     return vOut;
 }
 
-#endif  // IMGUI_API
+#endif  // IMGUIPACK_API

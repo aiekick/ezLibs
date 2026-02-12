@@ -38,6 +38,7 @@ SOFTWARE.
 
 #include "ezStr.hpp"
 #include "ezTime.hpp"
+#include "ezSingleton.hpp"
 
 /* WARNING
 * FOR USING THE OLD BEAHVIOR SINGLETON
@@ -493,12 +494,7 @@ public:
         return instance_ptr.get();
     }
 #else  // LEGACY_SINGLETON
-    static std::unique_ptr<Log>& initSingleton() {
-        static auto mp_instance = std::unique_ptr<Log>(new Log());
-        return mp_instance;
-    }
-    static Log& ref() { return *initSingleton().get(); }
-    static void unitSingleton() { initSingleton().reset(); }
+    IMPLEMENT_SINGLETON(Log)
 #endif  // LEGACY_SINGLETON
 };
 
