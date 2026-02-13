@@ -1,9 +1,0 @@
-TestEzApp_DefaultConstructor 2 0.00121416
-TestEzApp_SetAppPathEmpty 2 0.00083311
-TestEzApp_SetAppPath 1 0.00177434
-TestEzApp_SetAppPathWithBackslash 1 0.00162719
-TestEzApp_GetCurDirectory 1 0.0016007
-TestEzApp_SetCurDirectory 1 0.00165799
-TestEzApp_MiniFunction 1 0.00171911
-TestEzApp_ConstructorWithArgv 1 0.00178978
----

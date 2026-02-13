@@ -38,6 +38,11 @@ endif()
 
 include_directories(${EZ_LIBS_INCLUDE_DIR})
 
+if(NOT TARGET ezBuildInc)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Tests/ezBuildInc)
+	set_target_properties(ezBuildInc PROPERTIES FOLDER 3rdparty/tools)
+endif()
+
 if(USE_EZ_LIBS_TESTING)
   enable_testing()
   set(TEST_RESULTS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/TestResults/ezLibs)

@@ -43,3 +43,5 @@
 /TestResults
 /*.gcov
 /test.log
+/Testing
+/build_linux_release

@@ -41,8 +41,10 @@ function(AddTest arg)
   	add_test("${arg}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT}" "${arg}")
 endfunction(AddTest)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ezBuildInc)
-set_target_properties(ezBuildInc PROPERTIES FOLDER 3rdparty/tools)
+if(NOT TARGET ezBuildInc)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ezBuildInc)
+	set_target_properties(ezBuildInc PROPERTIES FOLDER 3rdparty/tools)
+endif()
 
 function(StageBuildInc)
 	add_custom_command(

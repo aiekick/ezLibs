@@ -1,1 +1,0 @@
-/usr/bin/clang++ -O3 -DNDEBUG -Xlinker --dependency-file=CMakeFiles/EzLibs_TestComp.dir/link.d CMakeFiles/EzLibs_TestComp.dir/TestEzLzw.cpp.o CMakeFiles/EzLibs_TestComp.dir/main.cpp.o -o EzLibs_TestComp
