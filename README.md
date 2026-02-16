@@ -1,6 +1,6 @@
 [![Win](https://github.com/aiekick/EzLibs/actions/workflows/Win.yml/badge.svg)](https://github.com/aiekick/EzLibs/actions/workflows/Win.yml)
 [![Linux](https://github.com/aiekick/EzLibs/actions/workflows/Linux.yml/badge.svg)](https://github.com/aiekick/EzLibs/actions/workflows/Linux.yml)
-[![Code Coverage](https://github.com/aiekick/ezLibs/actions/workflows/Coverage.yml/badge.svg)](https://aiekick.github.io/ezLibs)
+[![Code Coverage](https://github.com/aiekick/ezLibs/actions/workflows/Coverage.yml/badge.svg)](https://aiekick.github.io/ezlibs)
 [![CodeFactor](https://www.codefactor.io/repository/github/aiekick/ezlibs/badge/master)](https://www.codefactor.io/repository/github/aiekick/ezlibs/overview/master)
 
 # EzLibs
