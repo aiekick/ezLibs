@@ -12,7 +12,6 @@ bool GLContext::initGLContext(int32_t aMajor, int32_t aMinor) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, aMajor);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, aMinor);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     mp_window = glfwCreateWindow(10, 10, "test", nullptr, nullptr);
     if (mp_window == nullptr) {

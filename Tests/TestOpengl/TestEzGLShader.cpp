@@ -47,7 +47,7 @@ bool TestEzGL_Shader_CreateFromCode_Compute() {
     CTEST_ASSERT(GLContext::initGLContext());
 
     const char* compCode = R"(
-#version 430
+#version 310 es
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
 }
