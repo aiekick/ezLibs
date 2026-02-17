@@ -261,10 +261,10 @@ public:
         }*/
         return false;
     }
-    void drawUniformWidgets(Program::AdditionnalWidgetsFunctor vAdditionnalWidgetsFunctor = nullptr) {
+    /*void drawUniformWidgets(Program::AdditionnalWidgetsFunctor vAdditionnalWidgetsFunctor = nullptr) {
         ASSERT_THROW(m_ProgramPtr != nullptr, "");
         m_ProgramPtr->drawUniformWidgets(vAdditionnalWidgetsFunctor);
-    }
+    }*/
 #endif
     void unit() {
         m_ProgramPtr.reset();

@@ -79,6 +79,7 @@ private:
     std::map<uintptr_t, ShaderWeak> m_Shaders;  // a same shader object can be added two times
     UniformPerShaderTypeContainer m_Uniforms;
     UniformPreUploadFunctor m_UniformPreUploadFunctor = nullptr;  // lanbda to execute just before the uniform upload
+    AdditionnalWidgetsFunctor m_AdditionnalWidgetsFunctor = nullptr;
 
 public:
     static ProgramPtr create(const std::string& vProgramName) {
@@ -153,6 +154,7 @@ public:
     }
     const char* getLabelName() { return m_ProgramName.c_str(); }
     void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) { m_UniformPreUploadFunctor = vUniformPreUploadFunctor; }
+    void setAdditionnalWidgetsFunctor(AdditionnalWidgetsFunctor vAdditionnalWidgetsFunctor) { m_AdditionnalWidgetsFunctor = vAdditionnalWidgetsFunctor; }
     void addBufferBlock(const GLenum vShaderType, const std::string& vBufferName, const int32_t vBinding, BufferBlock** vBufferPtr) {
         ASSERT_THROW(vShaderType > 0, "");
         ASSERT_THROW(!vBufferName.empty(), "");
@@ -531,9 +533,7 @@ public:
         bool ret = false;
         ImGui::PushID(m_ProgramName.c_str());
         bool opened = true;
-        if (vShowCollapsingHeader) {
-            opened = ImGui::CollapsingHeader(m_ProgramName.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
-        }
+        if (vShowCollapsingHeader) { opened = ImGui::CollapsingHeader(m_ProgramName.c_str(), ImGuiTreeNodeFlags_DefaultOpen); }
         if (opened) {
             ImGui::Indent();
             for (auto& shader_type : m_Uniforms) {
@@ -547,8 +547,8 @@ public:
                 ImGui::Indent();
                 for (auto& uni : shader_type.second) {
                     if (uni.second.showed && uni.second.used) {
-                        if (uni.second.widgetFunctor != nullptr) {
-                            uni.second.widgetFunctor(uni.second);
+                        if (uni.second.widget_functor != nullptr) {
+                            uni.second.widget_functor(uni.second);
                         } else {
                             if (uni.second.datas_f != nullptr) {
                                 switch (uni.second.channels) {
@@ -571,15 +571,19 @@ public:
                                     case 3U: ImGui::DragScalarN(uni.second.name.c_str(), ImGuiDataType_U32, uni.second.datas_u, 3); break;
                                     case 4U: ImGui::DragScalarN(uni.second.name.c_str(), ImGuiDataType_U32, uni.second.datas_u, 4); break;
                                 }
-                            } else if (uni.second.data_s2d > 0U) {
+                            } else if (uni.second.data_s2d != nullptr && *uni.second.data_s2d > 0) {
                                 ImGui::Text(uni.second.name.c_str());
                                 ImGui::Indent();
-                                ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<size_t>(uni.second.data_s2d)), ImVec2(64.0f, 64.0f));
+                                ImTextureRef ref;
+                                ref._TexID = static_cast<size_t>(*uni.second.data_s2d);
+                                ImGui::Image(ref, ImVec2(64.0f, 64.0f));
                                 ImGui::Unindent();
-                            } else if (uni.second.data_i2d > 0U) {
+                            } else if (uni.second.data_i2d != nullptr && *uni.second.data_i2d > 0) {
                                 ImGui::Text(uni.second.name.c_str());
                                 ImGui::Indent();
-                                ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<size_t>(uni.second.data_i2d)), ImVec2(64.0f, 64.0f));
+                                ImTextureRef ref;
+                                ref._TexID = static_cast<size_t>(*uni.second.data_i2d);
+                                ImGui::Image(ref, ImVec2(64.0f, 64.0f));
                                 ImGui::Unindent();
                             }
                         }
@@ -587,9 +591,7 @@ public:
                 }
                 ImGui::Unindent();
             }
-            if (vAdditionnalWidgetsFunctor != nullptr) {
-                vAdditionnalWidgetsFunctor();
-            }
+            if (m_AdditionnalWidgetsFunctor != nullptr) { m_AdditionnalWidgetsFunctor(); }
             ImGui::Unindent();
         }
         ImGui::PopID();

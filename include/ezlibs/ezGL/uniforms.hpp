@@ -407,7 +407,7 @@ public:
         return true;
     };
     const char* get_general_help() {
-        return u8R"(
+        return R"(
 general syntax is : 
 - uniform type(widget:params) name; // simple or multiline comment
 )";
@@ -441,7 +441,7 @@ public:
         m_play = vFlag;
     }
     const char* get_help() override {
-        return u8R"(
+        return R"(
 buffer uniform syantax :(default is optional)
 - uniform float(time:default) name;
 )";
@@ -482,7 +482,7 @@ public:
         return false;
     }
     const char* get_help() override {
-        return u8R"(
+        return R"(
 buffer uniform syantax :
 - resolution :
   - vec2 resolution => uniform vec2(buffer) name;
@@ -497,7 +497,7 @@ buffer uniform syantax :
 class UniformSlider : public IUniform {
 public:
     const char* get_help() override {
-        return u8R"(
+        return R"(
 float slider uniform syntax : (default and step are otionals)
 - uniform float(inf:sup:default:step) name;
 - uniform vec2(inf:sup:default:step) name;
